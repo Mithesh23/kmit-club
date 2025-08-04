@@ -14,13 +14,281 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          club_id: string
+          content: string
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          club_id: string
+          content: string
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          club_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_admin_sessions: {
+        Row: {
+          admin_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          token: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          token: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_admin_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "club_admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_admins: {
+        Row: {
+          club_id: string
+          created_at: string
+          email: string
+          id: string
+          password_hash: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          email: string
+          id?: string
+          password_hash: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          password_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_admins_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_members: {
+        Row: {
+          club_id: string
+          created_at: string
+          id: string
+          name: string
+          role: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          id?: string
+          name: string
+          role: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_registrations: {
+        Row: {
+          club_id: string
+          created_at: string
+          id: string
+          phone: string | null
+          student_email: string
+          student_name: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          id?: string
+          phone?: string | null
+          student_email: string
+          student_name: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          id?: string
+          phone?: string | null
+          student_email?: string
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_registrations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          created_at: string
+          detailed_description: string | null
+          id: string
+          name: string
+          registration_open: boolean
+          short_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detailed_description?: string | null
+          id?: string
+          name: string
+          registration_open?: boolean
+          short_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detailed_description?: string | null
+          id?: string
+          name?: string
+          registration_open?: boolean
+          short_description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_images: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_images_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          club_id: string
+          created_at: string
+          description: string
+          id: string
+          title: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          description: string
+          id?: string
+          title: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      authenticate_club_admin: {
+        Args: { admin_email: string; admin_password: string }
+        Returns: {
+          success: boolean
+          token: string
+          club_id: string
+          message: string
+        }[]
+      }
+      create_club_admin: {
+        Args: { club_id: string; admin_email: string; admin_password: string }
+        Returns: {
+          success: boolean
+          message: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
