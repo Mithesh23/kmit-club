@@ -1,0 +1,114 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useClubAuth } from '@/hooks/useClubAuth';
+import { useAdminClub } from '@/hooks/useAdminClubData';
+import { ClubInfoEdit } from '@/components/admin/ClubInfoEdit';
+import { AnnouncementsManager } from '@/components/admin/AnnouncementsManager';
+import { MembersManager } from '@/components/admin/MembersManager';
+import { EventsManager } from '@/components/admin/EventsManager';
+import { RegistrationsView } from '@/components/admin/RegistrationsView';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, Loader2 } from 'lucide-react';
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { session, logout, loading } = useClubAuth();
+  const { data: club, isLoading: clubLoading } = useAdminClub(session?.club_id || '');
+
+  useEffect(() => {
+    if (!loading && !session?.success) {
+      navigate('/');
+    }
+  }, [session, loading, navigate]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  if (loading || clubLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session?.success || !club) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-accent to-background">
+      {/* Header */}
+      <header className="bg-card/80 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-primary">{club.name} - Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Manage your club information and activities</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => navigate(`/club/${club.id}`)}>
+              View Public Page
+            </Button>
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="info" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Club Info
+            </TabsTrigger>
+            <TabsTrigger value="announcements" className="flex items-center gap-2">
+              <Megaphone className="h-4 w-4" />
+              Announcements
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="registrations" className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Registrations
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info">
+            <ClubInfoEdit club={club} />
+          </TabsContent>
+
+          <TabsContent value="announcements">
+            <AnnouncementsManager clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="members">
+            <MembersManager clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="events">
+            <EventsManager clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="registrations">
+            <RegistrationsView clubId={club.id} />
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default AdminDashboard;
