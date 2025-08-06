@@ -289,6 +289,13 @@ export type Database = {
           message: string
         }[]
       }
+      get_current_admin_session: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          admin_id: string
+          club_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
