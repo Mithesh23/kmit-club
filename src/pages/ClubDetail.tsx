@@ -39,119 +39,210 @@ const ClubDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent to-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-light to-primary-100 relative">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 left-20 w-80 h-80 bg-gradient-to-r from-accent/10 to-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+      </div>
+
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+      <header className="relative bg-white/80 backdrop-blur-glass border-b border-white/20 shadow-elegant">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="bg-white/50 hover:bg-white/80 backdrop-blur-sm border border-white/20"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Clubs
             </Button>
           </div>
-          <h1 className="text-3xl font-bold text-primary">{club.name}</h1>
-          {club.detailed_description && (
-            <p className="text-muted-foreground mt-2 max-w-3xl">
-              {club.detailed_description}
-            </p>
-          )}
+          
+          <div className="flex items-start gap-6">
+            {/* Club Icon */}
+            <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-elegant">
+              {club.name.charAt(0)}
+            </div>
+            
+            <div className="flex-1">
+              <h1 className="text-5xl font-display font-bold text-gradient mb-3">
+                {club.name}
+              </h1>
+              {club.detailed_description && (
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-4xl">
+                  {club.detailed_description}
+                </p>
+              )}
+              
+              {/* Club Stats */}
+              <div className="flex items-center gap-6 mt-6">
+                <div className={`px-4 py-2 rounded-full ${
+                  club.registration_open 
+                    ? 'bg-success/10 text-success border border-success/20' 
+                    : 'bg-muted text-muted-foreground border border-border'
+                }`}>
+                  {club.registration_open ? '🟢 Registration Open' : '⭕ Registration Closed'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  📅 Est. {new Date(club.created_at).getFullYear()}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="relative container mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Announcements */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5" />
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Megaphone className="h-5 w-5 text-white" />
+                  </div>
                   Latest News & Announcements
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-64">
+                <ScrollArea className="h-80">
                   {announcementsLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                    <div className="flex items-center justify-center h-40">
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+                        <p className="text-muted-foreground">Loading announcements...</p>
+                      </div>
                     </div>
                   ) : announcements && announcements.length > 0 ? (
-                    <div className="space-y-4">
-                      {announcements.map((announcement) => (
-                        <div key={announcement.id} className="border-l-4 border-primary pl-4">
-                          <h4 className="font-semibold text-foreground">{announcement.title}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{announcement.content}</p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(announcement.created_at), 'PPP')}
+                    <div className="space-y-6">
+                      {announcements.map((announcement, index) => (
+                        <div 
+                          key={announcement.id} 
+                          className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
+                          <h4 className="font-display font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+                            {announcement.title}
+                          </h4>
+                          <p className="text-muted-foreground leading-relaxed mb-3">
+                            {announcement.content}
                           </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(announcement.created_at), 'PPP')}
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">No announcements yet.</p>
+                    <div className="text-center py-16">
+                      <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <Megaphone className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <h4 className="font-display font-semibold text-lg mb-2">No Announcements Yet</h4>
+                      <p className="text-muted-foreground">Check back soon for exciting updates!</p>
+                    </div>
                   )}
                 </ScrollArea>
               </CardContent>
             </Card>
 
             {/* Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
                   Club Events
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {eventsLoading ? (
-                  <div className="flex items-center justify-center h-32">
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                  <div className="flex items-center justify-center h-40">
+                    <div className="text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+                      <p className="text-muted-foreground">Loading events...</p>
+                    </div>
                   </div>
                 ) : events && events.length > 0 ? (
-                  <div className="space-y-6">
-                    {events.map((event) => (
-                      <div key={event.id} className="space-y-3">
-                        <div>
-                          <h4 className="font-semibold text-foreground">{event.title}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(event.created_at), 'PPP')}
+                  <div className="space-y-8">
+                    {events.map((event, index) => (
+                      <div 
+                        key={event.id} 
+                        className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
+                        
+                        <div className="mb-4">
+                          <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                            {event.title}
+                          </h4>
+                          <p className="text-muted-foreground leading-relaxed mb-3">
+                            {event.description}
                           </p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            {format(new Date(event.created_at), 'PPP')}
+                          </div>
                         </div>
+
                         {event.event_images && event.event_images.length > 0 && (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {event.event_images.map((image) => (
-                              <div key={image.id} className="relative group">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                            {event.event_images.map((image, imgIndex) => (
+                              <div 
+                                key={image.id} 
+                                className="relative group/img overflow-hidden rounded-lg"
+                                style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
+                              >
                                 <img
                                   src={image.image_url}
                                   alt="Event"
-                                  className="w-full h-24 object-cover rounded-md"
+                                  className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                                  <Camera className="h-4 w-4 text-white" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                  <Camera className="h-5 w-5 text-white" />
                                 </div>
                               </div>
                             ))}
                           </div>
                         )}
-                        {event !== events[events.length - 1] && <Separator />}
+                        
+                        {event !== events[events.length - 1] && (
+                          <Separator className="mt-6 bg-gradient-to-r from-transparent via-border to-transparent" />
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-8">No events yet.</p>
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <Calendar className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h4 className="font-display font-semibold text-lg mb-2">No Events Yet</h4>
+                    <p className="text-muted-foreground">Exciting events are being planned!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Registration */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Join This Club</CardTitle>
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-display">Join This Club</CardTitle>
+                <p className="text-muted-foreground mt-2">
+                  Become part of our amazing community
+                </p>
               </CardHeader>
               <CardContent>
                 <RegistrationDialog club={club} />
@@ -159,29 +250,56 @@ const ClubDetail = () => {
             </Card>
 
             {/* Club Members */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
                   Club Members
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {membersLoading ? (
-                  <div className="flex items-center justify-center h-24">
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                  <div className="flex items-center justify-center h-32">
+                    <div className="text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-primary" />
+                      <p className="text-muted-foreground text-sm">Loading members...</p>
+                    </div>
                   </div>
                 ) : members && members.length > 0 ? (
-                  <div className="space-y-3">
-                    {members.map((member) => (
-                      <div key={member.id} className="flex justify-between items-center">
-                        <span className="font-medium text-foreground">{member.name}</span>
-                        <Badge variant="secondary">{member.role}</Badge>
+                  <div className="space-y-4">
+                    {members.map((member, index) => (
+                      <div 
+                        key={member.id} 
+                        className="group flex items-center justify-between p-4 bg-gradient-secondary rounded-lg border border-primary/10 hover:shadow-sm transition-all duration-300"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {member.name.charAt(0)}
+                          </div>
+                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                            {member.name}
+                          </span>
+                        </div>
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-primary/10 text-primary border-primary/20 group-hover:bg-primary/20 transition-colors"
+                        >
+                          {member.role}
+                        </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-4">No members listed yet.</p>
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-gradient-secondary rounded-full mx-auto mb-3 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h4 className="font-display font-semibold mb-1">No Members Listed</h4>
+                    <p className="text-muted-foreground text-sm">Members will appear here soon!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
