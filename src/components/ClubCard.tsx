@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Club } from '@/types/club';
 import { useNavigate } from 'react-router-dom';
+import watermarkImage from '@/assets/club-watermark.jpg';
 
 interface ClubCardProps {
   club: Club;
@@ -22,7 +23,16 @@ export const ClubCard = ({ club }: ClubCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleKnowMore}
+      style={{
+        backgroundImage: `url(${watermarkImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
     >
+      {/* Watermark Overlay */}
+      <div className="absolute inset-0 bg-background/90 group-hover:bg-background/85 transition-colors duration-500 rounded-xl" />
+      
       {/* Professional Hover Glow Effect */}
       <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-xl" />
       <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-xl transition-colors duration-500" />

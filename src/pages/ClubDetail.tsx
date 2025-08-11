@@ -176,8 +176,9 @@ const ClubDetail = () => {
                     {events.map((event, index) => (
                       <div 
                         key={event.id} 
-                        className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300"
+                        className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
                         style={{ animationDelay: `${index * 100}ms` }}
+                        onClick={() => navigate(`/club/${id}/event/${event.id}`)}
                       >
                         <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
                         
@@ -186,11 +187,19 @@ const ClubDetail = () => {
                             {event.title}
                           </h4>
                           <p className="text-muted-foreground leading-relaxed mb-3">
-                            {event.description}
+                            {event.description.length > 150 
+                              ? `${event.description.substring(0, 150)}...` 
+                              : event.description
+                            }
                           </p>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            {format(new Date(event.created_at), 'PPP')}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              {format(new Date(event.created_at), 'PPP')}
+                            </div>
+                            <div className="text-primary text-sm font-medium group-hover:text-primary/80">
+                              View Details →
+                            </div>
                           </div>
                         </div>
 
