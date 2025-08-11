@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAdminEvents, useCreateEvent } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Plus, Loader2, Camera } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Calendar, Plus, Loader2, Camera, Upload, X } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EventsManagerProps {
@@ -17,6 +18,9 @@ interface EventsManagerProps {
 export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: events, isLoading } = useAdminEvents(clubId);
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
@@ -56,6 +60,44 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         }
       }
     );
+  };
+
+  const handleImageUpload = async (eventId: string, file: File) => {
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${eventId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName);
+
+      const { error: dbError } = await supabase
+        .from('event_images')
+        .insert([{ event_id: eventId, image_url: publicUrl }]);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload image.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      setSelectedEventId(null);
+    }
   };
 
   return (
@@ -139,6 +181,19 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                         ))}
                       </div>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedEventId(event.id);
+                        fileInputRef.current?.click();
+                      }}
+                      disabled={uploading}
+                      className="w-full mt-2"
+                    >
+                      <Upload className="h-3 w-3 mr-1" />
+                      Add Images
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -154,6 +209,21 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
             Image upload functionality for events will be available in the next update.
           </p>
         </div>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={async (e) => {
+            if (e.target.files && selectedEventId) {
+              for (const file of Array.from(e.target.files)) {
+                await handleImageUpload(selectedEventId, file);
+              }
+            }
+          }}
+        />
       </CardContent>
     </Card>
   );
