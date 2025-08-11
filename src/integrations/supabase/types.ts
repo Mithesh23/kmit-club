@@ -304,6 +304,10 @@ export type Database = {
           club_id: string
         }[]
       }
+      is_admin_for_event_storage: {
+        Args: { event_id_param: string }
+        Returns: boolean
+      }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {

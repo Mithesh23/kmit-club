@@ -42,7 +42,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { data: events, isLoading } = useAdminEvents(clubId);
+  const { data: events, isLoading, refetch } = useAdminEvents(clubId);
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
   const { toast } = useToast();
 
@@ -109,6 +109,9 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         title: "Success",
         description: "Image uploaded successfully!",
       });
+      
+      // Refresh events list to show new image
+      refetch();
     } catch (error: any) {
       toast({
         title: "Upload Failed",
