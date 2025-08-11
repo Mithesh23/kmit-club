@@ -7,9 +7,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAdminEvents, useCreateEvent } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 import { Calendar, Plus, Loader2, Camera, Upload, X } from 'lucide-react';
 import { format } from 'date-fns';
+
+const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
+
+// Create admin supabase client with token authentication
+const getAdminSupabaseClient = () => {
+  const token = localStorage.getItem('club_auth_token');
+  
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: localStorage,
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: token ? { authorization: token } : {},
+    },
+  });
+};
 
 interface EventsManagerProps {
   clubId: string;
@@ -65,20 +85,21 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const handleImageUpload = async (eventId: string, file: File) => {
     setUploading(true);
     try {
+      const adminClient = getAdminSupabaseClient();
       const fileExt = file.name.split('.').pop();
       const fileName = `${eventId}/${Date.now()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await adminClient.storage
         .from('event-images')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = adminClient.storage
         .from('event-images')
         .getPublicUrl(fileName);
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await adminClient
         .from('event_images')
         .insert([{ event_id: eventId, image_url: publicUrl }]);
 
@@ -206,7 +227,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         <div className="p-4 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
             <Camera className="h-4 w-4 inline mr-1" />
-            Image upload functionality for events will be available in the next update.
+            Upload multiple images per event. Images will be displayed in the club page and detailed event views.
           </p>
         </div>
         
