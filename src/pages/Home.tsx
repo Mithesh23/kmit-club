@@ -1,7 +1,9 @@
 import { useClubs } from '@/hooks/useClubs';
 import { ClubCard } from '@/components/ClubCard';
 import { ClubLoginDialog } from '@/components/ClubLoginDialog';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Loader2, Key } from 'lucide-react';
 
 const Home = () => {
   const { data: clubs, isLoading, error } = useClubs();
@@ -59,7 +61,13 @@ const Home = () => {
               </p>
               <div className="w-16 h-1 bg-gradient-primary rounded-full"></div>
             </div>
-            <div className="animate-scale-in">
+            <div className="animate-scale-in flex items-center gap-4">
+              <Button asChild variant="outline" className="gap-2">
+                <Link to="/credentials">
+                  <Key className="w-4 h-4" />
+                  View Credentials
+                </Link>
+              </Button>
               <ClubLoginDialog />
             </div>
           </div>

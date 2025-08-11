@@ -289,11 +289,26 @@ export type Database = {
           message: string
         }[]
       }
+      get_all_club_credentials: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          club_name: string
+          admin_email: string
+          plain_password: string
+        }[]
+      }
       get_current_admin_session: {
         Args: Record<PropertyKey, never>
         Returns: {
           admin_id: string
           club_id: string
+        }[]
+      }
+      update_club_admin_password: {
+        Args: { club_admin_email: string; new_password: string }
+        Returns: {
+          success: boolean
+          message: string
         }[]
       }
     }

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import ClubDetail from "./pages/ClubDetail";
 import AdminDashboard from "./pages/AdminDashboard";
+import ClubCredentials from "./pages/ClubCredentials";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/club/:id" element={<ClubDetail />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/credentials" element={<ClubCredentials />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
