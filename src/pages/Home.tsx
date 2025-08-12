@@ -54,9 +54,9 @@ const Home = () => {
           <div className="symmetric-flex">
             <div className="animate-fade-in space-y-2">
               <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient text-neon">
-                KMIT Clubs
+                KMIT Clubs Hub
               </h1>
-              <p className="text-muted-foreground font-medium text-lg">
+              <p className="text-muted-foreground font-large text-lg">
                 Keshav Memorial Institute of Technology
               </p>
               <div className="w-16 h-1 bg-gradient-primary rounded-full"></div>
