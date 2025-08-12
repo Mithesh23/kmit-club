@@ -206,7 +206,7 @@ const Home = () => {
           
           <div className="border-t border-border pt-8 text-center">
             <p className="text-muted-foreground text-lg">
-              © 2024 Keshav Memorial Institute of Technology. 
+              © 2025 Keshav Memorial Institute of Technology. 
               <span className="text-primary font-semibold">Crafting Excellence.</span>
             </p>
           </div>
