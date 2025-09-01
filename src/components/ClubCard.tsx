@@ -19,64 +19,65 @@ export const ClubCard = ({ club }: ClubCardProps) => {
 
   return (
     <Card 
-      className="group relative overflow-hidden card-neon transition-all duration-500 hover:-translate-y-4 cursor-pointer backdrop-blur-sm h-full glow-primary hover:glow-accent"
+      className="group relative overflow-hidden bg-white border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleKnowMore}
-      style={{
-        backgroundImage: `url(${watermarkImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
     >
-      {/* Watermark Overlay */}
-      <div className="absolute inset-0 bg-background/90 group-hover:bg-background/85 transition-colors duration-500 rounded-xl" />
+      {/* Clean Background with subtle watermark */}
+      <div 
+        className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
+        style={{
+          backgroundImage: `url(${watermarkImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
       
-      {/* Professional Hover Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-xl" />
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-xl transition-colors duration-500" />
+      {/* Clean Hover Effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
       
       {/* Card Content */}
-      <CardContent className="relative p-8 h-full flex flex-col">
-        {/* Professional Club Icon */}
-        <div className="w-20 h-20 bg-gradient-primary rounded-3xl mb-8 flex items-center justify-center text-primary-foreground text-3xl font-bold shadow-glow group-hover:scale-110 transition-transform duration-300">
+      <CardContent className="relative p-6 h-full flex flex-col">
+        {/* Clean Club Icon */}
+        <div className="w-16 h-16 bg-gradient-primary rounded-2xl mb-6 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
           {club.name.charAt(0)}
         </div>
 
         {/* Club Name */}
-        <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6 group-hover:text-gradient transition-all duration-300 leading-tight">
+        <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-4 group-hover:text-gradient transition-all duration-300 leading-tight">
           {club.name}
         </h3>
         
-        {/* Professional Description */}
-        <div className="relative flex-1 min-h-[80px]">
+        {/* Clean Description */}
+        <div className="relative flex-1 min-h-[60px]">
           {/* Always visible description */}
           {club.short_description && (
-            <p className={`text-muted-foreground leading-relaxed text-lg transition-all duration-300 ${
-              isHovered ? 'opacity-0 transform -translate-y-3' : 'opacity-100 transform translate-y-0'
+            <p className={`text-muted-foreground leading-relaxed transition-all duration-300 ${
+              isHovered ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
             }`}>
-              {club.short_description.length > 90 
-                ? `${club.short_description.substring(0, 90)}...` 
+              {club.short_description.length > 80 
+                ? `${club.short_description.substring(0, 80)}...` 
                 : club.short_description
               }
             </p>
           )}
           
-          {/* Professional Hover content */}
+          {/* Clean Hover content */}
           <div className={`absolute inset-0 transition-all duration-300 ${
-            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
             {club.short_description && (
-              <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
+              <p className="text-muted-foreground leading-relaxed mb-6">
                 {club.short_description}
               </p>
             )}
             
             <Button 
               variant="default" 
-              size="lg"
-              className="btn-neon w-full group/btn text-lg font-semibold py-4"
+              size="default"
+              className="w-full group/btn font-medium"
               onClick={(e) => {
                 e.stopPropagation();
                 handleKnowMore();
@@ -89,32 +90,20 @@ export const ClubCard = ({ club }: ClubCardProps) => {
           </div>
         </div>
 
-        {/* Professional Status Badge */}
-        <div className="absolute top-6 right-6">
-          <div className={`px-4 py-2 rounded-full text-sm font-bold ${
+        {/* Clean Status Badge */}
+        <div className="absolute top-4 right-4">
+          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
             club.registration_open 
-              ? 'bg-success/20 text-success border-2 border-success/30 glow-accent' 
-              : 'bg-muted/50 text-muted-foreground border-2 border-border'
+              ? 'bg-success/10 text-success border border-success/20' 
+              : 'bg-muted text-muted-foreground border border-border'
           }`}>
             {club.registration_open ? '● OPEN' : '○ CLOSED'}
           </div>
         </div>
 
-        {/* Enhanced Decorative Elements */}
-        <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-primary/10 rounded-full group-hover:scale-150 group-hover:bg-gradient-primary/20 transition-all duration-500 blur-sm" />
-        <div className="absolute -top-4 -left-4 w-16 h-16 bg-accent/10 rounded-full group-hover:scale-125 group-hover:bg-accent/20 transition-all duration-500 blur-sm" />
-        
-        {/* Professional Grid Pattern */}
-        <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
-          <svg className="w-full h-full" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="card-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#card-grid)" />
-          </svg>
-        </div>
+        {/* Subtle Decorative Elements */}
+        <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-primary/5 rounded-full group-hover:scale-125 group-hover:bg-gradient-primary/10 transition-all duration-300 blur-sm" />
+        <div className="absolute -top-2 -left-2 w-12 h-12 bg-accent/5 rounded-full group-hover:scale-110 group-hover:bg-accent/10 transition-all duration-300 blur-sm" />
       </CardContent>
     </Card>
   );

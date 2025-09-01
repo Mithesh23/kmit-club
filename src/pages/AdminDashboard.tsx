@@ -40,15 +40,15 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent to-background">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <div className="min-h-screen bg-gray-50">
+      {/* Clean Header */}
+      <header className="bg-white border-b shadow-sm">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">{club.name} - Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-foreground">{club.name} - Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground">Manage your club information and activities</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => navigate(`/club/${club.id}`)}>
               View Public Page
             </Button>
@@ -61,26 +61,26 @@ const AdminDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-6 py-8">
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="info" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm">
+            <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Settings className="h-4 w-4" />
               Club Info
             </TabsTrigger>
-            <TabsTrigger value="announcements" className="flex items-center gap-2">
+            <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Megaphone className="h-4 w-4" />
               Announcements
             </TabsTrigger>
-            <TabsTrigger value="members" className="flex items-center gap-2">
+            <TabsTrigger value="members" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Users className="h-4 w-4" />
               Members
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
+            <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Calendar className="h-4 w-4" />
               Events
             </TabsTrigger>
-            <TabsTrigger value="registrations" className="flex items-center gap-2">
+            <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <UserCheck className="h-4 w-4" />
               Registrations
             </TabsTrigger>
