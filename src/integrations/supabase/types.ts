@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -276,24 +276,24 @@ export type Database = {
       authenticate_club_admin: {
         Args: { admin_email: string; admin_password: string }
         Returns: {
-          success: boolean
-          token: string
           club_id: string
           message: string
+          success: boolean
+          token: string
         }[]
       }
       create_club_admin: {
-        Args: { club_id: string; admin_email: string; admin_password: string }
+        Args: { admin_email: string; admin_password: string; club_id: string }
         Returns: {
-          success: boolean
           message: string
+          success: boolean
         }[]
       }
       get_all_club_credentials: {
         Args: Record<PropertyKey, never>
         Returns: {
-          club_name: string
           admin_email: string
+          club_name: string
           plain_password: string
         }[]
       }
@@ -311,8 +311,8 @@ export type Database = {
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {
-          success: boolean
           message: string
+          success: boolean
         }[]
       }
     }
