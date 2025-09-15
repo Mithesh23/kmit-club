@@ -99,7 +99,7 @@ export const ClubLoginDialog = () => {
         </form>
         <div className="text-xs text-muted-foreground mt-4">
           <p>Demo credentials:</p>
-          <p>Email: organizingcommity@kmit.ac.in  <br>   aalap@admin.com</>   </p>
+          <p>Email: organizingcommity@kmit.ac.in  <br>   aalap@admin.com  </p>
           <p>Password: Kmit123$</p>
         </div>
       </DialogContent>
