@@ -6,6 +6,7 @@ export interface Club {
   registration_open: boolean;
   created_at: string;
   updated_at: string;
+  logo_url: string | null;
 }
 
 export interface ClubMember {

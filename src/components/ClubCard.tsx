@@ -40,10 +40,20 @@ export const ClubCard = ({ club }: ClubCardProps) => {
       
       {/* Card Content */}
       <CardContent className="relative p-6 h-full flex flex-col">
-        {/* Clean Club Icon */}
-        <div className="w-16 h-16 bg-gradient-primary rounded-2xl mb-6 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
-          {club.name.charAt(0)}
-        </div>
+        {/* Clean Club Icon/Logo */}
+        {club.logo_url ? (
+          <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 shadow-md group-hover:scale-105 transition-transform duration-300">
+            <img 
+              src={club.logo_url} 
+              alt={`${club.name} logo`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-16 h-16 bg-gradient-primary rounded-2xl mb-6 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
+            {club.name.charAt(0)}
+          </div>
+        )}
 
         {/* Club Name */}
         <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-4 group-hover:text-gradient transition-all duration-300 leading-tight">
