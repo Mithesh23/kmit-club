@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/carousel';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ChevronRight } from 'lucide-react';
-import heroImage from '@/assets/kmit-new-hero.jpg';
+import heroImage from '@/assets/kmit-campus-hero.jpg';
 
 const Home = () => {
   const { data: clubs, isLoading, error } = useClubs();
