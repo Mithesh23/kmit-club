@@ -244,9 +244,69 @@ export const useCreateEvent = () => {
   });
 };
 
+// Report Management Hooks
+export const useAdminReports = (clubId: string) => {
+  return useQuery({
+    queryKey: ['admin-reports', clubId],
+    queryFn: async () => {
+      const adminClient = getAdminSupabaseClient();
+      const { data, error } = await adminClient
+        .from('club_reports')
+        .select('*')
+        .eq('club_id', clubId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clubId,
+  });
+};
+
+export const useCreateReport = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (report: { club_id: string; title: string; report_type: 'monthly' | 'yearly' | 'event'; file_url: string }) => {
+      const adminClient = getAdminSupabaseClient();
+      const { data, error } = await adminClient
+        .from('club_reports')
+        .insert([report])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports', variables.club_id] });
+    },
+  });
+};
+
+export const useDeleteReport = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (reportId: string) => {
+      const adminClient = getAdminSupabaseClient();
+      const { error } = await adminClient
+        .from('club_reports')
+        .delete()
+        .eq('id', reportId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+    },
+  });
+};
+
+// Registration Management Hooks
 export const useAdminRegistrations = (clubId: string) => {
   return useQuery({
-    queryKey: ['adminRegistrations', clubId],
+    queryKey: ['admin-registrations', clubId],
     queryFn: async (): Promise<ClubRegistration[]> => {
       const adminClient = getAdminSupabaseClient();
       const { data, error } = await adminClient
@@ -259,5 +319,27 @@ export const useAdminRegistrations = (clubId: string) => {
       return data || [];
     },
     enabled: !!clubId
+  });
+};
+
+export const useUpdateRegistrationStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ registrationId, status }: { registrationId: string; status: 'approved' | 'rejected' }) => {
+      const adminClient = getAdminSupabaseClient();
+      const { data, error } = await adminClient
+        .from('club_registrations')
+        .update({ status })
+        .eq('id', registrationId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-registrations'] });
+    },
   });
 };

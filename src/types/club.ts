@@ -47,6 +47,16 @@ export interface ClubRegistration {
   student_name: string;
   student_email: string;
   phone: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
+export interface ClubReport {
+  id: string;
+  club_id: string;
+  title: string;
+  report_type: 'monthly' | 'yearly' | 'event';
+  file_url: string;
   created_at: string;
 }
 

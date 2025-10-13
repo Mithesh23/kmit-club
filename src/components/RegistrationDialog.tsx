@@ -28,7 +28,8 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
         club_id: club.id,
         student_name: studentName,
         student_email: studentEmail,
-        phone: phone || null
+        phone: phone || null,
+        status: 'pending'
       },
       {
         onSuccess: () => {

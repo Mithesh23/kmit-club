@@ -148,6 +148,7 @@ export type Database = {
           created_at: string
           id: string
           phone: string | null
+          status: Database["public"]["Enums"]["registration_status"]
           student_email: string
           student_name: string
         }
@@ -156,6 +157,7 @@ export type Database = {
           created_at?: string
           id?: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
           student_email: string
           student_name: string
         }
@@ -164,12 +166,48 @@ export type Database = {
           created_at?: string
           id?: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
           student_email?: string
           student_name?: string
         }
         Relationships: [
           {
             foreignKeyName: "club_registrations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_reports: {
+        Row: {
+          club_id: string
+          created_at: string
+          file_url: string
+          id: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          title: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          file_url: string
+          id?: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          title: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          file_url?: string
+          id?: string
+          report_type?: Database["public"]["Enums"]["report_type"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_reports_club_id_fkey"
             columns: ["club_id"]
             isOneToOne: false
             referencedRelation: "clubs"
@@ -320,7 +358,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      registration_status: "pending" | "approved" | "rejected"
+      report_type: "monthly" | "yearly" | "event"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -447,6 +486,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      registration_status: ["pending", "approved", "rejected"],
+      report_type: ["monthly", "yearly", "event"],
+    },
   },
 } as const
