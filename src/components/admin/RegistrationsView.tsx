@@ -16,6 +16,8 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
   const { mutate: updateStatus, isPending } = useUpdateRegistrationStatus();
   const { toast } = useToast();
 
+  const pendingCount = registrations?.filter(r => r.status === 'pending').length || 0;
+
   const handleStatusUpdate = (registrationId: string, status: 'approved' | 'rejected') => {
     updateStatus({ registrationId, status }, {
       onSuccess: () => {
@@ -37,16 +39,20 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserCheck className="h-5 w-5" />
-          Student Registrations
-          {registrations && registrations.length > 0 && (
-            <Badge variant="secondary">{registrations.length}</Badge>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-5 w-5" />
+            Student Registrations
+          </div>
+          {pendingCount > 0 && (
+            <Badge variant="secondary">
+              {pendingCount} Pending
+            </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-64">
+        <ScrollArea className="h-[500px]">
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="h-6 w-6 animate-spin" />
