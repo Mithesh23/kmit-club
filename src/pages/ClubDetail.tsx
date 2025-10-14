@@ -342,23 +342,16 @@ const ClubDetail = () => {
                     <DialogHeader>
                       <DialogTitle className="text-2xl font-display">Club Gallery</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-8 pt-4">
+                    <div className="pt-4">
                       {eventsLoading ? (
                         <div className="flex items-center justify-center h-40">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                       ) : events && events.length > 0 ? (
-                        events.map((event) => (
-                          event.event_images && event.event_images.length > 0 && (
-                            <div key={event.id} className="space-y-3">
-                              <h3 className="text-lg font-display font-semibold text-foreground border-l-4 border-primary pl-3 mb-1">
-                                {event.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mb-3 pl-3">
-                                {format(new Date(event.created_at), 'PPP')}
-                              </p>
-                              <div className="grid grid-cols-3 gap-4">
-                                {event.event_images.map((image) => (
+                        <div className="grid grid-cols-3 gap-4">
+                          {events.flatMap((event) => 
+                            event.event_images && event.event_images.length > 0 
+                              ? event.event_images.map((image) => (
                                   <div 
                                     key={image.id} 
                                     className="relative group overflow-hidden rounded-lg border border-primary/10"
@@ -373,11 +366,10 @@ const ClubDetail = () => {
                                       <p className="text-white/80 text-xs">{format(new Date(event.created_at), 'PPP')}</p>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        ))
+                                ))
+                              : []
+                          )}
+                        </div>
                       ) : (
                         <div className="text-center py-16">
                           <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
