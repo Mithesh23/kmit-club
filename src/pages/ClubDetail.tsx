@@ -243,65 +243,6 @@ const ClubDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Gallery Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button 
-                  size="lg" 
-                  className="w-full bg-gradient-primary hover:shadow-elegant transition-all"
-                >
-                  <ImageIcon className="h-5 w-5 mr-2" />
-                  View Club Gallery
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-display">Club Gallery</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-8 pt-4">
-                  {eventsLoading ? (
-                    <div className="flex items-center justify-center h-40">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                  ) : events && events.length > 0 ? (
-                    events.map((event) => (
-                      event.event_images && event.event_images.length > 0 && (
-                        <div key={event.id} className="space-y-3">
-                          <h3 className="text-lg font-display font-semibold text-foreground border-l-4 border-primary pl-3">
-                            {event.title}
-                          </h3>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {event.event_images.map((image) => (
-                              <div 
-                                key={image.id} 
-                                className="relative group overflow-hidden rounded-lg border border-primary/10"
-                              >
-                                <img
-                                  src={image.image_url}
-                                  alt={event.title}
-                                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                                  <p className="text-white text-sm font-medium">{event.title}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    ))
-                  ) : (
-                    <div className="text-center py-16">
-                      <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h4 className="font-display font-semibold text-lg mb-2">No Images Yet</h4>
-                      <p className="text-muted-foreground">Gallery images will appear here soon!</p>
-                    </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
 
           {/* Sidebar */}
@@ -371,6 +312,80 @@ const ClubDetail = () => {
                     <p className="text-muted-foreground text-sm">Members will appear here soon!</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Club Gallery */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="flex items-center justify-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <ImageIcon className="h-5 w-5 text-white" />
+                  </div>
+                  Club Gallery
+                </CardTitle>
+                <p className="text-muted-foreground text-sm mt-2">
+                  View all event photos
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-primary hover:shadow-elegant transition-all"
+                    >
+                      View Gallery
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-display">Club Gallery</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-8 pt-4">
+                      {eventsLoading ? (
+                        <div className="flex items-center justify-center h-40">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : events && events.length > 0 ? (
+                        events.map((event) => (
+                          event.event_images && event.event_images.length > 0 && (
+                            <div key={event.id} className="space-y-3">
+                              <h3 className="text-lg font-display font-semibold text-foreground border-l-4 border-primary pl-3">
+                                {event.title}
+                              </h3>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {event.event_images.map((image) => (
+                                  <div 
+                                    key={image.id} 
+                                    className="relative group overflow-hidden rounded-lg border border-primary/10"
+                                  >
+                                    <img
+                                      src={image.image_url}
+                                      alt={event.title}
+                                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                                      <p className="text-white text-sm font-medium">{event.title}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        ))
+                      ) : (
+                        <div className="text-center py-16">
+                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-display font-semibold text-lg mb-2">No Images Yet</h4>
+                          <p className="text-muted-foreground">Gallery images will appear here soon!</p>
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           </div>
