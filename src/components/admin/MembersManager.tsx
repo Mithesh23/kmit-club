@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useAdminMembers, useCreateMember, useDeleteMember } from '@/hooks/useAdminClubData';
+import { useAdminMembers, useCreateMember, useDeleteMember, useAdminRegistrations } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Users, Plus, Trash2, Loader2, UserCheck, Mail, Phone } from 'lucide-react';
+import { format } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MembersManagerProps {
   clubId: string;
@@ -19,7 +21,10 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
   const { data: members, isLoading } = useAdminMembers(clubId);
   const { mutate: createMember, isPending: isCreating } = useCreateMember();
   const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
+  const { data: registrations, isLoading: isLoadingRegistrations } = useAdminRegistrations(clubId);
   const { toast } = useToast();
+
+  const approvedRegistrations = registrations?.filter(r => r.status === 'approved') || [];
 
   const handleCreate = () => {
     if (!name.trim() || !role.trim()) {
@@ -151,6 +156,55 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
           ) : (
             <p className="text-muted-foreground text-center py-8">No members added yet.</p>
           )}
+        </div>
+
+        {/* Approved Student Registrations */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Approved Student Registrations
+            </h4>
+            {approvedRegistrations.length > 0 && (
+              <Badge variant="default">
+                {approvedRegistrations.length}
+              </Badge>
+            )}
+          </div>
+          <ScrollArea className="h-[400px]">
+            {isLoadingRegistrations ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : approvedRegistrations.length > 0 ? (
+              <div className="space-y-3">
+                {approvedRegistrations.map((registration) => (
+                  <div key={registration.id} className="p-3 border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{registration.student_name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(registration.created_at), 'PP')}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-3 w-3" />
+                        {registration.student_email}
+                      </div>
+                      {registration.phone && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          {registration.phone}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">No approved registrations yet.</p>
+            )}
+          </ScrollArea>
         </div>
       </CardContent>
     </Card>
