@@ -351,10 +351,13 @@ const ClubDetail = () => {
                         events.map((event) => (
                           event.event_images && event.event_images.length > 0 && (
                             <div key={event.id} className="space-y-3">
-                              <h3 className="text-lg font-display font-semibold text-foreground border-l-4 border-primary pl-3">
+                              <h3 className="text-lg font-display font-semibold text-foreground border-l-4 border-primary pl-3 mb-1">
                                 {event.title}
                               </h3>
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              <p className="text-xs text-muted-foreground mb-3 pl-3">
+                                {format(new Date(event.created_at), 'PPP')}
+                              </p>
+                              <div className="grid grid-cols-3 gap-4">
                                 {event.event_images.map((image) => (
                                   <div 
                                     key={image.id} 
@@ -363,10 +366,11 @@ const ClubDetail = () => {
                                     <img
                                       src={image.image_url}
                                       alt={event.title}
-                                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                                      className="w-full h-48 object-cover"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                                      <p className="text-white text-sm font-medium">{event.title}</p>
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                      <p className="text-white text-sm font-medium mb-1">{event.title}</p>
+                                      <p className="text-white/80 text-xs">{format(new Date(event.created_at), 'PPP')}</p>
                                     </div>
                                   </div>
                                 ))}
