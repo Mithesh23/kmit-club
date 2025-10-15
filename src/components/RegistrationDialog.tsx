@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useRegisterForClub } from '@/hooks/useClubs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, UserPlus } from 'lucide-react';
@@ -17,6 +18,11 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
+  const [year, setYear] = useState('');
+  const [branch, setBranch] = useState('');
+  const [whyJoin, setWhyJoin] = useState('');
+  const [pastExperience, setPastExperience] = useState('');
   const { mutate: register, isPending } = useRegisterForClub();
   const { toast } = useToast();
 
@@ -29,6 +35,11 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
         student_name: studentName,
         student_email: studentEmail,
         phone: phone || null,
+        roll_number: rollNumber || null,
+        year: year || null,
+        branch: branch || null,
+        why_join: whyJoin || null,
+        past_experience: pastExperience || null,
         status: 'pending'
       },
       {
@@ -41,6 +52,11 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
           setStudentName('');
           setStudentEmail('');
           setPhone('');
+          setRollNumber('');
+          setYear('');
+          setBranch('');
+          setWhyJoin('');
+          setPastExperience('');
         },
         onError: (error: any) => {
           toast({
@@ -111,6 +127,63 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="rollNumber" className="text-sm font-semibold">Roll Number</Label>
+            <Input
+              id="rollNumber"
+              placeholder="Enter your roll number"
+              value={rollNumber}
+              onChange={(e) => setRollNumber(e.target.value)}
+              className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <Label htmlFor="year" className="text-sm font-semibold">Year</Label>
+              <Input
+                id="year"
+                placeholder="e.g., 2nd Year"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div className="space-y-3">
+              <Label htmlFor="branch" className="text-sm font-semibold">Branch</Label>
+              <Input
+                id="branch"
+                placeholder="e.g., CSE"
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="whyJoin" className="text-sm font-semibold">Why do you want to join this club?</Label>
+            <Textarea
+              id="whyJoin"
+              placeholder="Tell us your motivation..."
+              value={whyJoin}
+              onChange={(e) => setWhyJoin(e.target.value)}
+              className="min-h-[100px] bg-white/50 border-primary/20 focus:border-primary resize-none"
+              required
+            />
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="pastExperience" className="text-sm font-semibold">Any past experience in clubs?</Label>
+            <Textarea
+              id="pastExperience"
+              placeholder="Share your club experience..."
+              value={pastExperience}
+              onChange={(e) => setPastExperience(e.target.value)}
+              className="min-h-[100px] bg-white/50 border-primary/20 focus:border-primary resize-none"
+              required
             />
           </div>
           <Button 

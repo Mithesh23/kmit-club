@@ -144,31 +144,46 @@ export type Database = {
       }
       club_registrations: {
         Row: {
+          branch: string | null
           club_id: string
           created_at: string
           id: string
+          past_experience: string | null
           phone: string | null
+          roll_number: string | null
           status: Database["public"]["Enums"]["registration_status"]
           student_email: string
           student_name: string
+          why_join: string | null
+          year: string | null
         }
         Insert: {
+          branch?: string | null
           club_id: string
           created_at?: string
           id?: string
+          past_experience?: string | null
           phone?: string | null
+          roll_number?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           student_email: string
           student_name: string
+          why_join?: string | null
+          year?: string | null
         }
         Update: {
+          branch?: string | null
           club_id?: string
           created_at?: string
           id?: string
+          past_experience?: string | null
           phone?: string | null
+          roll_number?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           student_email?: string
           student_name?: string
+          why_join?: string | null
+          year?: string | null
         }
         Relationships: [
           {

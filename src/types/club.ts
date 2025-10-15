@@ -47,6 +47,11 @@ export interface ClubRegistration {
   student_name: string;
   student_email: string;
   phone: string | null;
+  roll_number: string | null;
+  year: string | null;
+  branch: string | null;
+  why_join: string | null;
+  past_experience: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
 }
