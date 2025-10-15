@@ -73,10 +73,10 @@ const Home = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="animate-fade-in space-y-3 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient">
-                KMIT Clubs Hub
+                Keshav Memorial Institute of Technology
               </h1>
               <p className="text-muted-foreground text-lg font-medium">
-                Keshav Memorial Institute of Technology
+                KMIT Clubs Hub 
               </p>
               <div className="w-24 h-1 bg-gradient-primary rounded-full mx-auto md:mx-0"></div>
             </div>
