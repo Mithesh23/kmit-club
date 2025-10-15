@@ -4,39 +4,30 @@ import { ClubCard } from '@/components/ClubCard';
 import { ClubLoginDialog } from '@/components/ClubLoginDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ChevronRight } from 'lucide-react';
 import heroImage from '@/assets/kmit-campus-hero.jpg';
-
 const Home = () => {
-  const { data: clubs, isLoading, error } = useClubs();
+  const {
+    data: clubs,
+    isLoading,
+    error
+  } = useClubs();
   const navigate = useNavigate();
   const [showAllClubs, setShowAllClubs] = useState(false);
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-destructive mb-2">Error Loading Clubs</h2>
           <p className="text-muted-foreground">Please try refreshing the page</p>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Get featured clubs (first 3 clubs)
@@ -45,21 +36,23 @@ const Home = () => {
   const exploreClubs = clubs?.slice(3) || [];
   // All clubs for "See All" view
   const allClubs = clubs || [];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-orange-50/20 relative overflow-hidden">
+  return <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-orange-50/20 relative overflow-hidden">
       {/* Modern Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float opacity-40" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-accent/8 rounded-full blur-3xl animate-float opacity-50" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-float opacity-30" style={{ animationDelay: '4s' }} />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-accent/8 rounded-full blur-3xl animate-float opacity-50" style={{
+        animationDelay: '2s'
+      }} />
+        <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-float opacity-30" style={{
+        animationDelay: '4s'
+      }} />
         
         {/* Subtle Grid Pattern Overlay */}
         <div className="absolute inset-0 opacity-[0.02]">
           <svg className="w-full h-full" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="modern-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1"/>
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#modern-grid)" />
@@ -75,7 +68,7 @@ const Home = () => {
               <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient">
                 Keshav Memorial Institute of Technology
               </h1>
-              <p className="text-muted-foreground text-lg font-medium">
+              <p className="text-muted-foreground text-3xl text-center font-normal">
                 KMIT Clubs Hub 
               </p>
               <div className="w-24 h-1 bg-gradient-primary rounded-full mx-auto md:mx-0"></div>
@@ -88,12 +81,9 @@ const Home = () => {
       </header>
 
       {/* Hero Section */}
-      <section 
-        className="relative h-[600px] bg-cover bg-center bg-no-repeat flex items-center justify-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImage})`
-        }}
-      >
+      <section className="relative h-[600px] bg-cover bg-center bg-no-repeat flex items-center justify-center" style={{
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImage})`
+    }}>
         <div className="text-center text-white space-y-6 max-w-4xl mx-auto px-6">
           <h1 className="text-5xl md:text-6xl font-bold leading-tight">
             One Hub for Every Club
@@ -104,21 +94,15 @@ const Home = () => {
             centralized, real-time, and audit-ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <Button 
-              size="lg" 
-              className="bg-white text-foreground hover:bg-gray-100 px-8 py-3 text-lg font-medium"
-              onClick={() => {
-                const featuredSection = document.getElementById('featured');
-                featuredSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
+            <Button size="lg" className="bg-white text-foreground hover:bg-gray-100 px-8 py-3 text-lg font-medium" onClick={() => {
+            const featuredSection = document.getElementById('featured');
+            featuredSection?.scrollIntoView({
+              behavior: 'smooth'
+            });
+          }}>
               Explore Clubs
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-foreground px-8 py-3 text-lg font-medium"
-            >
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-foreground px-8 py-3 text-lg font-medium">
               View Events
             </Button>
           </div>
@@ -135,38 +119,25 @@ const Home = () => {
               </h2>
               <div className="w-20 h-1 bg-gradient-primary rounded-full" />
             </div>
-            <Button 
-              variant="outline" 
-              className="text-primary hover:bg-primary hover:text-white"
-              onClick={() => setShowAllClubs(!showAllClubs)}
-            >
+            <Button variant="outline" className="text-primary hover:bg-primary hover:text-white" onClick={() => setShowAllClubs(!showAllClubs)}>
               {showAllClubs ? 'Show Featured' : 'See all'}
             </Button>
           </div>
           
-          {(showAllClubs ? allClubs : featuredClubs).length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {(showAllClubs ? allClubs : featuredClubs).map((club, index) => (
-                <div 
-                  key={club.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 150}ms` }}
-                >
+          {(showAllClubs ? allClubs : featuredClubs).length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {(showAllClubs ? allClubs : featuredClubs).map((club, index) => <div key={club.id} className="animate-fade-in" style={{
+            animationDelay: `${index * 150}ms`
+          }}>
                   <ClubCard club={club} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
+                </div>)}
+            </div> : <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">No clubs available at the moment.</p>
-            </div>
-          )}
+            </div>}
         </div>
       </section>
 
       {/* Explore More Clubs Carousel Section - Only show if not showing all clubs */}
-      {!showAllClubs && exploreClubs.length > 0 && (
-        <section className="py-20 bg-white">
+      {!showAllClubs && exploreClubs.length > 0 && <section className="py-20 bg-white">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16 animate-slide-up space-y-6">
               <div className="space-y-4">
@@ -184,35 +155,20 @@ const Home = () => {
             </div>
             
             <div className="max-w-6xl mx-auto">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                className="w-full"
-              >
+              <Carousel opts={{
+            align: "start",
+            loop: true
+          }} className="w-full">
                 <CarouselContent className="-ml-4">
-                  {exploreClubs.map((club) => (
-                    <CarouselItem key={club.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
-                      <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-300 group"
-                        onClick={() => navigate(`/club/${club.id}`)}
-                      >
+                  {exploreClubs.map(club => <CarouselItem key={club.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
+                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 group" onClick={() => navigate(`/club/${club.id}`)}>
                         <CardContent className="flex flex-col items-center p-6 space-y-4">
                           {/* Circular Club Logo */}
-                          {club.logo_url ? (
-                            <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-300">
-                              <img 
-                                src={club.logo_url} 
-                                alt={`${club.name} logo`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:scale-105 transition-transform duration-300">
+                          {club.logo_url ? <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-300">
+                              <img src={club.logo_url} alt={`${club.name} logo`} className="w-full h-full object-cover" />
+                            </div> : <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:scale-105 transition-transform duration-300">
                               {club.name.charAt(0)}
-                            </div>
-                          )}
+                            </div>}
                           
                           {/* Club Name */}
                           <h3 className="text-lg font-semibold text-center text-foreground group-hover:text-primary transition-colors">
@@ -220,16 +176,14 @@ const Home = () => {
                           </h3>
                         </CardContent>
                       </Card>
-                    </CarouselItem>
-                  ))}
+                    </CarouselItem>)}
                 </CarouselContent>
                 <CarouselPrevious className="hidden md:flex" />
                 <CarouselNext className="hidden md:flex" />
               </Carousel>
             </div>
           </div>
-        </section>
-      )}
+        </section>}
 
       {/* Clean Modern Footer */}
       <footer className="relative bg-white border-t border-border shadow-lg mt-16">
@@ -282,8 +236,6 @@ const Home = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
