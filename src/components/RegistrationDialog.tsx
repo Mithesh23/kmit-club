@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRegisterForClub } from '@/hooks/useClubs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, UserPlus } from 'lucide-react';
@@ -28,6 +29,16 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate phone number
+    if (!/^\d{10}$/.test(phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
 
     register(
       {
@@ -86,7 +97,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg bg-gradient-card border-0 shadow-elegant">
-        <DialogHeader className="text-center pb-6">
+        <DialogHeader className="text-center pb-4">
           <DialogTitle className="text-2xl font-display font-bold text-gradient">
             Join {club.name}
           </DialogTitle>
@@ -94,7 +105,8 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
             Start your journey with us today
           </p>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
             <Input
@@ -119,14 +131,22 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
             />
           </div>
           <div className="space-y-3">
-            <Label htmlFor="phone" className="text-sm font-semibold">Phone Number (Optional)</Label>
+            <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="Enter your phone number"
+              placeholder="Enter 10 digit phone number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 10) {
+                  setPhone(value);
+                }
+              }}
               className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+              pattern="\d{10}"
+              maxLength={10}
+              required
             />
           </div>
           <div className="space-y-3">
@@ -200,7 +220,8 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               'Complete Registration'
             )}
           </Button>
-        </form>
+          </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
