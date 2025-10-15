@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAdminRegistrations, useUpdateRegistrationStatus } from '@/hooks/useAdminClubData';
-import { UserCheck, Loader2, Mail, Phone, CheckCircle, XCircle } from 'lucide-react';
+import { UserCheck, Loader2, Mail, Phone, CheckCircle, XCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,6 +36,34 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
     });
   };
 
+  const handleDownload = () => {
+    if (!registrations || registrations.length === 0) return;
+
+    const csvContent = [
+      ['Name', 'Email', 'Phone', 'Roll Number', 'Year', 'Branch', 'Why Join', 'Past Experience', 'Status', 'Registration Date'],
+      ...registrations.map(reg => [
+        reg.student_name,
+        reg.student_email,
+        reg.phone || '',
+        reg.roll_number || '',
+        reg.year || '',
+        reg.branch || '',
+        reg.why_join || '',
+        reg.past_experience || '',
+        reg.status,
+        format(new Date(reg.created_at), 'PP')
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `registrations_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -44,11 +72,23 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
             <UserCheck className="h-5 w-5" />
             Student Registrations
           </div>
-          {pendingCount > 0 && (
-            <Badge variant="secondary">
-              {pendingCount} Pending
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {pendingCount > 0 && (
+              <Badge variant="secondary">
+                {pendingCount} Pending
+              </Badge>
+            )}
+            {registrations && registrations.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDownload}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -82,7 +122,7 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Mail className="h-3 w-3" />
                       {registration.student_email}
@@ -91,6 +131,28 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Phone className="h-3 w-3" />
                         {registration.phone}
+                      </div>
+                    )}
+                    {registration.roll_number && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Roll:</span> {registration.roll_number}
+                      </div>
+                    )}
+                    {registration.year && registration.branch && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Year:</span> {registration.year} | <span className="font-medium">Branch:</span> {registration.branch}
+                      </div>
+                    )}
+                    {registration.why_join && (
+                      <div className="text-sm">
+                        <span className="font-medium">Why join:</span>
+                        <p className="text-muted-foreground mt-1">{registration.why_join}</p>
+                      </div>
+                    )}
+                    {registration.past_experience && (
+                      <div className="text-sm">
+                        <span className="font-medium">Past experience:</span>
+                        <p className="text-muted-foreground mt-1">{registration.past_experience}</p>
                       </div>
                     )}
                   </div>

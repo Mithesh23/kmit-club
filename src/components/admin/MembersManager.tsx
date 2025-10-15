@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAdminMembers, useCreateMember, useDeleteMember, useAdminRegistrations } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Plus, Trash2, Loader2, UserCheck, Mail, Phone } from 'lucide-react';
+import { Users, Plus, Trash2, Loader2, UserCheck, Mail, Phone, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -80,6 +80,54 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
     });
   };
 
+  const handleDownloadMembers = () => {
+    if (!members || members.length === 0) return;
+
+    const csvContent = [
+      ['Name', 'Role', 'Added Date'],
+      ...members.map(member => [
+        member.name,
+        member.role,
+        format(new Date(member.created_at), 'PP')
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `club_members_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadApproved = () => {
+    if (approvedRegistrations.length === 0) return;
+
+    const csvContent = [
+      ['Name', 'Email', 'Phone', 'Roll Number', 'Year', 'Branch', 'Why Join', 'Past Experience', 'Approved Date'],
+      ...approvedRegistrations.map(reg => [
+        reg.student_name,
+        reg.student_email,
+        reg.phone || '',
+        reg.roll_number || '',
+        reg.year || '',
+        reg.branch || '',
+        reg.why_join || '',
+        reg.past_experience || '',
+        format(new Date(reg.created_at), 'PP')
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `approved_students_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -129,7 +177,19 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
 
         {/* Existing Members */}
         <div>
-          <h4 className="font-semibold mb-3">Current Members</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold">Current Members</h4>
+            {members && members.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDownloadMembers}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+          </div>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -165,11 +225,23 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
               <UserCheck className="h-4 w-4" />
               Approved Student Registrations
             </h4>
-            {approvedRegistrations.length > 0 && (
-              <Badge variant="default">
-                {approvedRegistrations.length}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {approvedRegistrations.length > 0 && (
+                <>
+                  <Badge variant="default">
+                    {approvedRegistrations.length}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDownloadApproved}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
           <ScrollArea className="h-[400px]">
             {isLoadingRegistrations ? (
@@ -186,7 +258,7 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
                         {format(new Date(registration.created_at), 'PP')}
                       </span>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="h-3 w-3" />
                         {registration.student_email}
@@ -195,6 +267,16 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Phone className="h-3 w-3" />
                           {registration.phone}
+                        </div>
+                      )}
+                      {registration.roll_number && (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium">Roll:</span> {registration.roll_number}
+                        </div>
+                      )}
+                      {registration.year && registration.branch && (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium">Year:</span> {registration.year} | <span className="font-medium">Branch:</span> {registration.branch}
                         </div>
                       )}
                     </div>
