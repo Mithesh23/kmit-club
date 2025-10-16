@@ -65,7 +65,7 @@ const Home = () => {
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="animate-fade-in space-y-3 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient">
+              <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold text-justify">
                 Keshav Memorial Institute of Technology
               </h1>
               <p className="text-muted-foreground text-3xl text-center font-normal">
