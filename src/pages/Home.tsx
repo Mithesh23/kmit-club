@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useClubs } from '@/hooks/useClubs';
 import { ClubCard } from '@/components/ClubCard';
 import { ClubLoginDialog } from '@/components/ClubLoginDialog';
+import { HeroCarousel } from '@/components/HeroCarousel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -37,6 +38,12 @@ const Home = () => {
   const exploreClubs = clubs?.slice(3) || [];
   // All clubs for "See All" view
   const allClubs = clubs || [];
+
+  // Hero carousel images
+  const heroImages = [
+    heroImage,
+    // Add more images here as needed
+  ];
   return <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-orange-50/20 relative overflow-hidden">
       {/* Modern Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -89,10 +96,9 @@ const Home = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[600px] bg-cover bg-center bg-no-repeat flex items-center justify-center" style={{
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImage})`
-    }}>
-        <div className="text-center text-white space-y-6 max-w-4xl mx-auto px-6">
+      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+        <HeroCarousel images={heroImages} interval={5000} />
+        <div className="relative z-10 text-center text-white space-y-6 max-w-4xl mx-auto px-6">
           <h1 className="text-5xl md:text-6xl font-bold leading-tight">
             One Hub for Every Club
           </h1>
