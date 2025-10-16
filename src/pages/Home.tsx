@@ -9,6 +9,10 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ChevronRight } from 'lucide-react';
 import heroImage from '@/assets/kmit-campus-hero.jpg';
+import kmitCampusGroup from '@/assets/kmit-campus-group.jpeg';
+import kmitCampusBuilding from '@/assets/kmit-campus-building.jpeg';
+import kmitAuditorium from '@/assets/kmit-auditorium.jpg';
+import kmitCampusExtra from '@/assets/kmit-campus-extra.avif';
 import kmitLogo from '@/assets/kmit-logo.png';
 const Home = () => {
   const {
@@ -42,7 +46,10 @@ const Home = () => {
   // Hero carousel images
   const heroImages = [
     heroImage,
-    // Add more images here as needed
+    kmitCampusGroup,
+    kmitCampusBuilding,
+    kmitAuditorium,
+    kmitCampusExtra,
   ];
   return <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-orange-50/20 relative overflow-hidden">
       {/* Modern Animated Background Elements */}
