@@ -65,11 +65,11 @@ const Home = () => {
       <header className="relative bg-white/80 backdrop-blur-lg border-b border-border shadow-lg">
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="animate-fade-in flex items-center gap-6">
+            <div className="animate-fade-in flex items-center gap-4">
               <img 
                 src={kmitLogo} 
                 alt="KMIT Logo" 
-                className="w-20 h-20 md:w-24 md:h-24 object-contain flex-shrink-0"
+                className="w-32 h-32 md:w-40 md:h-40 object-contain flex-shrink-0"
               />
               <div className="space-y-3">
                 <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold">
