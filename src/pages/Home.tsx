@@ -8,6 +8,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ChevronRight } from 'lucide-react';
 import heroImage from '@/assets/kmit-campus-hero.jpg';
+import kmitLogo from '@/assets/kmit-logo.png';
 const Home = () => {
   const {
     data: clubs,
@@ -64,14 +65,21 @@ const Home = () => {
       <header className="relative bg-white/80 backdrop-blur-lg border-b border-border shadow-lg">
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="animate-fade-in space-y-3 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold text-center">
-                Keshav Memorial Institute of Technology
-              </h1>
-              <p className="text-muted-foreground text-3xl font-normal text-left">
-                KMIT Clubs Hub 
-              </p>
-              <div className="w-24 h-1 bg-gradient-primary rounded-full mx-auto md:mx-0"></div>
+            <div className="animate-fade-in flex items-center gap-6">
+              <img 
+                src={kmitLogo} 
+                alt="KMIT Logo" 
+                className="w-20 h-20 md:w-24 md:h-24 object-contain flex-shrink-0"
+              />
+              <div className="space-y-3">
+                <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold">
+                  Keshav Memorial Institute of Technology
+                </h1>
+                <p className="text-muted-foreground text-3xl font-normal">
+                  KMIT Clubs Hub 
+                </p>
+                <div className="w-24 h-1 bg-gradient-primary rounded-full"></div>
+              </div>
             </div>
             <div className="animate-scale-in">
               <ClubLoginDialog />
