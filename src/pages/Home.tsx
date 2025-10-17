@@ -83,7 +83,7 @@ const Home = () => {
               <img 
                 src={kmitLogo} 
                 alt="KMIT Logo" 
-                className="w-16 h-16 object-contain flex-shrink-0"
+                className="w-25 h-25 object-contain flex-shrink-0"
               />
               <div className="space-y-3">
                 <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold">
