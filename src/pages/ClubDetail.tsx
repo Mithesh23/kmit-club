@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/useClubs';
+import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
 import { RegistrationDialog } from '@/components/RegistrationDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap } from 'lucide-react';
 import { format } from 'date-fns';
 
 const ClubDetail = () => {
@@ -18,6 +20,7 @@ const ClubDetail = () => {
   const { data: members, isLoading: membersLoading } = useClubMembers(id!);
   const { data: announcements, isLoading: announcementsLoading } = useAnnouncements(id!);
   const { data: events, isLoading: eventsLoading } = useEvents(id!);
+  const { data: approvedRegistrations, isLoading: registrationsLoading } = useApprovedRegistrations(id!);
 
   if (clubLoading) {
     return (
@@ -312,6 +315,73 @@ const ClubDetail = () => {
                     <p className="text-muted-foreground text-sm">Members will appear here soon!</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Approved Members */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <GraduationCap className="h-5 w-5 text-white" />
+                  </div>
+                  Club Members List
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-primary hover:shadow-elegant transition-all"
+                    >
+                      View Members
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-display">Approved Members</DialogTitle>
+                    </DialogHeader>
+                    <div className="pt-4">
+                      {registrationsLoading ? (
+                        <div className="flex items-center justify-center h-40">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : approvedRegistrations && approvedRegistrations.length > 0 ? (
+                        <div className="rounded-lg border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Roll Number</TableHead>
+                                <TableHead>Branch</TableHead>
+                                <TableHead>Year</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {approvedRegistrations.map((registration) => (
+                                <TableRow key={registration.id}>
+                                  <TableCell className="font-medium">{registration.student_name}</TableCell>
+                                  <TableCell>{registration.roll_number || 'N/A'}</TableCell>
+                                  <TableCell>{registration.branch || 'N/A'}</TableCell>
+                                  <TableCell>{registration.year || 'N/A'}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <GraduationCap className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-display font-semibold text-lg mb-2">No Approved Members Yet</h4>
+                          <p className="text-muted-foreground">Approved members will appear here</p>
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
 
