@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { useAdminEvents, useCreateEvent } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { Calendar, Plus, Loader2, Camera, Upload, X } from 'lucide-react';
+import { Calendar, Plus, Loader2, Camera, Link } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
@@ -38,9 +38,8 @@ interface EventsManagerProps {
 export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [adding, setAdding] = useState(false);
   
   const { data: events, isLoading, refetch } = useAdminEvents(clubId);
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
@@ -82,45 +81,43 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
     );
   };
 
-  const handleImageUpload = async (eventId: string, file: File) => {
-    setUploading(true);
+  const handleAddImageUrl = async (eventId: string) => {
+    const imageUrl = imageUrls[eventId]?.trim();
+    
+    if (!imageUrl) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter an image URL.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAdding(true);
     try {
       const adminClient = getAdminSupabaseClient();
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${eventId}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await adminClient.storage
-        .from('event-images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = adminClient.storage
-        .from('event-images')
-        .getPublicUrl(fileName);
 
       const { error: dbError } = await adminClient
         .from('event_images')
-        .insert([{ event_id: eventId, image_url: publicUrl }]);
+        .insert([{ event_id: eventId, image_url: imageUrl }]);
 
       if (dbError) throw dbError;
 
       toast({
         title: "Success",
-        description: "Image uploaded successfully!",
+        description: "Image URL added successfully!",
       });
       
-      // Refresh events list to show new image
+      setImageUrls({ ...imageUrls, [eventId]: '' });
       refetch();
     } catch (error: any) {
       toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload image.",
+        title: "Failed",
+        description: error.message || "Failed to add image URL.",
         variant: "destructive",
       });
     } finally {
-      setUploading(false);
-      setSelectedEventId(null);
+      setAdding(false);
     }
   };
 
@@ -205,19 +202,33 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                         ))}
                       </div>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedEventId(event.id);
-                        fileInputRef.current?.click();
-                      }}
-                      disabled={uploading}
-                      className="w-full mt-2"
-                    >
-                      <Upload className="h-3 w-3 mr-1" />
-                      Add Images
-                    </Button>
+                    <div className="space-y-2 mt-2">
+                      <Label htmlFor={`image-url-${event.id}`} className="text-xs">Image URL</Label>
+                      <Input
+                        id={`image-url-${event.id}`}
+                        placeholder="https://example.com/image.jpg"
+                        value={imageUrls[event.id] || ''}
+                        onChange={(e) => setImageUrls({ ...imageUrls, [event.id]: e.target.value })}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddImageUrl(event.id)}
+                        disabled={adding}
+                        className="w-full"
+                      >
+                        {adding ? (
+                          <>
+                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Link className="h-3 w-3 mr-1" />
+                            Add Image URL
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -230,24 +241,9 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         <div className="p-4 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
             <Camera className="h-4 w-4 inline mr-1" />
-            Upload multiple images per event. Images will be displayed in the club page and detailed event views.
+            Add image URLs for events. Images will be displayed in the club page and detailed event views.
           </p>
         </div>
-        
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={async (e) => {
-            if (e.target.files && selectedEventId) {
-              for (const file of Array.from(e.target.files)) {
-                await handleImageUpload(selectedEventId, file);
-              }
-            }
-          }}
-        />
       </CardContent>
     </Card>
   );
