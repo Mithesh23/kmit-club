@@ -346,7 +346,7 @@ export type Database = {
         }[]
       }
       get_all_club_credentials: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           admin_email: string
           club_name: string
@@ -354,7 +354,7 @@ export type Database = {
         }[]
       }
       get_current_admin_session: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           admin_id: string
           club_id: string
