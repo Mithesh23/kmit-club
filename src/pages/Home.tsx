@@ -123,9 +123,6 @@ const Home = () => {
           }}>
               Explore Clubs
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-foreground px-8 py-3 text-lg font-medium">
-              View Events
-            </Button>
           </div>
         </div>
       </section>
