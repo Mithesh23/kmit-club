@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAdminReports, useCreateReport, useDeleteReport } from '@/hooks/useAdminClubData';
-import { FileText, Loader2, Trash2, Upload, Download } from 'lucide-react';
+import { FileText, Loader2, Trash2, Upload, Download, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -170,8 +170,8 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                       size="sm"
                       onClick={() => window.open(report.file_url, '_blank')}
                     >
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      View Report
                     </Button>
                     <Button
                       variant="ghost"
