@@ -17,88 +17,48 @@ interface ReportsManagerProps {
 export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const [title, setTitle] = useState('');
   const [reportType, setReportType] = useState<'monthly' | 'yearly' | 'event'>('monthly');
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [reportUrl, setReportUrl] = useState('');
 
   const { data: reports, isLoading } = useAdminReports(clubId);
   const { mutate: createReport, isPending: creating } = useCreateReport();
   const { mutate: deleteReport } = useDeleteReport();
   const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !file) {
+    if (!title || !reportUrl) {
       toast({
         title: 'Missing information',
-        description: 'Please provide both title and file',
+        description: 'Please provide both title and URL',
         variant: 'destructive',
       });
       return;
     }
 
-    try {
-      setUploading(true);
-      
-      // Upload file to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${clubId}/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('club-reports')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('club-reports')
-        .getPublicUrl(filePath);
-
-      // Create report record
-      createReport({
-        club_id: clubId,
-        title,
-        report_type: reportType,
-        file_url: publicUrl,
-      }, {
-        onSuccess: () => {
-          toast({
-            title: 'Success',
-            description: 'Report uploaded successfully',
-          });
-          setTitle('');
-          setFile(null);
-          setReportType('monthly');
-          // Reset file input
-          const fileInput = document.getElementById('report-file') as HTMLInputElement;
-          if (fileInput) fileInput.value = '';
-        },
-        onError: () => {
-          toast({
-            title: 'Error',
-            description: 'Failed to create report',
-            variant: 'destructive',
-          });
-        },
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast({
-        title: 'Upload failed',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploading(false);
-    }
+    createReport({
+      club_id: clubId,
+      title,
+      report_type: reportType,
+      file_url: reportUrl,
+    }, {
+      onSuccess: () => {
+        toast({
+          title: 'Success',
+          description: 'Report added successfully',
+        });
+        setTitle('');
+        setReportUrl('');
+        setReportType('monthly');
+      },
+      onError: () => {
+        toast({
+          title: 'Error',
+          description: 'Failed to create report',
+          variant: 'destructive',
+        });
+      },
+    });
   };
 
   const handleDelete = (reportId: string) => {
@@ -127,7 +87,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Upload New Report
+            Add New Report
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -158,20 +118,20 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
             </div>
 
             <div>
-              <Label htmlFor="report-file">Upload File (PDF, DOC, etc.)</Label>
+              <Label htmlFor="report-url">Report URL</Label>
               <Input
-                id="report-file"
-                type="file"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                id="report-url"
+                type="url"
+                value={reportUrl}
+                onChange={(e) => setReportUrl(e.target.value)}
+                placeholder="https://example.com/report.pdf"
                 required
               />
-              {file && <p className="text-sm text-muted-foreground mt-1">{file.name}</p>}
             </div>
 
-            <Button type="submit" disabled={creating || uploading}>
-              {(creating || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Upload Report
+            <Button type="submit" disabled={creating}>
+              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Add Report
             </Button>
           </form>
         </CardContent>
@@ -181,7 +141,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Uploaded Reports
+            Reports
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -225,7 +185,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">No reports uploaded yet.</p>
+            <p className="text-muted-foreground text-center py-8">No reports added yet.</p>
           )}
         </CardContent>
       </Card>
