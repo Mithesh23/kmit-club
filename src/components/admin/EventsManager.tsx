@@ -5,11 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useAdminEvents, useCreateEvent } from '@/hooks/useAdminClubData';
+import { useEventRegistrations } from '@/hooks/useEventRegistrations';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { Calendar, Plus, Loader2, Camera, Link } from 'lucide-react';
+import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
@@ -121,6 +125,32 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
     }
   };
 
+  const toggleRegistration = async (eventId: string, currentStatus: boolean) => {
+    try {
+      const adminClient = getAdminSupabaseClient();
+      
+      const { error } = await adminClient
+        .from('events')
+        .update({ registration_open: !currentStatus })
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Registration ${!currentStatus ? 'opened' : 'closed'} successfully!`,
+      });
+      
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Failed",
+        description: error.message || "Failed to update registration status.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -180,12 +210,41 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                 {events.map((event) => (
                   <div key={event.id} className="p-3 border rounded-lg space-y-3">
                     <div>
-                      <h5 className="font-medium">{event.title}</h5>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium">{event.title}</h5>
+                        <Badge variant={event.registration_open ? 'default' : 'secondary'}>
+                          {event.registration_open ? 'Open' : 'Closed'}
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
                       <p className="text-xs text-muted-foreground mt-2">
                         {format(new Date(event.created_at), 'PPP')}
                       </p>
                     </div>
+                    
+                    {/* Registration Controls */}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={event.registration_open ? 'destructive' : 'default'}
+                        onClick={() => toggleRegistration(event.id, event.registration_open ?? true)}
+                        className="flex-1"
+                      >
+                        {event.registration_open ? (
+                          <>
+                            <Lock className="h-3 w-3 mr-1" />
+                            Close Registration
+                          </>
+                        ) : (
+                          <>
+                            <LockOpen className="h-3 w-3 mr-1" />
+                            Open Registration
+                          </>
+                        )}
+                      </Button>
+                      <EventRegistrationsDialog eventId={event.id} eventTitle={event.title} />
+                    </div>
+
                     {event.event_images && event.event_images.length > 0 && (
                       <div className="grid grid-cols-3 gap-2">
                         {event.event_images.map((image) => (
@@ -246,5 +305,70 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+// Event Registrations Dialog Component
+const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; eventTitle: string }) => {
+  const { data: registrations, isLoading } = useEventRegistrations(eventId);
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="flex-1">
+          <Users className="h-3 w-3 mr-1" />
+          View Registrations ({registrations?.length || 0})
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-display">
+            Registrations for {eventTitle}
+          </DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-[60vh] mt-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-40">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : registrations && registrations.length > 0 ? (
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Roll Number</TableHead>
+                    <TableHead>Branch</TableHead>
+                    <TableHead>Year</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {registrations.map((registration) => (
+                    <TableRow key={registration.id}>
+                      <TableCell className="font-medium">{registration.student_name}</TableCell>
+                      <TableCell>{registration.student_email}</TableCell>
+                      <TableCell>{registration.roll_number}</TableCell>
+                      <TableCell>{registration.branch}</TableCell>
+                      <TableCell>{registration.year}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(registration.created_at), 'PP')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <h4 className="font-semibold text-lg mb-2">No Registrations Yet</h4>
+              <p className="text-muted-foreground">Student registrations will appear here</p>
+            </div>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -292,12 +292,54 @@ export type Database = {
           },
         ]
       }
+      event_registrations: {
+        Row: {
+          branch: string
+          created_at: string
+          event_id: string
+          id: string
+          roll_number: string
+          student_email: string
+          student_name: string
+          year: string
+        }
+        Insert: {
+          branch: string
+          created_at?: string
+          event_id: string
+          id?: string
+          roll_number: string
+          student_email: string
+          student_name: string
+          year: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          roll_number?: string
+          student_email?: string
+          student_name?: string
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           club_id: string
           created_at: string
           description: string
           id: string
+          registration_open: boolean
           title: string
         }
         Insert: {
@@ -305,6 +347,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          registration_open?: boolean
           title: string
         }
         Update: {
@@ -312,6 +355,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          registration_open?: boolean
           title?: string
         }
         Relationships: [

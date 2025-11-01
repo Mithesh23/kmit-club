@@ -31,6 +31,7 @@ export interface Event {
   title: string;
   description: string;
   created_at: string;
+  registration_open?: boolean;
   event_images?: EventImage[];
 }
 

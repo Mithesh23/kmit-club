@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Camera, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Event } from '@/types/club';
+import { EventRegistrationDialog } from '@/components/EventRegistrationDialog';
 
 const EventDetail = () => {
   const { eventId, clubId } = useParams<{ eventId: string; clubId: string }>();
@@ -112,6 +113,17 @@ const EventDetail = () => {
               <p className="text-xl text-muted-foreground leading-relaxed">
                 {event.description}
               </p>
+            </div>
+          </div>
+
+          {/* Event Registration */}
+          <div className="mb-16 animate-fade-in">
+            <div className="max-w-md mx-auto">
+              <EventRegistrationDialog 
+                eventId={event.id} 
+                eventTitle={event.title}
+                registrationOpen={event.registration_open ?? true}
+              />
             </div>
           </div>
 
