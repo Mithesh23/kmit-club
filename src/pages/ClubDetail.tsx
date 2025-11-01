@@ -408,48 +408,90 @@ const ClubDetail = () => {
                       View Gallery
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-display">Club Gallery</DialogTitle>
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
+                    <DialogHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+                      <DialogTitle className="text-3xl font-display text-center">
+                        <span className="text-gradient">Club Gallery</span>
+                      </DialogTitle>
+                      <p className="text-muted-foreground text-center mt-2">
+                        Explore our collection of memorable moments
+                      </p>
                     </DialogHeader>
-                    <div className="pt-4">
-                      {eventsLoading ? (
-                        <div className="flex items-center justify-center h-40">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : events && events.length > 0 ? (
-                        <div className="grid grid-cols-3 gap-4">
-                          {events.flatMap((event) => 
-                            event.event_images && event.event_images.length > 0 
-                              ? event.event_images.map((image) => (
-                                  <div 
-                                    key={image.id} 
-                                    className="relative group overflow-hidden rounded-lg border border-primary/10"
-                                  >
-                                    <img
-                                      src={image.image_url}
-                                      alt={event.title}
-                                      className="w-full h-48 object-cover"
-                                    />
-                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                                      <p className="text-white text-sm font-medium mb-1">{event.title}</p>
-                                      <p className="text-white/80 text-xs">{format(new Date(event.created_at), 'PPP')}</p>
-                                    </div>
-                                  </div>
-                                ))
-                              : []
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-16">
-                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                    <ScrollArea className="h-[calc(95vh-120px)] px-6">
+                      <div className="py-6">
+                        {eventsLoading ? (
+                          <div className="flex items-center justify-center h-96">
+                            <div className="text-center">
+                              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+                              <p className="text-muted-foreground text-lg">Loading gallery...</p>
+                            </div>
                           </div>
-                          <h4 className="font-display font-semibold text-lg mb-2">No Images Yet</h4>
-                          <p className="text-muted-foreground">Gallery images will appear here soon!</p>
-                        </div>
-                      )}
-                    </div>
+                        ) : events && events.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {events.flatMap((event) => 
+                              event.event_images && event.event_images.length > 0 
+                                ? event.event_images.map((image, index) => (
+                                    <div 
+                                      key={image.id} 
+                                      className="group relative overflow-hidden rounded-2xl border border-primary/20 hover:border-primary/40 transition-all duration-500 shadow-md hover:shadow-2xl animate-fade-in bg-gradient-to-br from-white to-primary/5"
+                                      style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                      <div className="relative aspect-[4/3] overflow-hidden">
+                                        <img
+                                          src={image.image_url}
+                                          alt={event.title}
+                                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                                      </div>
+                                      
+                                      <div className="absolute inset-0 flex flex-col justify-end p-6">
+                                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg">
+                                              <Camera className="h-4 w-4 text-white" />
+                                            </div>
+                                            <Badge className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
+                                              {event.title}
+                                            </Badge>
+                                          </div>
+                                          <h4 className="text-white text-lg font-display font-bold mb-1 drop-shadow-lg">
+                                            {event.title}
+                                          </h4>
+                                          <div className="flex items-center gap-2 text-white/90 text-sm">
+                                            <Calendar className="h-3.5 w-3.5" />
+                                            <span className="drop-shadow">{format(new Date(event.created_at), 'PPP')}</span>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                          <p className="text-white/90 text-sm line-clamp-2 drop-shadow">
+                                            {event.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                        <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                                          <ImageIcon className="h-5 w-5 text-white" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))
+                                : []
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-24">
+                            <div className="w-24 h-24 bg-gradient-secondary rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+                              <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                            <h4 className="font-display font-semibold text-2xl mb-3">No Images Yet</h4>
+                            <p className="text-muted-foreground text-lg">Gallery images will appear here soon!</p>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
                   </DialogContent>
                 </Dialog>
               </CardContent>
