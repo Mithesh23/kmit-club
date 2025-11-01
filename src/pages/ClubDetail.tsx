@@ -433,7 +433,7 @@ const ClubDetail = () => {
                                 ? event.event_images.map((image, index) => (
                                     <div 
                                       key={image.id} 
-                                      className="group relative overflow-hidden rounded-2xl border border-primary/20 hover:border-primary/40 transition-all duration-500 shadow-md hover:shadow-2xl animate-fade-in bg-gradient-to-br from-white to-primary/5"
+                                      className="group relative overflow-hidden rounded-2xl border border-primary/20 hover:border-primary/40 transition-all duration-500 shadow-md hover:shadow-2xl animate-fade-in"
                                       style={{ animationDelay: `${index * 50}ms` }}
                                     >
                                       <div className="relative aspect-[4/3] overflow-hidden">
@@ -442,38 +442,16 @@ const ClubDetail = () => {
                                           alt={event.title}
                                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                                       </div>
                                       
-                                      <div className="absolute inset-0 flex flex-col justify-end p-6">
-                                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                                          <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg">
-                                              <Camera className="h-4 w-4 text-white" />
-                                            </div>
-                                            <Badge className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
-                                              {event.title}
-                                            </Badge>
-                                          </div>
-                                          <h4 className="text-white text-lg font-display font-bold mb-1 drop-shadow-lg">
-                                            {event.title}
-                                          </h4>
-                                          <div className="flex items-center gap-2 text-white/90 text-sm">
-                                            <Calendar className="h-3.5 w-3.5" />
-                                            <span className="drop-shadow">{format(new Date(event.created_at), 'PPP')}</span>
-                                          </div>
-                                        </div>
-                                        
-                                        <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                          <p className="text-white/90 text-sm line-clamp-2 drop-shadow">
-                                            {event.description}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                        <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg">
-                                          <ImageIcon className="h-5 w-5 text-white" />
+                                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                                        <h4 className="text-white text-lg font-display font-bold mb-1 drop-shadow-lg">
+                                          {event.title}
+                                        </h4>
+                                        <div className="flex items-center gap-2 text-white/90 text-sm">
+                                          <Calendar className="h-3.5 w-3.5" />
+                                          <span className="drop-shadow">{format(new Date(event.created_at), 'PPP')}</span>
                                         </div>
                                       </div>
                                     </div>
