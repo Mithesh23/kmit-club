@@ -200,7 +200,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         {/* Existing Events */}
         <div>
           <h4 className="font-semibold mb-3">Existing Events</h4>
-          <ScrollArea className="h-64 border rounded-lg">
+          <ScrollArea className="h-[600px] border rounded-lg">
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
                 <Loader2 className="h-6 w-6 animate-spin" />
