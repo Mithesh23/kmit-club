@@ -199,24 +199,33 @@ export type Database = {
         Row: {
           club_id: string
           created_at: string
-          file_url: string
+          file_url: string | null
           id: string
+          participants_roll_numbers: string[] | null
+          report_data: Json | null
+          report_date: string | null
           report_type: Database["public"]["Enums"]["report_type"]
           title: string
         }
         Insert: {
           club_id: string
           created_at?: string
-          file_url: string
+          file_url?: string | null
           id?: string
+          participants_roll_numbers?: string[] | null
+          report_data?: Json | null
+          report_date?: string | null
           report_type: Database["public"]["Enums"]["report_type"]
           title: string
         }
         Update: {
           club_id?: string
           created_at?: string
-          file_url?: string
+          file_url?: string | null
           id?: string
+          participants_roll_numbers?: string[] | null
+          report_data?: Json | null
+          report_date?: string | null
           report_type?: Database["public"]["Enums"]["report_type"]
           title?: string
         }
@@ -418,7 +427,7 @@ export type Database = {
     }
     Enums: {
       registration_status: "pending" | "approved" | "rejected"
-      report_type: "monthly" | "yearly" | "event"
+      report_type: "mom" | "event" | "monthly" | "yearly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -547,7 +556,7 @@ export const Constants = {
   public: {
     Enums: {
       registration_status: ["pending", "approved", "rejected"],
-      report_type: ["monthly", "yearly", "event"],
+      report_type: ["mom", "event", "monthly", "yearly"],
     },
   },
 } as const

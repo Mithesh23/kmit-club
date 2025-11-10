@@ -267,7 +267,15 @@ export const useCreateReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (report: { club_id: string; title: string; report_type: 'monthly' | 'yearly' | 'event'; file_url: string }) => {
+    mutationFn: async (report: { 
+      club_id: string; 
+      title: string; 
+      report_type: 'mom' | 'monthly' | 'yearly' | 'event'; 
+      file_url: string | null;
+      report_date: string;
+      participants_roll_numbers: string[];
+      report_data: Record<string, any>;
+    }) => {
       const adminClient = getAdminSupabaseClient();
       const { data, error } = await adminClient
         .from('club_reports')

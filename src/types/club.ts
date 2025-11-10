@@ -61,8 +61,11 @@ export interface ClubReport {
   id: string;
   club_id: string;
   title: string;
-  report_type: 'monthly' | 'yearly' | 'event';
-  file_url: string;
+  report_type: 'mom' | 'monthly' | 'yearly' | 'event';
+  file_url: string | null;
+  report_date: string | null;
+  participants_roll_numbers: string[] | null;
+  report_data: Record<string, any> | null;
   created_at: string;
 }
 
