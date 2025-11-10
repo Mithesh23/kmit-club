@@ -12,6 +12,8 @@ import { FileText, Loader2, Trash2, Upload, CalendarIcon, Eye } from 'lucide-rea
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { ReportDetailsModal } from './ReportDetailsModal';
+import { ClubReport } from '@/types/club';
 
 interface ReportsManagerProps {
   clubId: string;
@@ -45,6 +47,9 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const { mutate: createReport, isPending: creating } = useCreateReport();
   const { mutate: deleteReport } = useDeleteReport();
   const { toast } = useToast();
+  
+  const [selectedReport, setSelectedReport] = useState<ClubReport | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,6 +420,16 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => {
+                          setSelectedReport(report as unknown as ClubReport);
+                          setViewModalOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleDelete(report.id)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -441,6 +456,12 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
           )}
         </CardContent>
       </Card>
+
+      <ReportDetailsModal
+        report={selectedReport}
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+      />
     </div>
   );
 };
