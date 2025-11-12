@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAdminAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '@/hooks/useAdminClubData';
+import { useAdminAnnouncements, useCreateAnnouncement, useDeleteAnnouncement, useAdminClub } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
-import { Megaphone, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Loader2, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnnouncementsManagerProps {
   clubId: string;
@@ -17,8 +18,10 @@ interface AnnouncementsManagerProps {
 export const AnnouncementsManager = ({ clubId }: AnnouncementsManagerProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
   
   const { data: announcements, isLoading } = useAdminAnnouncements(clubId);
+  const { data: club } = useAdminClub(clubId);
   const { mutate: createAnnouncement, isPending: isCreating } = useCreateAnnouncement();
   const { mutate: deleteAnnouncement, isPending: isDeleting } = useDeleteAnnouncement();
   const { toast } = useToast();
@@ -40,11 +43,45 @@ export const AnnouncementsManager = ({ clubId }: AnnouncementsManagerProps) => {
         content: content.trim()
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast({
             title: "Announcement Created",
             description: "New announcement has been added successfully.",
           });
+          
+          // Send email notification to all approved members
+          if (club) {
+            setSendingEmail(true);
+            try {
+              const { error } = await supabase.functions.invoke('send-announcement-email', {
+                body: {
+                  clubId,
+                  clubName: club.name,
+                  title: title.trim(),
+                  content: content.trim(),
+                },
+              });
+
+              if (error) {
+                console.error('Error sending announcement emails:', error);
+                toast({
+                  title: "Email Notification",
+                  description: "Announcement created but failed to send email notifications.",
+                  variant: "destructive",
+                });
+              } else {
+                toast({
+                  title: "Emails Sent",
+                  description: "Announcement emails sent to all approved members.",
+                });
+              }
+            } catch (error) {
+              console.error('Error invoking email function:', error);
+            } finally {
+              setSendingEmail(false);
+            }
+          }
+          
           setTitle('');
           setContent('');
         },
@@ -108,16 +145,17 @@ export const AnnouncementsManager = ({ clubId }: AnnouncementsManagerProps) => {
               rows={3}
             />
           </div>
-          <Button onClick={handleCreate} disabled={isCreating} className="w-full">
-            {isCreating ? (
+          <Button onClick={handleCreate} disabled={isCreating || sendingEmail} className="w-full">
+            {isCreating || sendingEmail ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {sendingEmail ? 'Sending emails...' : 'Creating...'}
               </>
             ) : (
               <>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Announcement
+                <Mail className="mr-2 h-4 w-4" />
+                Add & Send to Members
               </>
             )}
           </Button>

@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAdminRegistrations, useUpdateRegistrationStatus } from '@/hooks/useAdminClubData';
+import { useAdminRegistrations, useUpdateRegistrationStatus, useAdminClub } from '@/hooks/useAdminClubData';
 import { UserCheck, Loader2, Mail, Phone, CheckCircle, XCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RegistrationsViewProps {
   clubId: string;
@@ -13,18 +14,50 @@ interface RegistrationsViewProps {
 
 export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
   const { data: registrations, isLoading } = useAdminRegistrations(clubId);
+  const { data: club } = useAdminClub(clubId);
   const { mutate: updateStatus, isPending } = useUpdateRegistrationStatus();
   const { toast } = useToast();
 
   const pendingCount = registrations?.filter(r => r.status === 'pending').length || 0;
 
   const handleStatusUpdate = (registrationId: string, status: 'approved' | 'rejected') => {
+    const registration = registrations?.find(r => r.id === registrationId);
+    
     updateStatus({ registrationId, status }, {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast({
           title: 'Success',
           description: `Registration ${status} successfully`,
         });
+
+        // Send welcome email if approved
+        if (status === 'approved' && registration && club) {
+          try {
+            const { error } = await supabase.functions.invoke('send-welcome-email', {
+              body: {
+                studentName: registration.student_name,
+                studentEmail: registration.student_email,
+                clubName: club.name,
+              },
+            });
+
+            if (error) {
+              console.error('Error sending welcome email:', error);
+              toast({
+                title: "Welcome Email",
+                description: "Registration approved but failed to send welcome email.",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Welcome Email Sent",
+                description: `Welcome email sent to ${registration.student_name}`,
+              });
+            }
+          } catch (error) {
+            console.error('Error invoking welcome email function:', error);
+          }
+        }
       },
       onError: () => {
         toast({
