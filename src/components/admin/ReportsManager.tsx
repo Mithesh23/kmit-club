@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,22 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAdminReports, useCreateReport, useDeleteReport } from '@/hooks/useAdminClubData';
-import { FileText, Loader2, Trash2, Upload, CalendarIcon, Eye } from 'lucide-react';
+import { FileText, Loader2, Trash2, Upload, CalendarIcon, Eye, Plus, Download, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { ReportDetailsModal } from './ReportDetailsModal';
-import { ClubReport } from '@/types/club';
+import jsPDF from 'jspdf';
 
 interface ReportsManagerProps {
   clubId: string;
 }
 
 export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
+  const navigate = useNavigate();
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [title, setTitle] = useState('');
   const [reportType, setReportType] = useState<'mom' | 'monthly' | 'yearly' | 'event'>('mom');
   const [reportDate, setReportDate] = useState<Date>();
   const [participants, setParticipants] = useState('');
+  
+  // Filtering and sorting
+  const [filterType, setFilterType] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'created' | 'title'>('created');
   
   // Report-specific fields
   const [agenda, setAgenda] = useState('');
@@ -47,9 +53,26 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const { mutate: createReport, isPending: creating } = useCreateReport();
   const { mutate: deleteReport } = useDeleteReport();
   const { toast } = useToast();
-  
-  const [selectedReport, setSelectedReport] = useState<ClubReport | null>(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+
+  // Filter and sort reports
+  const filteredAndSortedReports = useMemo(() => {
+    if (!reports) return [];
+    
+    let filtered = reports;
+    if (filterType !== 'all') {
+      filtered = reports.filter(r => r.report_type === filterType);
+    }
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'date' && a.report_date && b.report_date) {
+        return new Date(b.report_date).getTime() - new Date(a.report_date).getTime();
+      }
+      if (sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [reports, filterType, sortBy]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,6 +138,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
         setAchievements('');
         setChallenges('');
         setPlans('');
+        setShowCreateForm(false);
       },
       onError: () => {
         toast({
@@ -146,9 +170,82 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
     }
   };
 
+  const handleDownloadPDF = (report: any) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(report.title, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const reportTypeLabel = report.report_type === 'mom' ? 'Minutes of Meeting' : 
+                           report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1) + ' Report';
+    doc.text(`Type: ${reportTypeLabel}`, 20, yPos);
+    yPos += 10;
+
+    if (report.report_date) {
+      doc.text(`Date: ${format(new Date(report.report_date), 'PPP')}`, 20, yPos);
+      yPos += 10;
+    }
+
+    if (report.participants_roll_numbers && report.participants_roll_numbers.length > 0) {
+      doc.text('Participants:', 20, yPos);
+      yPos += 7;
+      doc.setFontSize(10);
+      doc.text(report.participants_roll_numbers.join(', '), 25, yPos);
+      yPos += 12;
+      doc.setFontSize(12);
+    }
+
+    if (report.report_data) {
+      yPos += 5;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Report Details', 20, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+
+      Object.entries(report.report_data).forEach(([key, value]) => {
+        if (value) {
+          const label = key.replace(/([A-Z])/g, ' $1').trim();
+          const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${capitalizedLabel}:`, 20, yPos);
+          yPos += 7;
+          
+          doc.setFont('helvetica', 'normal');
+          const lines = doc.splitTextToSize(String(value), pageWidth - 40);
+          doc.text(lines, 25, yPos);
+          yPos += lines.length * 7 + 5;
+
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+        }
+      });
+    }
+
+    doc.save(`${report.title.replace(/\s+/g, '_')}_report.pdf`);
+  };
+
   return (
     <div className="space-y-6">
-      <Card>
+      {!showCreateForm && (
+        <div className="flex justify-end">
+          <Button onClick={() => setShowCreateForm(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Report
+          </Button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -370,29 +467,68 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
               )}
             </div>
 
-            <Button type="submit" disabled={creating} className="w-full">
-              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Report
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowCreateForm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={creating} className="flex-1">
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Report
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Existing Reports
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Reports
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="mom">MOM</SelectItem>
+                  <SelectItem value="event">Event</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created">Sort by Created</SelectItem>
+                  <SelectItem value="date">Sort by Date</SelectItem>
+                  <SelectItem value="title">Sort by Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
+
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : reports && reports.length > 0 ? (
+          ) : filteredAndSortedReports.length > 0 ? (
             <div className="space-y-3">
-              {reports.map((report) => (
+              {filteredAndSortedReports.map((report) => (
                 <div key={report.id} className="p-4 border rounded-lg">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -420,12 +556,16 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setSelectedReport(report as unknown as ClubReport);
-                          setViewModalOpen(true);
-                        }}
+                        onClick={() => navigate(`/admin/report/${report.id}`)}
                       >
                         <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownloadPDF(report)}
+                      >
+                        <Download className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -452,16 +592,12 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">No reports created yet.</p>
+            <p className="text-muted-foreground text-center py-8">
+              {filterType === 'all' ? 'No reports created yet.' : `No ${filterType} reports found.`}
+            </p>
           )}
         </CardContent>
       </Card>
-
-      <ReportDetailsModal
-        report={selectedReport}
-        open={viewModalOpen}
-        onOpenChange={setViewModalOpen}
-      />
     </div>
   );
 };

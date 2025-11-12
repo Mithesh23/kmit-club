@@ -8,6 +8,7 @@ import ClubDetail from "./pages/ClubDetail";
 import EventDetail from "./pages/EventDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClubCredentials from "./pages/ClubCredentials";
+import ViewReport from "./pages/ViewReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/club/:id" element={<ClubDetail />} />
           <Route path="/club/:clubId/event/:eventId" element={<EventDetail />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/report/:reportId" element={<ViewReport />} />
           <Route path="/credentials" element={<ClubCredentials />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
