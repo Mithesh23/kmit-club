@@ -60,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to all members
     const emailPromises = members.map(async (member) => {
       try {
-        const emailResponse = await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: `${clubName} <onboarding@resend.dev>`,
           to: [member.student_email],
           subject: `${clubName} Announcement: ${title}`,
@@ -83,8 +83,13 @@ const handler = async (req: Request): Promise<Response> => {
           `,
         });
 
-        console.log(`Email sent to ${member.student_email}:`, emailResponse.id);
-        return { success: true, email: member.student_email };
+        if (error) {
+          console.error(`Failed to send email to ${member.student_email}:`, error);
+          return { success: false, email: member.student_email, error };
+        }
+
+        console.log(`Email sent to ${member.student_email}:`, data.id);
+        return { success: true, email: member.student_email, emailId: data.id };
       } catch (error) {
         console.error(`Failed to send email to ${member.student_email}:`, error);
         return { success: false, email: member.student_email, error };

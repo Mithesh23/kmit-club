@@ -25,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending welcome email to ${studentEmail} for club: ${clubName}`);
 
-    const emailResponse = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: `${clubName} <onboarding@resend.dev>`,
       to: [studentEmail],
       subject: `Welcome to ${clubName}! 🎉`,
@@ -74,12 +74,17 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Welcome email sent successfully:", emailResponse.id);
+    if (error) {
+      console.error("Error sending welcome email:", error);
+      throw error;
+    }
+
+    console.log("Welcome email sent successfully:", data.id);
 
     return new Response(
       JSON.stringify({ 
         message: 'Welcome email sent successfully',
-        emailId: emailResponse.id 
+        emailId: data.id 
       }),
       {
         status: 200,
