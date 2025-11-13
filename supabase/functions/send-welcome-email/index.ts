@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending welcome email to ${studentEmail} for club: ${clubName}`);
 
     const { data, error } = await resend.emails.send({
-      from: `${clubName} <onboarding@resend.dev>`,
+      from: `${clubName} <noreply@kmitclubs.gt.tc>`,
       to: [studentEmail],
       subject: `Welcome to ${clubName}! 🎉`,
       html: `

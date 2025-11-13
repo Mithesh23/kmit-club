@@ -61,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPromises = members.map(async (member) => {
       try {
         const { data, error } = await resend.emails.send({
-          from: `${clubName} <onboarding@resend.dev>`,
+          from: `${clubName} <noreply@kmitclubs.gt.tc>`,
           to: [member.student_email],
           subject: `${clubName} Announcement: ${title}`,
           html: `
