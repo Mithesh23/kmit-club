@@ -13,7 +13,8 @@ import { useEventRegistrations } from '@/hooks/useEventRegistrations';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
@@ -312,6 +313,10 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
 const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; eventTitle: string }) => {
   const { data: registrations, isLoading } = useEventRegistrations(eventId);
   const { toast } = useToast();
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const downloadRegistrations = () => {
     if (!registrations || registrations.length === 0) {
@@ -356,6 +361,63 @@ const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; ev
     });
   };
 
+  const sendBulkEmail = async () => {
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in both subject and message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!registrations || registrations.length === 0) {
+      toast({
+        title: "No Recipients",
+        description: "There are no registrations to send emails to.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingEmail(true);
+
+    try {
+      const token = localStorage.getItem('club_auth_token');
+      
+      const { data, error } = await supabase.functions.invoke('send-event-update-email', {
+        body: {
+          eventId,
+          subject: emailSubject.trim(),
+          message: emailMessage.trim(),
+        },
+        headers: {
+          Authorization: token || '',
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Emails Sent Successfully",
+        description: `${data.sent} emails sent to registered students.`,
+      });
+
+      setEmailDialogOpen(false);
+      setEmailSubject('');
+      setEmailMessage('');
+    } catch (error: any) {
+      console.error('Error sending bulk emails:', error);
+      toast({
+        title: "Failed to Send Emails",
+        description: error.message || "An error occurred while sending emails.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -366,19 +428,86 @@ const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; ev
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <DialogTitle className="text-xl font-display">
               Registrations for {eventTitle}
             </DialogTitle>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={downloadRegistrations}
-              disabled={isLoading || !registrations || registrations.length === 0}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download CSV
-            </Button>
+            <div className="flex gap-2">
+              <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    disabled={isLoading || !registrations || registrations.length === 0}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Send Email to All Registrants</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div className="p-3 bg-muted rounded-lg text-sm">
+                      <p className="font-medium">Recipients: {registrations?.length || 0} students</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-subject">Email Subject</Label>
+                      <Input
+                        id="email-subject"
+                        placeholder="e.g., Important Event Update"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        disabled={isSendingEmail}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-message">Message</Label>
+                      <Textarea
+                        id="email-message"
+                        placeholder="Write your message to all registered students..."
+                        value={emailMessage}
+                        onChange={(e) => setEmailMessage(e.target.value)}
+                        rows={8}
+                        disabled={isSendingEmail}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setEmailDialogOpen(false)}
+                        disabled={isSendingEmail}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={sendBulkEmail} disabled={isSendingEmail}>
+                        {isSendingEmail ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Send to {registrations?.length || 0} Students
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={downloadRegistrations}
+                disabled={isLoading || !registrations || registrations.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV
+              </Button>
+            </div>
           </div>
         </DialogHeader>
         <ScrollArea className="h-[60vh] mt-4">
