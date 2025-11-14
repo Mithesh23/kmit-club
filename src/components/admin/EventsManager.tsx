@@ -13,7 +13,7 @@ import { useEventRegistrations } from '@/hooks/useEventRegistrations';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen } from 'lucide-react';
+import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
@@ -311,6 +311,50 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
 // Event Registrations Dialog Component
 const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; eventTitle: string }) => {
   const { data: registrations, isLoading } = useEventRegistrations(eventId);
+  const { toast } = useToast();
+
+  const downloadRegistrations = () => {
+    if (!registrations || registrations.length === 0) {
+      toast({
+        title: "No Data",
+        description: "There are no registrations to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Roll Number', 'Branch', 'Year', 'Registration Date'];
+    const rows = registrations.map(reg => [
+      reg.student_name,
+      reg.student_email,
+      reg.roll_number,
+      reg.branch,
+      reg.year,
+      format(new Date(reg.created_at), 'PP')
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${eventTitle.replace(/[^a-z0-9]/gi, '_')}_registrations.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Download Started",
+      description: "Registration data is being downloaded as CSV.",
+    });
+  };
 
   return (
     <Dialog>
@@ -322,9 +366,20 @@ const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; ev
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-xl font-display">
-            Registrations for {eventTitle}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-display">
+              Registrations for {eventTitle}
+            </DialogTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={downloadRegistrations}
+              disabled={isLoading || !registrations || registrations.length === 0}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download CSV
+            </Button>
+          </div>
         </DialogHeader>
         <ScrollArea className="h-[60vh] mt-4">
           {isLoading ? (
