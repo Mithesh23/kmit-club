@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/useClubs';
 import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
 import { RegistrationDialog } from '@/components/RegistrationDialog';
@@ -9,18 +10,24 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap } from 'lucide-react';
-import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap, History } from 'lucide-react';
+import { format, isPast } from 'date-fns';
 
 const ClubDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showPastEvents, setShowPastEvents] = useState(false);
   
   const { data: club, isLoading: clubLoading } = useClub(id!);
   const { data: members, isLoading: membersLoading } = useClubMembers(id!);
   const { data: announcements, isLoading: announcementsLoading } = useAnnouncements(id!);
   const { data: events, isLoading: eventsLoading } = useEvents(id!);
   const { data: approvedRegistrations, isLoading: registrationsLoading } = useApprovedRegistrations(id!);
+
+  // Split events into current and past
+  const currentEvents = events?.filter(event => !event.event_date || !isPast(new Date(event.event_date))) || [];
+  const pastEvents = events?.filter(event => event.event_date && isPast(new Date(event.event_date))) || [];
 
   if (clubLoading) {
     return (
@@ -175,9 +182,151 @@ const ClubDetail = () => {
                       <p className="text-muted-foreground">Loading events...</p>
                     </div>
                   </div>
-                ) : events && events.length > 0 ? (
-                  <div className="space-y-8">
-                    {events.map((event, index) => (
+                ) : (
+                  <Tabs defaultValue="current" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="current">Current Events</TabsTrigger>
+                      <TabsTrigger value="past">
+                        <History className="h-4 w-4 mr-2" />
+                        Past Events
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="current">
+                      {currentEvents.length > 0 ? (
+                        <div className="space-y-8">
+                          {currentEvents.map((event, index) => (
+                            <div 
+                              key={event.id} 
+                              className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
+                              style={{ animationDelay: `${index * 100}ms` }}
+                              onClick={() => navigate(`/club/${id}/event/${event.id}`)}
+                            >
+                              <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
+                              
+                              <div className="mb-4">
+                                <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                                  {event.title}
+                                </h4>
+                                <p className="text-muted-foreground leading-relaxed mb-3">
+                                  {event.description.length > 150 
+                                    ? `${event.description.substring(0, 150)}...` 
+                                    : event.description
+                                  }
+                                </p>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Calendar className="h-4 w-4" />
+                                    {event.event_date ? format(new Date(event.event_date), 'PPP') : format(new Date(event.created_at), 'PPP')}
+                                  </div>
+                                  <div className="text-primary text-sm font-medium group-hover:text-primary/80">
+                                    View Details →
+                                  </div>
+                                </div>
+                              </div>
+
+                              {event.event_images && event.event_images.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                  {event.event_images.map((image, imgIndex) => (
+                                    <div 
+                                      key={image.id} 
+                                      className="relative group/img overflow-hidden rounded-lg"
+                                      style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
+                                    >
+                                      <img
+                                        src={image.image_url}
+                                        alt="Event"
+                                        className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                        <Camera className="h-5 w-5 text-white" />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-16">
+                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <Calendar className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-display font-semibold text-lg mb-2">No Current Events</h4>
+                          <p className="text-muted-foreground">Exciting events are being planned!</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                    <TabsContent value="past">
+                      {pastEvents.length > 0 ? (
+                        <div className="space-y-8">
+                          {pastEvents.map((event, index) => (
+                            <div 
+                              key={event.id} 
+                              className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer opacity-75"
+                              style={{ animationDelay: `${index * 100}ms` }}
+                              onClick={() => navigate(`/club/${id}/event/${event.id}`)}
+                            >
+                              <div className="absolute left-0 top-0 w-1 h-full bg-muted rounded-full" />
+                              
+                              <div className="mb-4">
+                                <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                                  {event.title}
+                                </h4>
+                                <p className="text-muted-foreground leading-relaxed mb-3">
+                                  {event.description.length > 150 
+                                    ? `${event.description.substring(0, 150)}...` 
+                                    : event.description
+                                  }
+                                </p>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Calendar className="h-4 w-4" />
+                                    {event.event_date && format(new Date(event.event_date), 'PPP')}
+                                  </div>
+                                  <Badge variant="secondary">Completed</Badge>
+                                </div>
+                              </div>
+
+                              {event.event_images && event.event_images.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                  {event.event_images.map((image, imgIndex) => (
+                                    <div 
+                                      key={image.id} 
+                                      className="relative group/img overflow-hidden rounded-lg"
+                                      style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
+                                    >
+                                      <img
+                                        src={image.image_url}
+                                        alt="Event"
+                                        className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                        <Camera className="h-5 w-5 text-white" />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-16">
+                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <History className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-display font-semibold text-lg mb-2">No Past Events</h4>
+                          <p className="text-muted-foreground">Past events will appear here once they are completed.</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </CardContent>
+            </Card>
+
+          </div>
                       <div 
                         key={event.id} 
                         className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
