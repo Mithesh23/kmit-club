@@ -30,7 +30,6 @@ export interface Event {
   club_id: string;
   title: string;
   description: string;
-  event_date?: string | null;
   created_at: string;
   registration_open?: boolean;
   event_images?: EventImage[];

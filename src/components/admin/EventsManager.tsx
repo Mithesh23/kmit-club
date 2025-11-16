@@ -14,10 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar as CalendarIcon, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail } from 'lucide-react';
+import { Calendar, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
@@ -45,7 +43,6 @@ interface EventsManagerProps {
 export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [eventDate, setEventDate] = useState<Date>();
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
   
@@ -67,8 +64,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
       {
         club_id: clubId,
         title: title.trim(),
-        description: description.trim(),
-        event_date: eventDate?.toISOString()
+        description: description.trim()
       },
       {
         onSuccess: () => {
@@ -78,7 +74,6 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
           });
           setTitle('');
           setDescription('');
-          setEventDate(undefined);
         },
         onError: (error: any) => {
           toast({
@@ -187,29 +182,6 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Event Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {eventDate ? format(eventDate, 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={eventDate}
-                  onSelect={setEventDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
           </div>
           <Button onClick={handleCreate} disabled={isCreating} className="w-full">
             {isCreating ? (

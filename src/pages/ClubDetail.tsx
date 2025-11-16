@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/useClubs';
 import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
 import { RegistrationDialog } from '@/components/RegistrationDialog';
@@ -10,24 +9,18 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap, History } from 'lucide-react';
-import { format, isPast } from 'date-fns';
+import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap } from 'lucide-react';
+import { format } from 'date-fns';
 
 const ClubDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [showPastEvents, setShowPastEvents] = useState(false);
   
   const { data: club, isLoading: clubLoading } = useClub(id!);
   const { data: members, isLoading: membersLoading } = useClubMembers(id!);
   const { data: announcements, isLoading: announcementsLoading } = useAnnouncements(id!);
   const { data: events, isLoading: eventsLoading } = useEvents(id!);
   const { data: approvedRegistrations, isLoading: registrationsLoading } = useApprovedRegistrations(id!);
-
-  // Split events into current and past
-  const currentEvents = events?.filter(event => !event.event_date || !isPast(new Date(event.event_date))) || [];
-  const pastEvents = events?.filter(event => event.event_date && isPast(new Date(event.event_date))) || [];
 
   if (clubLoading) {
     return (
@@ -182,150 +175,305 @@ const ClubDetail = () => {
                       <p className="text-muted-foreground">Loading events...</p>
                     </div>
                   </div>
+                ) : events && events.length > 0 ? (
+                  <div className="space-y-8">
+                    {events.map((event, index) => (
+                      <div 
+                        key={event.id} 
+                        className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                        onClick={() => navigate(`/club/${id}/event/${event.id}`)}
+                      >
+                        <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
+                        
+                        <div className="mb-4">
+                          <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
+                            {event.title}
+                          </h4>
+                          <p className="text-muted-foreground leading-relaxed mb-3">
+                            {event.description.length > 150 
+                              ? `${event.description.substring(0, 150)}...` 
+                              : event.description
+                            }
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              {format(new Date(event.created_at), 'PPP')}
+                            </div>
+                            <div className="text-primary text-sm font-medium group-hover:text-primary/80">
+                              View Details →
+                            </div>
+                          </div>
+                        </div>
+
+                        {event.event_images && event.event_images.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                            {event.event_images.map((image, imgIndex) => (
+                              <div 
+                                key={image.id} 
+                                className="relative group/img overflow-hidden rounded-lg"
+                                style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
+                              >
+                                <img
+                                  src={image.image_url}
+                                  alt="Event"
+                                  className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
+                                  <Camera className="h-5 w-5 text-white" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {event !== events[events.length - 1] && (
+                          <Separator className="mt-6 bg-gradient-to-r from-transparent via-border to-transparent" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <Tabs defaultValue="current" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="current">Current Events</TabsTrigger>
-                      <TabsTrigger value="past">
-                        <History className="h-4 w-4 mr-2" />
-                        Past Events
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="current">
-                      {currentEvents.length > 0 ? (
-                        <div className="space-y-8">
-                          {currentEvents.map((event, index) => (
-                            <div 
-                              key={event.id} 
-                              className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
-                              style={{ animationDelay: `${index * 100}ms` }}
-                              onClick={() => navigate(`/club/${id}/event/${event.id}`)}
-                            >
-                              <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
-                              
-                              <div className="mb-4">
-                                <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
-                                  {event.title}
-                                </h4>
-                                <p className="text-muted-foreground leading-relaxed mb-3">
-                                  {event.description.length > 150 
-                                    ? `${event.description.substring(0, 150)}...` 
-                                    : event.description
-                                  }
-                                </p>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    {event.event_date ? format(new Date(event.event_date), 'PPP') : format(new Date(event.created_at), 'PPP')}
-                                  </div>
-                                  <div className="text-primary text-sm font-medium group-hover:text-primary/80">
-                                    View Details →
-                                  </div>
-                                </div>
-                              </div>
-
-                              {event.event_images && event.event_images.length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
-                                  {event.event_images.map((image, imgIndex) => (
-                                    <div 
-                                      key={image.id} 
-                                      className="relative group/img overflow-hidden rounded-lg"
-                                      style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
-                                    >
-                                      <img
-                                        src={image.image_url}
-                                        alt="Event"
-                                        className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
-                                        <Camera className="h-5 w-5 text-white" />
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-16">
-                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <Calendar className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <h4 className="font-display font-semibold text-lg mb-2">No Current Events</h4>
-                          <p className="text-muted-foreground">Exciting events are being planned!</p>
-                        </div>
-                      )}
-                    </TabsContent>
-                    <TabsContent value="past">
-                      {pastEvents.length > 0 ? (
-                        <div className="space-y-8">
-                          {pastEvents.map((event, index) => (
-                            <div 
-                              key={event.id} 
-                              className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer opacity-75"
-                              style={{ animationDelay: `${index * 100}ms` }}
-                              onClick={() => navigate(`/club/${id}/event/${event.id}`)}
-                            >
-                              <div className="absolute left-0 top-0 w-1 h-full bg-muted rounded-full" />
-                              
-                              <div className="mb-4">
-                                <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
-                                  {event.title}
-                                </h4>
-                                <p className="text-muted-foreground leading-relaxed mb-3">
-                                  {event.description.length > 150 
-                                    ? `${event.description.substring(0, 150)}...` 
-                                    : event.description
-                                  }
-                                </p>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    {event.event_date && format(new Date(event.event_date), 'PPP')}
-                                  </div>
-                                  <Badge variant="secondary">Completed</Badge>
-                                </div>
-                              </div>
-
-                              {event.event_images && event.event_images.length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
-                                  {event.event_images.map((image, imgIndex) => (
-                                    <div 
-                                      key={image.id} 
-                                      className="relative group/img overflow-hidden rounded-lg"
-                                      style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
-                                    >
-                                      <img
-                                        src={image.image_url}
-                                        alt="Event"
-                                        className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3">
-                                        <Camera className="h-5 w-5 text-white" />
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-16">
-                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <History className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <h4 className="font-display font-semibold text-lg mb-2">No Past Events</h4>
-                          <p className="text-muted-foreground">Past events will appear here once they are completed.</p>
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <Calendar className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h4 className="font-display font-semibold text-lg mb-2">No Events Yet</h4>
+                    <p className="text-muted-foreground">Exciting events are being planned!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Registration */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-display">Join This Club</CardTitle>
+                <p className="text-muted-foreground mt-2">
+                  Become part of our amazing community
+                </p>
+              </CardHeader>
+              <CardContent>
+                <RegistrationDialog club={club} />
+              </CardContent>
+            </Card>
+
+            {/* Club Members */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  Club Members
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {membersLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <div className="text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-primary" />
+                      <p className="text-muted-foreground text-sm">Loading members...</p>
+                    </div>
+                  </div>
+                ) : members && members.length > 0 ? (
+                  <div className="space-y-4">
+                    {members.map((member, index) => (
+                      <div 
+                        key={member.id} 
+                        className="group flex items-center justify-between p-4 bg-gradient-secondary rounded-lg border border-primary/10 hover:shadow-sm transition-all duration-300"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {member.name.charAt(0)}
+                          </div>
+                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                            {member.name}
+                          </span>
+                        </div>
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-primary/10 text-primary border-primary/20 group-hover:bg-primary/20 transition-colors"
+                        >
+                          {member.role}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-gradient-secondary rounded-full mx-auto mb-3 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h4 className="font-display font-semibold mb-1">No Members Listed</h4>
+                    <p className="text-muted-foreground text-sm">Members will appear here soon!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Approved Members */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <GraduationCap className="h-5 w-5 text-white" />
+                  </div>
+                  Club Members List
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-primary hover:shadow-elegant transition-all"
+                    >
+                      View Members
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-display">Approved Members</DialogTitle>
+                    </DialogHeader>
+                    <div className="pt-4">
+                      {registrationsLoading ? (
+                        <div className="flex items-center justify-center h-40">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : approvedRegistrations && approvedRegistrations.length > 0 ? (
+                        <div className="rounded-lg border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Roll Number</TableHead>
+                                <TableHead>Branch</TableHead>
+                                <TableHead>Year</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {approvedRegistrations.map((registration) => (
+                                <TableRow key={registration.id}>
+                                  <TableCell className="font-medium">{registration.student_name}</TableCell>
+                                  <TableCell>{registration.roll_number || 'N/A'}</TableCell>
+                                  <TableCell>{registration.branch || 'N/A'}</TableCell>
+                                  <TableCell>{registration.year || 'N/A'}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <GraduationCap className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-display font-semibold text-lg mb-2">No Approved Members Yet</h4>
+                          <p className="text-muted-foreground">Approved members will appear here</p>
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+
+            {/* Club Gallery */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="flex items-center justify-center gap-3 text-xl font-display">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <ImageIcon className="h-5 w-5 text-white" />
+                  </div>
+                  Club Gallery
+                </CardTitle>
+                <p className="text-muted-foreground text-sm mt-2">
+                  View all event photos
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-primary hover:shadow-elegant transition-all"
+                    >
+                      View Gallery
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
+                    <DialogHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+                      <DialogTitle className="text-3xl font-display text-center">
+                        <span className="text-gradient">Club Gallery</span>
+                      </DialogTitle>
+                      <p className="text-muted-foreground text-center mt-2">
+                        Explore our collection of memorable moments
+                      </p>
+                    </DialogHeader>
+                    <ScrollArea className="h-[calc(95vh-120px)] px-6">
+                      <div className="py-6">
+                        {eventsLoading ? (
+                          <div className="flex items-center justify-center h-96">
+                            <div className="text-center">
+                              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+                              <p className="text-muted-foreground text-lg">Loading gallery...</p>
+                            </div>
+                          </div>
+                        ) : events && events.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {events.flatMap((event) => 
+                              event.event_images && event.event_images.length > 0 
+                                ? event.event_images.map((image, index) => (
+                                    <div 
+                                      key={image.id} 
+                                      className="group relative overflow-hidden rounded-2xl border border-primary/20 hover:border-primary/40 transition-all duration-500 shadow-md hover:shadow-2xl animate-fade-in"
+                                      style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                      <div className="relative aspect-[4/3] overflow-hidden">
+                                        <img
+                                          src={image.image_url}
+                                          alt={event.title}
+                                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                      </div>
+                                      
+                                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                                        <h4 className="text-white text-lg font-display font-bold mb-1 drop-shadow-lg">
+                                          {event.title}
+                                        </h4>
+                                        <div className="flex items-center gap-2 text-white/90 text-sm">
+                                          <Calendar className="h-3.5 w-3.5" />
+                                          <span className="drop-shadow">{format(new Date(event.created_at), 'PPP')}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))
+                                : []
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-24">
+                            <div className="w-24 h-24 bg-gradient-secondary rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+                              <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                            <h4 className="font-display font-semibold text-2xl mb-3">No Images Yet</h4>
+                            <p className="text-muted-foreground text-lg">Gallery images will appear here soon!</p>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
