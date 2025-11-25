@@ -51,13 +51,23 @@ const ViewReport = () => {
 
     // Participants
     if (report.participants_roll_numbers && report.participants_roll_numbers.length > 0) {
-      doc.text('Participants:', 20, yPos);
-      yPos += 7;
-      doc.setFontSize(10);
-      doc.text(report.participants_roll_numbers.join(', '), 25, yPos);
-      yPos += 12;
-      doc.setFontSize(12);
-    }
+  doc.setFontSize(12);
+  doc.text('Participants:', 20, yPos);
+  yPos += 7;
+
+  doc.setFontSize(10);
+
+  const participantText = report.participants_roll_numbers.join(', ');
+  const wrappedParticipants = doc.splitTextToSize(participantText, pageWidth - 40);
+
+  doc.text(wrappedParticipants, 25, yPos);
+
+  // Increase yPos based on number of lines
+  yPos += wrappedParticipants.length * 7 + 10; // +10 gives extra spacing
+
+  doc.setFontSize(12);
+}
+
 
     // Report Data
     if (report.report_data) {
@@ -154,7 +164,7 @@ const ViewReport = () => {
                   <Users className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Participants</h3>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap pl-20">
+                <p className="text-sm text-muted-foreground">
                   {report.participants_roll_numbers.join(', ')}
                 </p>
               </div>
