@@ -154,7 +154,7 @@ const ViewReport = () => {
                   <Users className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Participants</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap pl-20">
                   {report.participants_roll_numbers.join(', ')}
                 </p>
               </div>
