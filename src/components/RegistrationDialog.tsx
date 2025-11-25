@@ -160,30 +160,46 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               required
             />
           </div>
+            
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <Label htmlFor="year" className="text-sm font-semibold">Year</Label>
-              <Input
-                id="year"
-                placeholder="e.g., 2nd Year"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                className="h-12 bg-white/50 border-primary/20 focus:border-primary"
-                required
-              />
-            </div>
-            <div className="space-y-3">
-              <Label htmlFor="branch" className="text-sm font-semibold">Branch</Label>
-              <Input
-                id="branch"
-                placeholder="e.g., CSE"
-                value={branch}
-                onChange={(e) => setBranch(e.target.value)}
-                className="h-12 bg-white/50 border-primary/20 focus:border-primary"
-                required
-              />
-            </div>
-          </div>
+  {/* Year Dropdown */}
+  <div className="space-y-3">
+    <Label htmlFor="year" className="text-sm font-semibold">Year</Label>
+    <select
+      id="year"
+      value={year}
+      onChange={(e) => setYear(e.target.value)}
+      className="h-12 bg-white/50 border border-primary/20 rounded-md px-3 focus:border-primary"
+      required
+    >
+      <option value="">Select Year</option>
+      <option value="1st Year">1st Year</option>
+      <option value="2nd Year">2nd Year</option>
+      <option value="3rd Year">3rd Year</option>
+      <option value="4th Year">4th Year</option>
+    </select>
+  </div>
+
+  {/* Branch Dropdown */}
+  <div className="space-y-3">
+    <Label htmlFor="branch" className="text-sm font-semibold">Branch</Label>
+    <select
+      id="branch"
+      value={branch}
+      onChange={(e) => setBranch(e.target.value)}
+      className="h-12 bg-white/50 border border-primary/20 rounded-md px-3 focus:border-primary"
+      required
+    >
+      <option value="">Select Branch</option>
+      <option value="CSE">CSE</option>
+      <option value="CSE (AI & ML)">CSE (AI & ML)</option>
+      <option value="CSE (DS)">CSE (DS)</option>
+      <option value="IT">IT</option>
+    </select>
+  </div>
+</div>
+
+            
           <div className="space-y-3">
             <Label htmlFor="whyJoin" className="text-sm font-semibold">Why do you want to join this club?</Label>
             <Textarea
