@@ -22,85 +22,143 @@ const ViewReport = () => {
 
   const report = reports?.find(r => r.id === reportId);
 
+  // --------------------------------------------------
+  //          FINAL IMPROVED PROFESSIONAL PDF
+  // --------------------------------------------------
   const handleDownloadPDF = () => {
     if (!report) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let yPos = 20;
+    const doc = new jsPDF({
+      unit: 'pt',
+      format: 'a4'
+    });
 
-    // Title
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text(report.title, pageWidth / 2, yPos, { align: 'center' });
-    yPos += 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 40;
+    let y = 60;
+
+    const addLine = () => {
+      doc.setDrawColor(180);
+      doc.setLineWidth(1);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 15;
+    };
+
+    const addPageIfNeeded = (heightNeeded = 50) => {
+      if (y + heightNeeded >= pageHeight - 40) {
+        doc.addPage();
+        y = 60;
+        drawHeader();
+        y += 20;
+      }
+    };
+
+    const drawHeader = () => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text(report.title, pageWidth / 2, 40, { align: 'center' });
+    };
+
+    // Draw header
+    drawHeader();
+    y += 20;
 
     // Report Type
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Report Type:', margin, y);
+
     doc.setFont('helvetica', 'normal');
-    const reportTypeLabel = report.report_type === 'mom' ? 'Minutes of Meeting' : 
-                           report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1) + ' Report';
-    doc.text(`Type: ${reportTypeLabel}`, 20, yPos);
-    yPos += 10;
+    const reportTypeLabel =
+      report.report_type === 'mom'
+        ? 'Minutes of Meeting'
+        : report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1) + ' Report';
+
+    doc.text(reportTypeLabel, margin + 100, y);
+    y += 20;
 
     // Date
     if (report.report_date) {
-      doc.text(`Date: ${format(new Date(report.report_date), 'PPP')}`, 20, yPos);
-      yPos += 10;
-    }
-
-    // Participants
-    if (report.participants_roll_numbers && report.participants_roll_numbers.length > 0) {
-  doc.setFontSize(12);
-  doc.text('Participants:', 20, yPos);
-  yPos += 7;
-
-  doc.setFontSize(10);
-
-  const participantText = report.participants_roll_numbers.join(', ');
-  const wrappedParticipants = doc.splitTextToSize(participantText, pageWidth - 40);
-
-  doc.text(wrappedParticipants, 25, yPos);
-
-  // Increase yPos based on number of lines
-  yPos += wrappedParticipants.length * 7 + 10; // +10 gives extra spacing
-
-  doc.setFontSize(12);
-}
-
-
-    // Report Data
-    if (report.report_data) {
-      yPos += 5;
       doc.setFont('helvetica', 'bold');
-      doc.text('Report Details', 20, yPos);
-      yPos += 10;
+      doc.text('Report Date:', margin, y);
+
       doc.setFont('helvetica', 'normal');
-
-      Object.entries(report.report_data).forEach(([key, value]) => {
-        if (value) {
-          const label = key.replace(/([A-Z])/g, ' $1').trim();
-          const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-          
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${capitalizedLabel}:`, 20, yPos);
-          yPos += 7;
-          
-          doc.setFont('helvetica', 'normal');
-          const lines = doc.splitTextToSize(String(value), pageWidth - 40);
-          doc.text(lines, 25, yPos);
-          yPos += lines.length * 7 + 5;
-
-          if (yPos > 270) {
-            doc.addPage();
-            yPos = 20;
-          }
-        }
-      });
+      doc.text(format(new Date(report.report_date), 'PPP'), margin + 100, y);
+      y += 25;
     }
+
+    addLine();
+
+    // Participants section
+    if (report.participants_roll_numbers?.length > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('Participants', margin, y);
+      y += 18;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+
+      const participantString = report.participants_roll_numbers.join(', ');
+      const wrapped = doc.splitTextToSize(participantString, pageWidth - margin * 2);
+
+      wrapped.forEach(line => {
+        addPageIfNeeded(20);
+        doc.text(line, margin + 10, y);
+        y += 15;
+      });
+
+      y += 10;
+      addLine();
+    }
+
+    // Report Details
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Report Details', margin, y);
+    y += 20;
+
+    doc.setFontSize(11);
+
+    Object.entries(report.report_data || {}).forEach(([key, value]) => {
+      if (!value) return;
+
+      addPageIfNeeded();
+
+      const label = key.replace(/([A-Z])/g, ' $1').trim();
+      const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${formattedLabel}:`, margin, y);
+      y += 15;
+
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(String(value), pageWidth - margin * 2);
+
+      lines.forEach(line => {
+        addPageIfNeeded();
+        doc.text(line, margin + 10, y);
+        y += 15;
+      });
+
+      y += 10;
+    });
+
+    addLine();
+
+    // Footer
+    addPageIfNeeded();
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.text(`Created on: ${format(new Date(report.created_at), 'PPP p')}`, margin, y + 10);
 
     doc.save(`${report.title.replace(/\s+/g, '_')}_report.pdf`);
   };
+
+  // --------------------------------------------------
+  //                       UI
+  // --------------------------------------------------
 
   if (authLoading || isLoading) {
     return (
@@ -147,7 +205,9 @@ const ViewReport = () => {
             <CardTitle className="text-3xl">{report.title}</CardTitle>
             <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">
-                {report.report_type === 'mom' ? 'MOM' : report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
+                {report.report_type === 'mom'
+                  ? 'MOM'
+                  : report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
               </span>
               {report.report_date && (
                 <div className="flex items-center gap-1">
@@ -157,8 +217,9 @@ const ViewReport = () => {
               )}
             </div>
           </CardHeader>
+
           <CardContent className="space-y-6">
-            {report.participants_roll_numbers && report.participants_roll_numbers.length > 0 && (
+            {report.participants_roll_numbers?.length > 0 && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-5 w-5 text-primary" />
