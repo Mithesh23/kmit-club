@@ -2,8 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Camera, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isPast, parseISO } from 'date-fns';
 import { Event } from '@/types/club';
 import { EventRegistrationDialog } from '@/components/EventRegistrationDialog';
 
@@ -96,8 +97,14 @@ const EventDetail = () => {
             <div className="flex items-center gap-3 text-muted-foreground">
               <Calendar className="h-5 w-5" />
               <span className="text-lg font-medium">
-                {format(new Date(event.created_at), 'PPPP')}
+                {event.event_date 
+                  ? format(parseISO(event.event_date), 'PPPP') 
+                  : format(new Date(event.created_at), 'PPPP')
+                }
               </span>
+              {event.event_date && isPast(parseISO(event.event_date)) && (
+                <Badge variant="secondary">Completed</Badge>
+              )}
             </div>
           </div>
         </div>

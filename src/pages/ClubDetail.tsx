@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/useClubs';
 import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
@@ -9,18 +10,44 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap, History } from 'lucide-react';
+import { format, isPast, parseISO } from 'date-fns';
 
 const ClubDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showPastEvents, setShowPastEvents] = useState(false);
   
   const { data: club, isLoading: clubLoading } = useClub(id!);
   const { data: members, isLoading: membersLoading } = useClubMembers(id!);
   const { data: announcements, isLoading: announcementsLoading } = useAnnouncements(id!);
   const { data: events, isLoading: eventsLoading } = useEvents(id!);
   const { data: approvedRegistrations, isLoading: registrationsLoading } = useApprovedRegistrations(id!);
+
+  // Filter events into upcoming and past based on event_date
+  const { upcomingEvents, pastEvents } = useMemo(() => {
+    if (!events) return { upcomingEvents: [], pastEvents: [] };
+    
+    const now = new Date();
+    const upcoming: typeof events = [];
+    const past: typeof events = [];
+    
+    events.forEach(event => {
+      if (event.event_date) {
+        const eventDate = parseISO(event.event_date);
+        if (isPast(eventDate)) {
+          past.push(event);
+        } else {
+          upcoming.push(event);
+        }
+      } else {
+        // Events without date go to upcoming by default
+        upcoming.push(event);
+      }
+    });
+    
+    return { upcomingEvents: upcoming, pastEvents: past };
+  }, [events]);
 
   if (clubLoading) {
     return (
@@ -157,15 +184,29 @@ const ClubDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Events */}
+            {/* Upcoming Events */}
             <Card className="card-elegant border-0 shadow-lg">
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-2xl font-display">
-                  <div className="p-2 bg-gradient-primary rounded-lg">
-                    <Calendar className="h-5 w-5 text-white" />
-                  </div>
-                  Club Events
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-3 text-2xl font-display">
+                    <div className="p-2 bg-gradient-primary rounded-lg">
+                      <Calendar className="h-5 w-5 text-white" />
+                    </div>
+                    {showPastEvents ? 'Past Events' : 'Upcoming Events'}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPastEvents(!showPastEvents)}
+                    className="flex items-center gap-2"
+                  >
+                    <History className="h-4 w-4" />
+                    {showPastEvents ? 'View Upcoming' : 'View Past Events'}
+                    {!showPastEvents && pastEvents.length > 0 && (
+                      <Badge variant="secondary" className="ml-1">{pastEvents.length}</Badge>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {eventsLoading ? (
@@ -175,21 +216,26 @@ const ClubDetail = () => {
                       <p className="text-muted-foreground">Loading events...</p>
                     </div>
                   </div>
-                ) : events && events.length > 0 ? (
+                ) : (showPastEvents ? pastEvents : upcomingEvents).length > 0 ? (
                   <div className="space-y-8">
-                    {events.map((event, index) => (
+                    {(showPastEvents ? pastEvents : upcomingEvents).map((event, index) => (
                       <div 
                         key={event.id} 
                         className="group relative p-6 bg-gradient-secondary rounded-xl border border-primary/10 hover:shadow-md transition-all duration-300 cursor-pointer"
                         style={{ animationDelay: `${index * 100}ms` }}
                         onClick={() => navigate(`/club/${id}/event/${event.id}`)}
                       >
-                        <div className="absolute left-0 top-0 w-1 h-full bg-gradient-primary rounded-full" />
+                        <div className={`absolute left-0 top-0 w-1 h-full rounded-full ${showPastEvents ? 'bg-muted-foreground' : 'bg-gradient-primary'}`} />
                         
                         <div className="mb-4">
-                          <h4 className="font-display font-semibold text-xl text-foreground mb-2 group-hover:text-primary transition-colors">
-                            {event.title}
-                          </h4>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-display font-semibold text-xl text-foreground group-hover:text-primary transition-colors">
+                              {event.title}
+                            </h4>
+                            {showPastEvents && (
+                              <Badge variant="secondary" className="text-xs">Completed</Badge>
+                            )}
+                          </div>
                           <p className="text-muted-foreground leading-relaxed mb-3">
                             {event.description.length > 150 
                               ? `${event.description.substring(0, 150)}...` 
@@ -197,9 +243,13 @@ const ClubDetail = () => {
                             }
                           </p>
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              {format(new Date(event.created_at), 'PPP')}
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              {event.event_date && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  {format(parseISO(event.event_date), 'PPP')}
+                                </span>
+                              )}
                             </div>
                             <div className="text-primary text-sm font-medium group-hover:text-primary/80">
                               View Details →
@@ -227,10 +277,6 @@ const ClubDetail = () => {
                             ))}
                           </div>
                         )}
-                        
-                        {event !== events[events.length - 1] && (
-                          <Separator className="mt-6 bg-gradient-to-r from-transparent via-border to-transparent" />
-                        )}
                       </div>
                     ))}
                   </div>
@@ -239,8 +285,15 @@ const ClubDetail = () => {
                     <div className="w-16 h-16 bg-gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Calendar className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <h4 className="font-display font-semibold text-lg mb-2">No Events Yet</h4>
-                    <p className="text-muted-foreground">Exciting events are being planned!</p>
+                    <h4 className="font-display font-semibold text-lg mb-2">
+                      {showPastEvents ? 'No Past Events' : 'No Upcoming Events'}
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {showPastEvents 
+                        ? 'No events have been completed yet.' 
+                        : 'Exciting events are being planned!'
+                      }
+                    </p>
                   </div>
                 )}
               </CardContent>
