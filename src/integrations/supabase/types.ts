@@ -347,6 +347,7 @@ export type Database = {
           club_id: string
           created_at: string
           description: string
+          event_date: string | null
           id: string
           registration_open: boolean
           title: string
@@ -355,6 +356,7 @@ export type Database = {
           club_id: string
           created_at?: string
           description: string
+          event_date?: string | null
           id?: string
           registration_open?: boolean
           title: string
@@ -363,6 +365,7 @@ export type Database = {
           club_id?: string
           created_at?: string
           description?: string
+          event_date?: string | null
           id?: string
           registration_open?: boolean
           title?: string
@@ -377,6 +380,59 @@ export type Database = {
           },
         ]
       }
+      student_accounts: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+          roll_number: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+          roll_number: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+          roll_number?: string
+        }
+        Relationships: []
+      }
+      student_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          student_id: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          student_id?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          student_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_sessions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -387,6 +443,15 @@ export type Database = {
         Returns: {
           club_id: string
           message: string
+          success: boolean
+          token: string
+        }[]
+      }
+      authenticate_student: {
+        Args: { student_password: string; student_roll_number: string }
+        Returns: {
+          message: string
+          roll_number: string
           success: boolean
           token: string
         }[]
@@ -411,6 +476,13 @@ export type Database = {
         Returns: {
           admin_id: string
           club_id: string
+        }[]
+      }
+      get_current_student_session: {
+        Args: never
+        Returns: {
+          roll_number: string
+          student_id: string
         }[]
       }
       is_admin_for_event_storage: {
