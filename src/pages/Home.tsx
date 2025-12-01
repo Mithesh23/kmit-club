@@ -95,7 +95,14 @@ const Home = () => {
                 <div className="w-24 h-1 bg-gradient-primary rounded-full"></div>
               </div>
             </div>
-            <div className="animate-scale-in">
+            <div className="animate-scale-in flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/student/login')}
+                className="border-primary/30 hover:bg-primary/10"
+              >
+                Student Login
+              </Button>
               <ClubLoginDialog />
             </div>
           </div>

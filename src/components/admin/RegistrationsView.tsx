@@ -30,6 +30,29 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
           description: `Registration ${status} successfully`,
         });
 
+        // If approved and has roll number, create student account via edge function
+        if (status === 'approved' && registration?.roll_number) {
+          try {
+            const { data, error: accountError } = await supabase.functions.invoke('create-student-account', {
+              body: {
+                rollNumber: registration.roll_number,
+                password: 'Kmitclubs123',
+              },
+            });
+
+            if (accountError) {
+              console.error('Error creating student account:', accountError);
+            } else if (data?.success && !data?.alreadyExists) {
+              toast({
+                title: "Student Account Created",
+                description: `Login credentials generated for ${registration.roll_number}`,
+              });
+            }
+          } catch (error) {
+            console.error('Error creating student account:', error);
+          }
+        }
+
         // Send welcome email if approved
         if (status === 'approved' && registration && club) {
           try {
@@ -38,6 +61,8 @@ export const RegistrationsView = ({ clubId }: RegistrationsViewProps) => {
                 studentName: registration.student_name,
                 studentEmail: registration.student_email,
                 clubName: club.name,
+                rollNumber: registration.roll_number,
+                defaultPassword: 'Kmitclubs123',
               },
             });
 
