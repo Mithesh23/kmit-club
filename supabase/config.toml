@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false
+
+[functions.send-event-update-email]
+verify_jwt = false
+
+[functions.create-student-account]
+verify_jwt = false

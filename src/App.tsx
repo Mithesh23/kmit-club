@@ -9,6 +9,8 @@ import EventDetail from "./pages/EventDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClubCredentials from "./pages/ClubCredentials";
 import ViewReport from "./pages/ViewReport";
+import StudentLogin from "./pages/StudentLogin";
+import StudentDashboard from "./pages/StudentDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,9 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/report/:reportId" element={<ViewReport />} />
           <Route path="/credentials" element={<ClubCredentials />} />
+          <Route path="/student/login" element={<StudentLogin />} />
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/report/:reportId" element={<ViewReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

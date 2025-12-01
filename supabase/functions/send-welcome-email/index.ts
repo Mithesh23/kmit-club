@@ -13,6 +13,8 @@ interface WelcomeEmailRequest {
   studentName: string;
   studentEmail: string;
   clubName: string;
+  rollNumber?: string;
+  defaultPassword?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,9 +23,22 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { studentName, studentEmail, clubName }: WelcomeEmailRequest = await req.json();
+    const { studentName, studentEmail, clubName, rollNumber, defaultPassword }: WelcomeEmailRequest = await req.json();
 
     console.log(`Sending welcome email to ${studentEmail} for club: ${clubName}`);
+
+    const loginSection = rollNumber ? `
+      <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+        <h3 style="color: #155724; margin-top: 0; margin-bottom: 15px;">🔐 Your Login Credentials</h3>
+        <p style="margin: 0; color: #155724;">
+          <strong>Username (Roll Number):</strong> ${rollNumber}<br/>
+          <strong>Default Password:</strong> ${defaultPassword || 'Kmitclubs123'}
+        </p>
+        <p style="margin-top: 15px; margin-bottom: 0; color: #155724; font-size: 14px;">
+          Visit the KMIT Clubs Hub and click "Student Login" to access your dashboard.
+        </p>
+      </div>
+    ` : '';
 
     const { data, error } = await resend.emails.send({
       from: `${clubName} <noreply@kmitclubs.gt.tc>`,
@@ -46,9 +61,12 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
           </div>
 
+          ${loginSection}
+
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #333; margin-top: 0;">What's Next?</h3>
             <ul style="color: #666; line-height: 1.8;">
+              <li>Login to your student dashboard to see all your clubs</li>
               <li>You'll receive announcements and updates about club activities via email</li>
               <li>Check your club dashboard for upcoming events and meetings</li>
               <li>Stay active and participate in club activities</li>
