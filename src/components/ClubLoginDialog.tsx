@@ -246,7 +246,7 @@ export const ClubLoginDialog = () => {
                 <Label>Email</Label>
                 <Input
                   type="email"
-                  placeholder="Enter mentor email"
+                  placeholder="Enter Principal email"
                   value={mentorEmail}
                   onChange={(e) => setMentorEmail(e.target.value)}
                 />
