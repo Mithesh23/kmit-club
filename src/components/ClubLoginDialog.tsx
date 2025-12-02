@@ -145,7 +145,7 @@ export const ClubLoginDialog = () => {
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="club">Club</TabsTrigger>
             <TabsTrigger value="student">Student</TabsTrigger>
-            <TabsTrigger value="faculty">Mentor</TabsTrigger>
+            <TabsTrigger value="faculty">Principal</TabsTrigger>
           </TabsList>
 
           {/* ---------------- CLUB LOGIN TAB ---------------- */}
@@ -277,7 +277,7 @@ export const ClubLoginDialog = () => {
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  "Login as Mentor"
+                  "Login as Principal"
                 )}
               </Button>
             </form>
