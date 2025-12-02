@@ -83,3 +83,13 @@ export interface ClubSession {
   club_id: string;
   message: string;
 }
+
+export interface KMITEvent {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  date: string;
+  year?: number;
+  drive_link?: string | null;
+}

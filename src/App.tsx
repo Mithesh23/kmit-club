@@ -1,3 +1,6 @@
+// import KmitEvents from "./pages/KmitEvents";
+import MentorDashboard from "./pages/MentorDashboard";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +15,11 @@ import ViewReport from "./pages/ViewReport";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
 import NotFound from "./pages/NotFound";
+import KmitEvents from "@/pages/KmitEvents";
+import KmitEventsPast from "@/pages/KmitEventsPast";
+import KmitEventDetail from "@/pages/KmitEventDetail";
+// import MentorDashboard from "@/pages/MentorDashboard";
+
 
 const queryClient = new QueryClient();
 
@@ -32,6 +40,15 @@ const App = () => (
           <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/report/:reportId" element={<ViewReport />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/kmit-events" element={<KmitEvents />} />
+          <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+          <Route path="/kmit-events" element={<KmitEvents />} />
+<Route path="/kmit-events/past" element={<KmitEventsPast />} />
+<Route path="/kmit-events/:id" element={<KmitEventDetail />} />
+<Route path="/mentor/dashboard" element={<MentorDashboard />} />
+
+
+
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

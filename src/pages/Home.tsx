@@ -121,7 +121,9 @@ const Home = () => {
             <br />
             centralized, real-time, and audit-ready.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+
+
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Button size="lg" className="bg-white text-foreground hover:bg-gray-100 px-8 py-3 text-lg font-medium" onClick={() => {
             const featuredSection = document.getElementById('featured');
             featuredSection?.scrollIntoView({
@@ -130,7 +132,37 @@ const Home = () => {
           }}>
               Explore Clubs
             </Button>
-          </div>
+          </div> */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+  
+  {/* Explore Clubs Button */}
+<Button
+    size="lg"
+    className="bg-white text-foreground hover:bg-gray-100 px-8 py-3 text-lg font-medium"
+    onClick={() => {
+      const featuredSection = document.getElementById("featured");
+      featuredSection?.scrollIntoView({ behavior: "smooth" });
+    }}
+  >
+    Explore Clubs
+  </Button>
+
+  {/* KMIT Events Button - Same Styling */}
+  <Button
+    size="lg"
+    className="bg-white text-foreground hover:bg-gray-100 px-8 py-3 text-lg font-medium"
+    onClick={() => navigate("/kmit-events")}
+  >
+    KMIT Events
+  </Button>
+
+</div>
+
+
+
+
+
+
         </div>
       </section>
 

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -5,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useClubAuth } from '@/hooks/useClubAuth';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, Loader2 } from 'lucide-react';
+import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
-// NEW: For Login Tabs
+// Tabs
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const ClubLoginDialog = () => {
@@ -19,25 +21,31 @@ export const ClubLoginDialog = () => {
   const [password, setPassword] = useState('');
   const { login } = useClubAuth();
 
+  // Password visibility toggles
+  const [showClubPass, setShowClubPass] = useState(false);
+  const [showStudentPass, setShowStudentPass] = useState(false);
+  const [showMentorPass, setShowMentorPass] = useState(false);
+
   // Student login
   const [studentRoll, setStudentRoll] = useState('');
   const [studentPass, setStudentPass] = useState('');
 
-  // Faculty login
-  const [facultyUser, setFacultyUser] = useState('');
-  const [facultyPass, setFacultyPass] = useState('');
+  // Mentor login
+  const [mentorEmail, setMentorEmail] = useState('');
+  const [mentorPassword, setMentorPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  /* ------------------------ CLUB LOGIN HANDLER ------------------------ */
   const handleClubLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const result = await login(email, password);
-      
+
       if (result.success) {
         toast({
           title: "Login Successful",
@@ -65,17 +73,9 @@ export const ClubLoginDialog = () => {
     }
   };
 
+  /* ------------------------ STUDENT LOGIN HANDLER ------------------------ */
   const handleStudentLogin = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (studentRoll === "" || studentPass === "") {
-      toast({
-        title: "Missing Details",
-        description: "Please enter roll number and password.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     toast({
       title: "Student Login",
@@ -83,22 +83,48 @@ export const ClubLoginDialog = () => {
     });
   };
 
-  const handleFacultyLogin = (e: React.FormEvent) => {
+  /* ------------------------ MENTOR LOGIN HANDLER ------------------------ */
+  const handleMentorLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (facultyUser === "" || facultyPass === "") {
+    if (!mentorEmail || !mentorPassword) {
       toast({
         title: "Missing Details",
-        description: "Please enter username and password.",
+        description: "Please enter mentor email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("mentors")
+      .select("*")
+      .eq("email", mentorEmail)
+      .eq("password", mentorPassword)
+      .single();
+
+    setLoading(false);
+
+    if (error || !data) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid mentor credentials",
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Faculty Login",
-      description: "Faculty login functionality will be added soon.",
+      title: "Login Successful",
+      description: "Welcome Mentor!",
     });
+
+    localStorage.setItem("mentor_email", mentorEmail);
+
+    setOpen(false);
+    navigate("/mentor/dashboard");
   };
 
   return (
@@ -109,6 +135,7 @@ export const ClubLoginDialog = () => {
           Login
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Select Login Type</DialogTitle>
@@ -121,13 +148,14 @@ export const ClubLoginDialog = () => {
             <TabsTrigger value="faculty">Mentor</TabsTrigger>
           </TabsList>
 
-          {/* ---------- CLUB LOGIN (Unchanged Functionality) ---------- */}
+          {/* ---------------- CLUB LOGIN TAB ---------------- */}
           <TabsContent value="club">
             <form onSubmit={handleClubLogin} className="space-y-4 mt-4">
+              
+              {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label>Email</Label>
                 <Input
-                  id="email"
                   type="email"
                   placeholder="Enter club admin email"
                   value={email}
@@ -136,40 +164,43 @@ export const ClubLoginDialog = () => {
                 />
               </div>
 
+              {/* Password with Eye Toggle */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <Label>Password</Label>
+                <div className="relative">
+                  <Input
+                    type={showClubPass ? "text" : "password"}
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowClubPass(!showClubPass)}
+                  >
+                    {showClubPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   "Login"
                 )}
               </Button>
             </form>
-
-            <div className="text-xs text-muted-foreground mt-4">
-              <p>Demo credentials:</p>
-              <p>Email: organizingcommity@kmit.ac.in</p>
-              <p>Password: Kmit123$</p>
-            </div>
           </TabsContent>
 
-          {/* ---------- STUDENT LOGIN ---------- */}
+          {/* ---------------- STUDENT LOGIN TAB ---------------- */}
           <TabsContent value="student">
             <form onSubmit={handleStudentLogin} className="space-y-4 mt-4">
+
+              {/* Roll Number */}
               <div className="space-y-2">
                 <Label>Roll Number</Label>
                 <Input
@@ -179,14 +210,25 @@ export const ClubLoginDialog = () => {
                 />
               </div>
 
+              {/* Password with Eye Toggle */}
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input
-                  type="password"
-                  placeholder="Enter password"
-                  value={studentPass}
-                  onChange={(e) => setStudentPass(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    type={showStudentPass ? "text" : "password"}
+                    placeholder="Enter password"
+                    value={studentPass}
+                    onChange={(e) => setStudentPass(e.target.value)}
+                  />
+
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowStudentPass(!showStudentPass)}
+                  >
+                    {showStudentPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <Button type="submit" className="w-full">
@@ -195,30 +237,48 @@ export const ClubLoginDialog = () => {
             </form>
           </TabsContent>
 
-          {/* ---------- FACULTY LOGIN ---------- */}
+          {/* ---------------- MENTOR LOGIN TAB ---------------- */}
           <TabsContent value="faculty">
-            <form onSubmit={handleFacultyLogin} className="space-y-4 mt-4">
+            <form onSubmit={handleMentorLogin} className="space-y-4 mt-4">
+
+              {/* Mentor Email */}
               <div className="space-y-2">
-                <Label>Username</Label>
+                <Label>Email</Label>
                 <Input
-                  placeholder="Enter username"
-                  value={facultyUser}
-                  onChange={(e) => setFacultyUser(e.target.value)}
+                  type="email"
+                  placeholder="Enter mentor email"
+                  value={mentorEmail}
+                  onChange={(e) => setMentorEmail(e.target.value)}
                 />
               </div>
 
+              {/* Password with Eye Toggle */}
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input
-                  type="password"
-                  placeholder="Enter password"
-                  value={facultyPass}
-                  onChange={(e) => setFacultyPass(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    type={showMentorPass ? "text" : "password"}
+                    placeholder="Enter password"
+                    value={mentorPassword}
+                    onChange={(e) => setMentorPassword(e.target.value)}
+                  />
+
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowMentorPass(!showMentorPass)}
+                  >
+                    {showMentorPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full">
-                Login as Mentor
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Login as Mentor"
+                )}
               </Button>
             </form>
           </TabsContent>

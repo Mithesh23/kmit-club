@@ -85,7 +85,7 @@ const ClubDetail = () => {
               variant="ghost" 
               size="sm" 
               onClick={() => navigate('/')}
-              className="bg-white/50 hover:bg-white/80 backdrop-blur-sm border border-white/20"
+              className="bg-white/50 hover:bg-orange/80 backdrop-blur-sm border border-white/20"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Clubs
