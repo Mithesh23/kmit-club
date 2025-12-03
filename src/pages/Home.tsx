@@ -292,6 +292,14 @@ const Home = () => {
             </p>
           </div>
         </div>
+
+        {/* Typing + Glow + Slide Down (10 sec) */}
+<div className="fixed bottom-6 right-6 z-50 signature-container">
+  <div className="px-4 py-2 rounded-full bg-black/80 text-white text-sm shadow-lg backdrop-blur-md glow-pulse">
+    <span className="typing-effect block w-fit">by Mithesh Pulluri</span>
+  </div>
+</div>
+
       </footer>
     </div>;
 };
