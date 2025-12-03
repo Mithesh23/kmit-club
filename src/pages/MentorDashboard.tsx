@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Trash2, Edit2, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ManageClubs from "@/components/mentor/ManageClubs";
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -432,16 +433,7 @@ export default function MentorDashboard() {
              MANAGE CLUBS TAB
           ============================================================ */}
           <TabsContent value="clubs">
-            <Card className="rounded-2xl shadow-xl bg-white/80 p-10 text-center">
-              <h2 className="text-3xl font-display font-bold mb-4 text-gradient">
-                Manage Clubs
-              </h2>
-
-              <p className="text-muted-foreground text-lg">
-                This module will allow mentors to manage club approvals,
-                assign faculty coordinators, update club details, and more.
-              </p>
-            </Card>
+            <ManageClubs />
           </TabsContent>
 
         </Tabs>
