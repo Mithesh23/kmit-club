@@ -9,23 +9,25 @@ const KmitEventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const numericId = id ? parseInt(id, 10) : null;
+
   const { data: event, isLoading } = useQuery({
-    queryKey: ["kmit_event", id],
+    queryKey: ["kmit_event", numericId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("kmit_events").select("*").eq("id", id).single();
+      const { data, error } = await supabase.from("kmit_events").select("*").eq("id", numericId!).single();
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!numericId,
   });
 
   const { data: imagesData } = useQuery({
-    queryKey: ["kmit_event_images", id],
+    queryKey: ["kmit_event_images", numericId],
     queryFn: async () => {
-      const { data } = await supabase.from("kmit_event_images").select("*").eq("event_id", id).order("created_at", { ascending: true });
+      const { data } = await supabase.from("kmit_event_images").select("*").eq("event_id", numericId!).order("created_at", { ascending: true });
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!numericId,
   });
 
   if (isLoading) {
