@@ -380,6 +380,89 @@ export type Database = {
           },
         ]
       }
+      kmit_event_images: {
+        Row: {
+          created_at: string | null
+          event_id: number | null
+          id: number
+          image_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: never
+          image_url: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: never
+          image_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kmit_event_images_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "kmit_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kmit_events: {
+        Row: {
+          category: string
+          created_at: string | null
+          date: string
+          description: string | null
+          drive_link: string | null
+          id: number
+          name: string
+          year: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          date: string
+          description?: string | null
+          drive_link?: string | null
+          id?: never
+          name: string
+          year: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          drive_link?: string | null
+          id?: never
+          name?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      mentors: {
+        Row: {
+          email: string
+          id: string
+          name: string | null
+          password: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          name?: string | null
+          password: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string | null
+          password?: string
+        }
+        Relationships: []
+      }
       student_accounts: {
         Row: {
           created_at: string | null

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/useClubs';
 import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
 import { RegistrationDialog } from '@/components/RegistrationDialog';
+import { ClubCalendar } from '@/components/ClubCalendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -298,6 +299,11 @@ const ClubDetail = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Club Calendar */}
+            {events && events.length > 0 && (
+              <ClubCalendar events={events} clubId={id!} />
+            )}
 
           </div>
 
