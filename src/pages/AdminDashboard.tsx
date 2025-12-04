@@ -8,9 +8,10 @@ import { MembersManager } from '@/components/admin/MembersManager';
 import { EventsManager } from '@/components/admin/EventsManager';
 import { RegistrationsView } from '@/components/admin/RegistrationsView';
 import { ReportsManager } from '@/components/admin/ReportsManager';
+import { AttendanceManager } from '@/components/admin/AttendanceManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2 } from 'lucide-react';
+import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-white shadow-sm">
+          <TabsList className="grid w-full grid-cols-7 bg-white shadow-sm">
             <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Settings className="h-4 w-4" />
               Club Info
@@ -80,6 +81,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Calendar className="h-4 w-4" />
               Events
+            </TabsTrigger>
+            <TabsTrigger value="attendance" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ClipboardCheck className="h-4 w-4" />
+              Attendance
             </TabsTrigger>
             <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <UserCheck className="h-4 w-4" />
@@ -105,6 +110,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="events">
             <EventsManager clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="attendance">
+            <AttendanceManager clubId={club.id} />
           </TabsContent>
 
           <TabsContent value="registrations">
