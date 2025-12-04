@@ -60,7 +60,22 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
     
     let filtered = reports;
     if (filterType !== 'all') {
-      filtered = reports.filter(r => r.report_type === filterType);
+      if (filterType === 'attendance') {
+        // Filter for attendance reports (event type with attendance data)
+        filtered = reports.filter(r => 
+          r.report_type === 'event' && 
+          r.report_data && 
+          (r.report_data as any).type === 'attendance'
+        );
+      } else if (filterType === 'event') {
+        // Filter for non-attendance event reports
+        filtered = reports.filter(r => 
+          r.report_type === 'event' && 
+          (!r.report_data || (r.report_data as any).type !== 'attendance')
+        );
+      } else {
+        filtered = reports.filter(r => r.report_type === filterType);
+      }
     }
 
     return [...filtered].sort((a, b) => {
@@ -503,6 +518,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="mom">MOM</SelectItem>
                   <SelectItem value="event">Event</SelectItem>
+                  <SelectItem value="attendance">Attendance</SelectItem>
                   <SelectItem value="monthly">Monthly</SelectItem>
                   <SelectItem value="yearly">Yearly</SelectItem>
                 </SelectContent>
@@ -534,8 +550,17 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                     <div className="flex-1">
                       <h4 className="font-medium">{report.title}</h4>
                       <div className="flex items-center gap-4 mt-2">
-                        <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                          {report.report_type === 'mom' ? 'MOM' : report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
+                        <span className={cn(
+                          "text-xs px-2 py-1 rounded",
+                          report.report_data && (report.report_data as any).type === 'attendance' 
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-primary/10 text-primary"
+                        )}>
+                          {report.report_data && (report.report_data as any).type === 'attendance' 
+                            ? 'Attendance' 
+                            : report.report_type === 'mom' 
+                              ? 'MOM' 
+                              : report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
                         </span>
                         {report.report_date && (
                           <span className="text-xs text-muted-foreground">

@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, GraduationCap, LogOut, Users, Calendar, FileText } from 'lucide-react';
+import { Loader2, GraduationCap, LogOut, Users, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { useStudentAttendance } from '@/hooks/useAttendance';
 
 interface StudentClub {
   id: string;
@@ -43,6 +44,8 @@ const StudentDashboard = () => {
   const [rollNumber, setRollNumber] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const { data: attendedEvents, isLoading: attendanceLoading } = useStudentAttendance(rollNumber || '');
 
   useEffect(() => {
     const token = localStorage.getItem('student_auth_token');
@@ -247,12 +250,77 @@ const StudentDashboard = () => {
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gradient-secondary rounded-lg">
                     <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <span className="text-sm">Events Attended</span>
+                    </div>
+                    <span className="text-2xl font-bold text-green-600">{attendedEvents?.length || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gradient-secondary rounded-lg">
+                    <div className="flex items-center gap-2">
                       <FileText className="h-5 w-5 text-primary" />
                       <span className="text-sm">Reports</span>
                     </div>
                     <span className="text-2xl font-bold text-primary">{reports.length}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Attended Events */}
+            <Card className="card-elegant border-0 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg font-display">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  Events Attended
+                </CardTitle>
+                <CardDescription>
+                  Your attendance history
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {attendanceLoading ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : attendedEvents && attendedEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    {attendedEvents.slice(0, 5).map((event) => (
+                      <div
+                        key={event.id}
+                        className="p-3 bg-green-50 border border-green-200 rounded-lg"
+                      >
+                        <h4 className="font-medium text-sm truncate">{event.title}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Attended
+                          </Badge>
+                          {event.club?.name && (
+                            <span className="text-xs text-muted-foreground">
+                              {event.club.name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(event.event_date), 'PP')}
+                          <Clock className="h-3 w-3 ml-2" />
+                          {event.event_time}
+                        </div>
+                        {event.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {event.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <CheckCircle2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No attendance records yet</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

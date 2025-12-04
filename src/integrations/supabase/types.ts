@@ -46,6 +46,79 @@ export type Database = {
           },
         ]
       }
+      attendance_events: {
+        Row: {
+          club_id: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          event_time: string
+          id: string
+          title: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date: string
+          event_time: string
+          id?: string
+          title: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          event_time?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_events_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_records: {
+        Row: {
+          attendance_event_id: string
+          created_at: string
+          id: string
+          present: boolean
+          roll_number: string
+        }
+        Insert: {
+          attendance_event_id: string
+          created_at?: string
+          id?: string
+          present?: boolean
+          roll_number: string
+        }
+        Update: {
+          attendance_event_id?: string
+          created_at?: string
+          id?: string
+          present?: boolean
+          roll_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_attendance_event_id_fkey"
+            columns: ["attendance_event_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_admin_sessions: {
         Row: {
           admin_id: string
