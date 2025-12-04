@@ -165,7 +165,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPromises = registrations.map(async (registration) => {
       try {
         const { data, error } = await resend.emails.send({
-          from: `${clubName} <noreply@kmitclubs.gt.tc>`,
+          from: `${clubName} <noreply@kmitclubs.in>`,
           to: [registration.student_email],
           subject: `${event.title}: ${subject}`,
           html: `
