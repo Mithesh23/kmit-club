@@ -317,6 +317,7 @@ export type Database = {
           created_at: string
           detailed_description: string | null
           id: string
+          is_active: boolean
           logo_url: string | null
           name: string
           registration_open: boolean
@@ -327,6 +328,7 @@ export type Database = {
           created_at?: string
           detailed_description?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name: string
           registration_open?: boolean
@@ -337,6 +339,7 @@ export type Database = {
           created_at?: string
           detailed_description?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name?: string
           registration_open?: boolean
@@ -645,6 +648,7 @@ export type Database = {
         Args: { event_id_param: string }
         Returns: boolean
       }
+      is_club_active: { Args: { club_id_param: string }; Returns: boolean }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {

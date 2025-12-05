@@ -4,6 +4,7 @@ export interface Club {
   short_description: string | null;
   detailed_description: string | null;
   registration_open: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
   logo_url: string | null;

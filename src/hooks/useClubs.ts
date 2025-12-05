@@ -2,14 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Club, ClubMember, Announcement, Event, ClubRegistration } from '@/types/club';
 
-export const useClubs = () => {
+export const useClubs = (includeInactive = false) => {
   return useQuery({
-    queryKey: ['clubs'],
+    queryKey: ['clubs', includeInactive],
     queryFn: async (): Promise<Club[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('clubs')
         .select('*')
         .order('name');
+      
+      // By default, only fetch active clubs for public views
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data || [];

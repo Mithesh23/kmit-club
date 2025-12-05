@@ -36,12 +36,14 @@ const Home = () => {
       </div>;
   }
 
-  // Get featured clubs (first 3 clubs)
-  const featuredClubs = clubs?.slice(0, 3) || [];
+  // Filter only active clubs
+  const activeClubs = clubs?.filter(club => club.is_active !== false) || [];
+  // Get featured clubs (first 3 active clubs)
+  const featuredClubs = activeClubs.slice(0, 3);
   // Get remaining clubs for carousel
-  const exploreClubs = clubs?.slice(3) || [];
+  const exploreClubs = activeClubs.slice(3);
   // All clubs for "See All" view
-  const allClubs = clubs || [];
+  const allClubs = activeClubs;
 
   // Hero carousel images
   const heroImages = [
