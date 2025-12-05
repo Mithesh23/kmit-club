@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +20,19 @@ import {
   Power,
   PowerOff,
 } from "lucide-react";
+
+// Get authenticated Supabase client with mentor token
+const getMentorClient = () => {
+  const token = localStorage.getItem('mentor_auth_token');
+  const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
+  
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    }
+  });
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,7 +125,8 @@ export default function ManageClubs() {
     setConfirmAddDialog(false);
 
     try {
-      const { error } = await supabase.from("clubs").insert({
+      const mentorClient = getMentorClient();
+      const { error } = await mentorClient.from("clubs").insert({
         name: newClubName.trim(),
         short_description: newClubDescription.trim() || null,
         is_active: true,
@@ -141,7 +156,8 @@ export default function ManageClubs() {
     const newStatus = action === 'enable';
 
     try {
-      const { error } = await supabase
+      const mentorClient = getMentorClient();
+      const { error } = await mentorClient
         .from("clubs")
         .update({ is_active: newStatus })
         .eq("id", club.id);

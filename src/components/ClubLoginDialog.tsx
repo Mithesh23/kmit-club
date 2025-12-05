@@ -98,33 +98,43 @@ export const ClubLoginDialog = () => {
 
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("mentors")
-      .select("*")
-      .eq("email", mentorEmail)
-      .eq("password", mentorPassword)
-      .single();
+    try {
+      const { data, error } = await supabase.rpc('authenticate_mentor', {
+        mentor_email: mentorEmail,
+        mentor_password: mentorPassword
+      });
 
-    setLoading(false);
+      if (error) throw error;
 
-    if (error || !data) {
+      if (data && data.length > 0 && data[0].success) {
+        const result = data[0];
+        localStorage.setItem("mentor_auth_token", result.token);
+        localStorage.setItem("mentor_id", result.mentor_id);
+        localStorage.setItem("mentor_email", mentorEmail);
+
+        toast({
+          title: "Login Successful",
+          description: "Welcome Mentor!",
+        });
+
+        setOpen(false);
+        navigate("/mentor/dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: data?.[0]?.message || "Invalid mentor credentials",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: "Invalid mentor credentials",
+        description: error.message || "Invalid mentor credentials",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: "Login Successful",
-      description: "Welcome Mentor!",
-    });
-
-    localStorage.setItem("mentor_email", mentorEmail);
-
-    setOpen(false);
-    navigate("/mentor/dashboard");
   };
 
   return (
