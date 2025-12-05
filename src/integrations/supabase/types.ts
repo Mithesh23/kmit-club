@@ -518,6 +518,38 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          mentor_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          mentor_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          mentor_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_sessions_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentors: {
         Row: {
           email: string
@@ -606,6 +638,15 @@ export type Database = {
           token: string
         }[]
       }
+      authenticate_mentor: {
+        Args: { mentor_email: string; mentor_password: string }
+        Returns: {
+          mentor_id: string
+          message: string
+          success: boolean
+          token: string
+        }[]
+      }
       authenticate_student: {
         Args: { student_password: string; student_roll_number: string }
         Returns: {
@@ -637,6 +678,12 @@ export type Database = {
           club_id: string
         }[]
       }
+      get_current_mentor_session: {
+        Args: never
+        Returns: {
+          mentor_id: string
+        }[]
+      }
       get_current_student_session: {
         Args: never
         Returns: {
@@ -649,6 +696,7 @@ export type Database = {
         Returns: boolean
       }
       is_club_active: { Args: { club_id_param: string }; Returns: boolean }
+      is_mentor: { Args: never; Returns: boolean }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {
