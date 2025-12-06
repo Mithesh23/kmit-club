@@ -573,22 +573,34 @@ export type Database = {
       }
       student_accounts: {
         Row: {
+          branch: string | null
           created_at: string | null
           id: string
           password_hash: string
+          phone: string | null
           roll_number: string
+          student_email: string | null
+          year: string | null
         }
         Insert: {
+          branch?: string | null
           created_at?: string | null
           id?: string
           password_hash: string
+          phone?: string | null
           roll_number: string
+          student_email?: string | null
+          year?: string | null
         }
         Update: {
+          branch?: string | null
           created_at?: string | null
           id?: string
           password_hash?: string
+          phone?: string | null
           roll_number?: string
+          student_email?: string | null
+          year?: string | null
         }
         Relationships: []
       }
