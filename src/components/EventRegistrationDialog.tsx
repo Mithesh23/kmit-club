@@ -9,10 +9,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, UserPlus } from 'lucide-react';
 import { z } from 'zod';
 
+// Roll number validation: 2 digits + "bd" + "a" + 4 digits (case-insensitive)
+const rollNumberRegex = /^\d{2}[bB][dD][aA]\d{4}$/;
+
 const registrationSchema = z.object({
   student_name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   student_email: z.string().trim().email('Invalid email address').max(255, 'Email must be less than 255 characters'),
-  roll_number: z.string().trim().min(1, 'Roll number is required').max(50, 'Roll number must be less than 50 characters'),
+  roll_number: z.string().trim()
+    .min(1, 'Roll number is required')
+    .length(10, 'Roll number must be exactly 10 characters')
+    .regex(rollNumberRegex, 'Roll number must follow format: 2 digits + BD + A + 4 digits (e.g., 24BDA1234)'),
   branch: z.string().min(1, 'Branch is required'),
   year: z.string().min(1, 'Year is required'),
 });
@@ -155,11 +161,12 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
             <Input
               id="roll_number"
               value={formData.roll_number}
-              onChange={(e) => setFormData({ ...formData, roll_number: e.target.value })}
-              placeholder="Enter your roll number"
+              onChange={(e) => setFormData({ ...formData, roll_number: e.target.value.toUpperCase() })}
+              placeholder="e.g., 24BDA1234"
               required
-              maxLength={50}
+              maxLength={10}
             />
+            <p className="text-xs text-muted-foreground">Format: 2 digits + BD + A + 4 digits</p>
           </div>
 
           <div className="space-y-2">

@@ -27,8 +27,24 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
   const { mutate: register, isPending } = useRegisterForClub();
   const { toast } = useToast();
 
+  // Roll number validation: 2 digits + "bd" + "a" + 4 digits (case-insensitive)
+  const validateRollNumber = (rollNo: string): boolean => {
+    const rollNumberRegex = /^\d{2}[bB][dD][aA]\d{4}$/;
+    return rollNumberRegex.test(rollNo);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate roll number format
+    if (!validateRollNumber(rollNumber)) {
+      toast({
+        title: "Invalid Roll Number",
+        description: "Roll number must follow format: 2 digits + BD + A + 4 digits (e.g., 24BDA1234)",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate phone number
     if (!/^\d{10}$/.test(phone)) {
@@ -153,12 +169,14 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
             <Label htmlFor="rollNumber" className="text-sm font-semibold">Roll Number</Label>
             <Input
               id="rollNumber"
-              placeholder="Enter your roll number"
+              placeholder="e.g., 24BDA1234"
               value={rollNumber}
-              onChange={(e) => setRollNumber(e.target.value)}
+              onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
               className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+              maxLength={10}
               required
             />
+            <p className="text-xs text-muted-foreground">Format: 2 digits + BD + A + 4 digits</p>
           </div>
             
           <div className="grid grid-cols-2 gap-4">
