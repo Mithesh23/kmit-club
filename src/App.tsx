@@ -79,6 +79,7 @@ import NotFound from "./pages/NotFound";
 import KmitEvents from "@/pages/KmitEvents";
 import KmitEventsPast from "@/pages/KmitEventsPast";
 import KmitEventDetail from "@/pages/KmitEventDetail";
+import NoticeBoard from "./pages/NoticeBoard";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
 
           {/* HOME */}
           <Route path="/" element={<Home />} />
+          <Route path="/notice-board" element={<NoticeBoard />} />
 
           {/* CLUB DETAILS */}
           <Route path="/club/:id" element={<ClubDetail />} />
