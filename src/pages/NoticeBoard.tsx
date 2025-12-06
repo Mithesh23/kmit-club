@@ -1,9 +1,17 @@
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNoticeBoard } from '@/hooks/useNoticeBoard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   ArrowLeft, 
   Megaphone, 
@@ -11,14 +19,79 @@ import {
   Clock, 
   Building2,
   Loader2,
-  Sparkles
+  Sparkles,
+  Search,
+  Filter,
+  X
 } from 'lucide-react';
-import { format, parseISO, formatDistanceToNow } from 'date-fns';
+import { format, parseISO, formatDistanceToNow, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import kmitLogo from '@/assets/kmit-logo.png';
 
 const NoticeBoard = () => {
   const navigate = useNavigate();
   const { data: notices, isLoading, error } = useNoticeBoard();
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [clubFilter, setClubFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+
+  // Get unique club names for filter dropdown
+  const uniqueClubs = useMemo(() => {
+    if (!notices) return [];
+    const clubs = [...new Set(notices.map(n => n.clubName))];
+    return clubs.sort();
+  }, [notices]);
+
+  // Filter notices
+  const filteredNotices = useMemo(() => {
+    if (!notices) return [];
+    
+    return notices.filter(notice => {
+      // Search filter
+      const matchesSearch = searchQuery.trim() === '' || 
+        notice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        notice.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        notice.clubName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Type filter
+      const matchesType = typeFilter === 'all' || notice.type === typeFilter;
+      
+      // Club filter
+      const matchesClub = clubFilter === 'all' || notice.clubName === clubFilter;
+      
+      // Date filter
+      let matchesDate = true;
+      if (dateFilter !== 'all') {
+        const noticeDate = parseISO(notice.createdAt);
+        const today = new Date();
+        
+        if (dateFilter === 'today') {
+          matchesDate = isAfter(noticeDate, startOfDay(today)) && isBefore(noticeDate, endOfDay(today));
+        } else if (dateFilter === 'week') {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          matchesDate = isAfter(noticeDate, weekAgo);
+        } else if (dateFilter === 'month') {
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          matchesDate = isAfter(noticeDate, monthAgo);
+        }
+      }
+      
+      return matchesSearch && matchesType && matchesClub && matchesDate;
+    });
+  }, [notices, searchQuery, typeFilter, clubFilter, dateFilter]);
+
+  const hasActiveFilters = searchQuery || typeFilter !== 'all' || clubFilter !== 'all' || dateFilter !== 'all';
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setTypeFilter('all');
+    setClubFilter('all');
+    setDateFilter('all');
+  };
 
   if (isLoading) {
     return (
@@ -42,14 +115,11 @@ const NoticeBoard = () => {
   const handleNoticeClick = (notice: any) => {
     if (notice.type === 'event') {
       if (notice.clubId === 'kmit') {
-        // Navigate to KMIT event
         navigate(`/kmit-events/${notice.eventId}`);
       } else {
-        // Navigate to club event
         navigate(`/club/${notice.clubId}/event/${notice.eventId}`);
       }
     } else {
-      // Navigate to club page for announcements
       navigate(`/club/${notice.clubId}`);
     }
   };
@@ -93,25 +163,107 @@ const NoticeBoard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8 relative z-10">
-        {notices && notices.length > 0 ? (
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Notice Stats */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <Badge variant="secondary" className="bg-amber-100 text-amber-700 px-4 py-2">
-                  <Megaphone className="h-4 w-4 mr-2" />
-                  {notices.filter(n => n.type === 'announcement').length} Announcements
-                </Badge>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700 px-4 py-2">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {notices.filter(n => n.type === 'event').length} Upcoming Events
-                </Badge>
-              </div>
-            </div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Search & Filters */}
+          <Card className="bg-white/80 backdrop-blur-sm border-amber-200/50">
+            <CardContent className="p-4">
+              <div className="flex flex-col gap-4">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search notices by title, content, or club..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-amber-200 focus:border-amber-400"
+                  />
+                </div>
 
-            {/* Notices List */}
+                {/* Filter Row */}
+                <div className="flex flex-wrap gap-3 items-center">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Filter className="h-4 w-4" />
+                    <span>Filters:</span>
+                  </div>
+
+                  {/* Type Filter */}
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-[140px] bg-white border-amber-200">
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="announcement">Announcements</SelectItem>
+                      <SelectItem value="event">Events</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Club Filter */}
+                  <Select value={clubFilter} onValueChange={setClubFilter}>
+                    <SelectTrigger className="w-[160px] bg-white border-amber-200">
+                      <SelectValue placeholder="Club" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Clubs</SelectItem>
+                      {uniqueClubs.map(club => (
+                        <SelectItem key={club} value={club}>{club}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Date Filter */}
+                  <Select value={dateFilter} onValueChange={setDateFilter}>
+                    <SelectTrigger className="w-[130px] bg-white border-amber-200">
+                      <SelectValue placeholder="Date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Clear Filters */}
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="text-amber-600 hover:text-amber-700 hover:bg-amber-100"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notice Stats */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 px-4 py-2">
+                <Megaphone className="h-4 w-4 mr-2" />
+                {filteredNotices.filter(n => n.type === 'announcement').length} Announcements
+              </Badge>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 px-4 py-2">
+                <Calendar className="h-4 w-4 mr-2" />
+                {filteredNotices.filter(n => n.type === 'event').length} Events
+              </Badge>
+            </div>
+            {hasActiveFilters && (
+              <span className="text-sm text-muted-foreground">
+                Showing {filteredNotices.length} of {notices?.length || 0} notices
+              </span>
+            )}
+          </div>
+
+          {/* Notices List */}
+          {filteredNotices.length > 0 ? (
             <div className="space-y-4">
-              {notices.map((notice, index) => (
+              {filteredNotices.map((notice, index) => (
                 <Card
                   key={notice.id}
                   className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-l-4 ${
@@ -224,24 +376,26 @@ const NoticeBoard = () => {
                 </Card>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto text-center py-20">
-            <div className="w-24 h-24 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
-              <Megaphone className="h-12 w-12 text-amber-500" />
+          ) : (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+                <Search className="h-10 w-10 text-amber-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">No Notices Found</h3>
+              <p className="text-muted-foreground mb-4">
+                {hasActiveFilters 
+                  ? "Try adjusting your search or filters" 
+                  : "Check back later for announcements and events"}
+              </p>
+              {hasActiveFilters && (
+                <Button onClick={clearFilters} variant="outline" className="border-amber-300">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
             </div>
-            <h2 className="text-2xl font-display font-bold text-foreground mb-3">
-              No Notices Yet
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Check back later for announcements and upcoming events from KMIT clubs.
-            </p>
-            <Button onClick={() => navigate('/')} variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </main>
 
       {/* Footer */}
