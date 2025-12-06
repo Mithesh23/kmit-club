@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Trash2, Edit2, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ManageClubs from "@/components/mentor/ManageClubs";
+import MentorCredentialsManager from "@/components/mentor/MentorCredentialsManager";
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -191,9 +192,10 @@ export default function MentorDashboard() {
 
         {/* ⭐ TABS SYSTEM */}
         <Tabs defaultValue="events" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full mb-8">
+          <TabsList className="grid grid-cols-3 w-full mb-8">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="clubs">Manage Clubs</TabsTrigger>
+            <TabsTrigger value="mentors">Mentor Credentials</TabsTrigger>
           </TabsList>
 
           {/* ============================================================
@@ -434,6 +436,13 @@ export default function MentorDashboard() {
           ============================================================ */}
           <TabsContent value="clubs">
             <ManageClubs />
+          </TabsContent>
+
+          {/* ============================================================
+             MENTOR CREDENTIALS TAB
+          ============================================================ */}
+          <TabsContent value="mentors">
+            <MentorCredentialsManager />
           </TabsContent>
 
         </Tabs>
