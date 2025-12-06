@@ -193,8 +193,8 @@ export default function MentorDashboard() {
         {/* ⭐ TABS SYSTEM */}
         <Tabs defaultValue="events" className="w-full">
           <TabsList className="grid grid-cols-3 w-full mb-8">
-            <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="clubs">Manage Clubs</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="mentors">Mentor Credentials</TabsTrigger>
           </TabsList>
 
