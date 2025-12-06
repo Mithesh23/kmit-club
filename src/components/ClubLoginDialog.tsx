@@ -13,7 +13,11 @@ import { supabase } from "@/integrations/supabase/client";
 // Tabs
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-export const ClubLoginDialog = () => {
+interface ClubLoginDialogProps {
+  buttonSize?: "sm" | "default" | "lg" | "icon";
+}
+
+export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps) => {
   const [open, setOpen] = useState(false);
 
   // Club login
@@ -140,7 +144,7 @@ export const ClubLoginDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" size={buttonSize} className="gap-2">
           <LogIn className="h-4 w-4" />
           Login
         </Button>
