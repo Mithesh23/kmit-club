@@ -442,14 +442,7 @@ export default function MentorClubDetails() {
                               </p>
                             </div>
 
-                            <Button
-  size="sm"
-  variant="outline"
-  onClick={() => navigate(`/mentor/report/${rep.id}`)}
->
-  <FileText className="mr-2 h-3 w-3" />
-  View
-</Button>
+                              <Button onClick={() => navigate(`/mentor/view-report/${rep.id}`)}>View Report</Button>
 
                           </div>
                         ))
@@ -474,14 +467,9 @@ export default function MentorClubDetails() {
                           </p>
                         </div>
 
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/report/${rep.id}`)}
-                        >
-                          <FileText className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
+                          <Button onClick={() => navigate(`/mentor/view-report/${rep.id}`)}>
+    View Report
+  </Button>
                       </div>
                     ))}
                   </div>
