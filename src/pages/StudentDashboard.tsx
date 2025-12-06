@@ -145,12 +145,34 @@ const StudentDashboard = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <GraduationCap className="h-6 w-6 text-white" />
+              <div className="w-14 h-14 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                {clubs[0]?.student_name?.charAt(0)?.toUpperCase() || rollNumber?.charAt(0) || 'S'}
               </div>
               <div>
-                <h1 className="text-2xl font-display font-bold text-gradient">Student Dashboard</h1>
-                <p className="text-sm text-muted-foreground">Roll Number: {rollNumber}</p>
+                <h1 className="text-2xl font-display font-bold text-gradient">
+                  {clubs[0]?.student_name || 'Student Dashboard'}
+                </h1>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-sm text-muted-foreground">
+                    {rollNumber}
+                  </span>
+                  {clubs[0]?.year && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {clubs[0].year}
+                      </Badge>
+                    </>
+                  )}
+                  {clubs[0]?.branch && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <Badge variant="outline" className="text-xs">
+                        {clubs[0].branch}
+                      </Badge>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             <Button variant="outline" onClick={handleLogout}>
