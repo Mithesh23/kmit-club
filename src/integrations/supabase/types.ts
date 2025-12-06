@@ -697,6 +697,18 @@ export type Database = {
       }
       is_club_active: { Args: { club_id_param: string }; Returns: boolean }
       is_mentor: { Args: never; Returns: boolean }
+      mentor_create_club: {
+        Args: {
+          p_name: string
+          p_registration_open?: boolean
+          p_short_description?: string
+        }
+        Returns: string
+      }
+      mentor_update_club_status: {
+        Args: { p_club_id: string; p_is_active: boolean }
+        Returns: boolean
+      }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {
