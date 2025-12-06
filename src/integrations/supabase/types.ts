@@ -721,6 +721,7 @@ export type Database = {
         Args: { p_club_id: string; p_is_active: boolean }
         Returns: boolean
       }
+      promote_students_yearly: { Args: never; Returns: undefined }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {

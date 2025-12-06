@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, GraduationCap, LogOut, Users, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { Loader2, LogOut, Users, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { useStudentAttendance } from '@/hooks/useAttendance';
+import { StudentProfileDialog } from '@/components/StudentProfileDialog';
 
 interface StudentClub {
   id: string;
   club_id: string;
   student_name: string;
   student_email: string;
+  phone: string | null;
   roll_number: string;
   year: string;
   branch: string;
@@ -71,6 +73,7 @@ const StudentDashboard = () => {
           club_id,
           student_name,
           student_email,
+          phone,
           roll_number,
           year,
           branch,
@@ -175,10 +178,18 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-3">
+              <StudentProfileDialog
+                rollNumber={rollNumber || ''}
+                currentEmail={clubs[0]?.student_email}
+                currentPhone={clubs[0]?.phone}
+                onUpdate={() => rollNumber && fetchStudentData(rollNumber)}
+              />
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>

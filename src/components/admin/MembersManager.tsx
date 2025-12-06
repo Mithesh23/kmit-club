@@ -310,6 +310,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, Trash2, Loader2, UserCheck, Mail, Phone, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PastMembersDialog } from '@/components/PastMembersDialog';
 
 interface MembersManagerProps {
   clubId: string;
@@ -337,9 +338,11 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
   const years = Array.from(new Set(approvedRegistrations.map(r => r.year).filter(Boolean)));
   const branches = Array.from(new Set(approvedRegistrations.map(r => r.branch).filter(Boolean)));
 
-  // Apply filters
+  // Apply filters - exclude "Pass Out" students from main view
   const filteredApproved = useMemo(() => {
     return approvedRegistrations.filter(r => {
+      // Exclude passout students
+      if (r.year === 'Pass Out') return false;
       return (
         (filterYear ? r.year === filterYear : true) &&
         (filterBranch ? r.branch === filterBranch : true)
@@ -568,8 +571,9 @@ export const MembersManager = ({ clubId }: MembersManagerProps) => {
               <h4 className="font-semibold">Club Members</h4>
             </div>
 
-            {/* FILTER + DOWNLOAD */}
-            <div className="flex gap-2">
+            {/* FILTER + PAST MEMBERS + DOWNLOAD */}
+            <div className="flex gap-2 flex-wrap">
+              <PastMembersDialog clubId={clubId} />
 
               {/* Year Filter */}
               <select

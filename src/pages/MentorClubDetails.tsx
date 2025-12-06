@@ -40,6 +40,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { PastMembersDialog } from "@/components/PastMembersDialog";
+
 export default function MentorClubDetails() {
   const { id: clubId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -165,9 +167,12 @@ export default function MentorClubDetails() {
     });
   }, [events, eventSearch, eventYear, eventMonth]);
 
-  // STUDENT FILTERS
+  // STUDENT FILTERS - exclude Pass Out students from main view
   const filteredStudents = useMemo(() => {
     return registrations.filter((r) => {
+      // Exclude passout students from main view
+      if (r.year === 'Pass Out') return false;
+      
       const matchesSearch =
         studentSearch === "" ||
         r.student_name?.toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -341,12 +346,14 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
 
-            {/* STUDENT REGISTRATIONS */}
             <Card>
               <CardHeader className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  <CardTitle>Registered Students</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    <CardTitle>Registered Students</CardTitle>
+                  </div>
+                  <PastMembersDialog clubId={clubId || ''} clubName={club?.name} />
                 </div>
 
                 <div className="flex flex-wrap gap-3">
