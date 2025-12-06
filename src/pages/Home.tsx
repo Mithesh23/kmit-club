@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useClubs } from '@/hooks/useClubs';
+import { useHasNewNotices } from '@/hooks/useNoticeBoard';
 import { ClubCard } from '@/components/ClubCard';
 import { ClubLoginDialog } from '@/components/ClubLoginDialog';
 import { HeroCarousel } from '@/components/HeroCarousel';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronRight, Megaphone } from 'lucide-react';
 import heroImage from '@/assets/kmit-campus-hero.jpg';
 import kmitCampusGroup from '@/assets/kmit-campus-group.jpeg';
 import kmitCampusBuilding from '@/assets/kmit-campus-building.jpeg';
@@ -20,6 +21,7 @@ const Home = () => {
     isLoading,
     error
   } = useClubs();
+  const hasNewNotices = useHasNewNotices();
   const navigate = useNavigate();
   const [showAllClubs, setShowAllClubs] = useState(false);
   if (isLoading) {
@@ -98,6 +100,17 @@ const Home = () => {
               </div>
             </div>
             <div className="animate-scale-in flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/notice-board')}
+                className="border-amber-500/30 hover:bg-amber-500/10 text-amber-700 relative"
+              >
+                <Megaphone className="h-4 w-4 mr-2" />
+                Notice Board
+                {hasNewNotices && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                )}
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate('/student/login')}
