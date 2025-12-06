@@ -82,7 +82,7 @@ const Home = () => {
       {/* Modern Clean Header */}
       <header className="relative bg-white/80 backdrop-blur-lg border-b border-border shadow-lg">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-16">
             <div className="animate-fade-in flex items-center gap-4">
               <img 
                 src={kmitLogo} 
@@ -90,7 +90,7 @@ const Home = () => {
                 className="w-[100px] h-[100px] object-contain flex-shrink-0"
               />
               <div className="space-y-3">
-                <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold">
+                <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold whitespace-nowrap">
                   Keshav Memorial Institute of Technology
                 </h1>
                 <p className="text-muted-foreground text-3xl font-normal">
@@ -99,7 +99,10 @@ const Home = () => {
                 <div className="w-24 h-1 bg-gradient-primary rounded-full"></div>
               </div>
             </div>
-            <div className="animate-scale-in flex items-center gap-3">
+
+
+            
+            {/* <div className="animate-scale-in flex items-center gap-3">
               <Button
                 variant="outline"
                 onClick={() => navigate('/notice-board')}
@@ -119,7 +122,28 @@ const Home = () => {
                 Student Login
               </Button>
               <ClubLoginDialog />
-            </div>
+            </div> */}
+
+
+            <div className="animate-scale-in flex items-center gap-2">
+    <Button
+    size="sm"
+    variant="outline"
+    onClick={() => navigate('/notice-board')}
+    className="border-amber-500/30 hover:bg-amber-500/10 text-amber-700 px-4 py-2 text-sm flex items-center">
+    <Megaphone className="h-4 w-4 mr-2" />Notice</Button>
+
+  <Button
+    size="sm"
+    variant="outline"
+    onClick={() => navigate('/student/login')}
+    className="border-primary/30 hover:bg-primary/10 px-4 py-2 text-sm flex items-center">Student Login</Button>
+
+  <ClubLoginDialog buttonSize="sm" />
+</div>
+
+
+            
           </div>
         </div>
       </header>
