@@ -1,12 +1,15 @@
+
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,17 +20,25 @@ import {
   FileText,
   Filter,
   Search,
+  Power,
+  PowerOff,
 } from "lucide-react";
+
 import { format } from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function MentorClubDetails() {
   const { id: clubId } = useParams<{ id: string }>();
@@ -50,6 +61,10 @@ export default function MentorClubDetails() {
   const [studentYear, setStudentYear] = useState("");
   const [studentBranch, setStudentBranch] = useState("");
   const [studentStatus, setStudentStatus] = useState("");
+
+  // Club Toggle Dialog State
+  const [toggleClubDialog, setToggleClubDialog] = useState<{ action: "enable" | "disable" } | null>(null);
+  const [togglingClub, setTogglingClub] = useState(false);
 
   useEffect(() => {
     if (!clubId) return;
@@ -102,9 +117,34 @@ export default function MentorClubDetails() {
     setLoading(false);
   }
 
-  // ==============================
-  // EVENT FILTERING
-  // ==============================
+  // Toggle Club Status
+  async function handleToggleClub() {
+    if (!toggleClubDialog || !club) return;
+
+    const newStatus = toggleClubDialog.action === "enable";
+    setTogglingClub(true);
+
+    try {
+      const { error } = await supabase.rpc("mentor_update_club_status", {
+        p_club_id: club.id,
+        p_is_active: newStatus,
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        `Club "${club.name}" has been ${toggleClubDialog.action}d successfully!`
+      );
+      loadAll(); // refresh updated status
+    } catch (e: any) {
+      toast.error(`Failed to ${toggleClubDialog.action} club: ${e.message}`);
+    } finally {
+      setTogglingClub(false);
+      setToggleClubDialog(null);
+    }
+  }
+
+  // EVENT FILTERS
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
       const matchesSearch =
@@ -125,9 +165,7 @@ export default function MentorClubDetails() {
     });
   }, [events, eventSearch, eventYear, eventMonth]);
 
-  // ==============================
-  // STUDENT FILTERING
-  // ==============================
+  // STUDENT FILTERS
   const filteredStudents = useMemo(() => {
     return registrations.filter((r) => {
       const matchesSearch =
@@ -161,16 +199,12 @@ export default function MentorClubDetails() {
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-6">
 
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
             <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted">
               {club?.logo_url ? (
-                <img
-                  src={club.logo_url}
-                  className="w-full h-full object-cover"
-                  alt=""
-                />
+                <img src={club.logo_url} className="w-full h-full object-cover" />
               ) : (
                 <div className="text-muted-foreground">No Logo</div>
               )}
@@ -184,21 +218,43 @@ export default function MentorClubDetails() {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
+          <div className="flex gap-3">
+
+            {/* ENABLE / DISABLE CLUB BUTTON */}
+            {club && (
+              club.is_active !== false ? (
+                <Button
+                  variant="outline"
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                  onClick={() => setToggleClubDialog({ action: "disable" })}
+                >
+                  <PowerOff className="h-4 w-4 mr-2" /> Disable Club
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="text-green-600 border-green-600/30 hover:bg-green-600/10"
+                  onClick={() => setToggleClubDialog({ action: "enable" })}
+                >
+                  <Power className="h-4 w-4 mr-2" /> Enable Club
+                </Button>
+              )
+            )}
+
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              Back
+            </Button>
             <Button onClick={() => navigate("/")}>Home</Button>
           </div>
         </div>
 
-        {/* ============================
-              Main Layout
-        ============================ */}
+        {/* MAIN LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
 
           {/* LEFT SECTION */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* About */}
+            {/* ABOUT */}
             <Card>
               <CardHeader>
                 <CardTitle>About the Club</CardTitle>
@@ -208,9 +264,7 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
 
-            {/* ============================
-                  EVENTS + FILTERS
-            ============================ */}
+            {/* EVENTS SECTION */}
             <Card>
               <CardHeader className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -218,7 +272,6 @@ export default function MentorClubDetails() {
                   <CardTitle>Club Events</CardTitle>
                 </div>
 
-                {/* Filters */}
                 <div className="flex flex-wrap gap-3">
                   <Input
                     placeholder="Search event name..."
@@ -288,9 +341,7 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
 
-            {/* ============================
-                STUDENT REGISTRATIONS + FILTERS
-            ============================ */}
+            {/* STUDENT REGISTRATIONS */}
             <Card>
               <CardHeader className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -298,9 +349,7 @@ export default function MentorClubDetails() {
                   <CardTitle>Registered Students</CardTitle>
                 </div>
 
-                {/* Filters */}
                 <div className="flex flex-wrap gap-3">
-
                   <Input
                     placeholder="Search name / roll"
                     className="w-56"
@@ -360,6 +409,7 @@ export default function MentorClubDetails() {
                               {s.student_email} • {s.roll_number}
                             </p>
                           </div>
+
                           <Badge
                             variant={
                               s.status === "approved"
@@ -383,7 +433,7 @@ export default function MentorClubDetails() {
           {/* RIGHT SIDEBAR */}
           <aside className="space-y-6">
 
-            {/* Executive members */}
+            {/* EXECUTIVE MEMBERS */}
             <Card>
               <CardHeader>
                 <CardTitle>Executive Members</CardTitle>
@@ -404,52 +454,18 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
 
-            {/* ============================
-                REPORTS + VIEW ALL
-            ============================ */}
+            {/* REPORTS */}
             <Card>
               <CardHeader className="flex items-center justify-between">
                 <CardTitle>Club Reports</CardTitle>
 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      View All
-                    </Button>
-                  </DialogTrigger>
-
-                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>All Club Reports</DialogTitle>
-                    </DialogHeader>
-
-                    <div className="space-y-3 mt-4">
-                      {reports.length === 0 ? (
-                        <p className="text-muted-foreground">No reports available.</p>
-                      ) : (
-                        reports.map((rep) => (
-                          <div
-                            key={rep.id}
-                            className="p-3 border rounded-lg flex justify-between items-center"
-                          >
-                            <div>
-                              <p className="font-medium">{rep.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {rep.report_type} •{" "}
-                                {rep.report_date
-                                  ? format(new Date(rep.report_date), "PPP")
-                                  : format(new Date(rep.created_at), "PPP")}
-                              </p>
-                            </div>
-
-                              <Button onClick={() => navigate(`/mentor/view-report/${rep.id}`)}>View Report</Button>
-
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/mentor/clubs/${clubId}/reports`)}
+                >
+                  View All
+                </Button>
               </CardHeader>
 
               <CardContent>
@@ -462,14 +478,13 @@ export default function MentorClubDetails() {
                         <div>
                           <p className="font-medium">{rep.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {rep.report_type} •{" "}
-                            {format(new Date(rep.created_at), "PPP")}
+                            {rep.report_type} • {format(new Date(rep.created_at), "PPP")}
                           </p>
                         </div>
 
-                          <Button onClick={() => navigate(`/mentor/view-report/${rep.id}`)}>
-    View Report
-  </Button>
+                        <Button onClick={() => navigate(`/mentor/view-report/${rep.id}`)}>
+                          View Report
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -477,7 +492,7 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
 
-            {/* Stats */}
+            {/* STATS */}
             <Card>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 text-center">
@@ -493,9 +508,72 @@ export default function MentorClubDetails() {
               </CardContent>
             </Card>
           </aside>
-
         </div>
       </div>
+
+      {/* ===========================
+            CONFIRMATION DIALOG
+      =========================== */}
+      <AlertDialog
+        open={!!toggleClubDialog}
+        onOpenChange={() => setToggleClubDialog(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {toggleClubDialog?.action === "disable"
+                ? "Disable Club"
+                : "Enable Club"}
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              {toggleClubDialog?.action === "disable" ? (
+                <>
+                  Are you sure you want to disable "{club?.name}"?
+                  <br />
+                  <br />
+                  This will:
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    <li>Remove the club from the homepage</li>
+                    <li>Disable club admin login</li>
+                    <li>Prevent new registrations</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  Are you sure you want to enable "{club?.name}"?
+                  <br />
+                  <br />
+                  This will:
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    <li>Show the club on the homepage</li>
+                    <li>Reactivate club admin login</li>
+                    <li>Allow new registrations</li>
+                  </ul>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={togglingClub}>
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              disabled={togglingClub}
+              onClick={handleToggleClub}
+              className={
+                toggleClubDialog?.action === "disable"
+                  ? "bg-destructive hover:bg-destructive/90"
+                  : "bg-green-600 hover:bg-green-700"
+              }
+            >
+              {toggleClubDialog?.action === "disable" ? "Disable" : "Enable"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
