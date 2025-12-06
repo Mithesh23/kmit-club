@@ -97,6 +97,8 @@ export default function ManageClubs() {
     reports: reports.length,
     approvedStudents: registrations.filter((r) => r.status === "approved").length,
     pendingRegistrations: registrations.filter((r) => r.status === "pending").length,
+    membersCount: registrations.filter(r => r.status === "approved").length,
+
   };
 
   const handleAddClubSubmit = () => {
@@ -176,6 +178,15 @@ export default function ManageClubs() {
             <div className="text-sm text-muted-foreground">Reports</div>
           </CardContent>
         </Card>
+
+        <Card className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-200">
+  <CardContent className="p-4 text-center">
+    <Users className="h-8 w-8 mx-auto mb-2 text-teal-600" />
+    <div className="text-2xl font-bold text-teal-700">{totalStats.membersCount}</div>
+    <div className="text-sm text-muted-foreground">Members</div>
+  </CardContent>
+</Card>
+
       </div>
 
       {/* SEARCH + ADD CLUB */}
