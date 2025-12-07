@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { useStudentAttendance } from '@/hooks/useAttendance';
 import { StudentProfileDialog } from '@/components/StudentProfileDialog';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
+import kmitLogo from '@/assets/kmit-logo.png';
 
 interface StudentClub {
   id: string;
@@ -149,7 +150,7 @@ const StudentDashboard = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <img src="/src/assets/kmit-logo.png" alt="KMIT Logo" className="h-12 w-auto" />
+              <img src={kmitLogo} alt="KMIT Logo" className="h-12 w-auto" />
               <div className="w-14 h-14 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-xl font-bold">
                 {clubs[0]?.student_name?.charAt(0)?.toUpperCase() || rollNumber?.charAt(0) || 'S'}
               </div>
