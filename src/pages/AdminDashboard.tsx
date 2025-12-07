@@ -49,9 +49,12 @@ const AdminDashboard = () => {
       {/* Clean Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{club.name} - Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Manage your club information and activities</p>
+          <div className="flex items-center gap-4">
+            <img src="/src/assets/kmit-logo.png" alt="KMIT Logo" className="h-12 w-auto" />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{club.name} - Admin Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Manage your club information and activities</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => navigate(`/club/${club.id}`)}>
