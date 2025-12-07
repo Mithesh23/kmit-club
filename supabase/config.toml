@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.create-mentor-account]
 verify_jwt = false
+
+[functions.student-forgot-password]
+verify_jwt = false

@@ -1,4 +1,3 @@
-
 import MentorDashboard from "./pages/MentorDashboard";
 import MentorClubDetails from "./pages/MentorClubDetails";   
 
@@ -22,6 +21,7 @@ import KmitEventsPast from "@/pages/KmitEventsPast";
 import KmitEventDetail from "@/pages/KmitEventDetail";
 import NoticeBoard from "./pages/NoticeBoard";
 import MentorViewReport from "@/pages/MentorViewReport";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +49,7 @@ const App = () => (
           {/* STUDENT */}
           <Route path="/student/login" element={<StudentLogin />} />
           <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* REPORT */}
           <Route path="/report/:reportId" element={<ViewReport />} />
