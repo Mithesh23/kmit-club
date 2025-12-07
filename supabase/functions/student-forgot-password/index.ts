@@ -34,11 +34,13 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Find student by roll number
+    // Find student by roll number (case-insensitive)
+    const normalizedRollNumber = roll_number.toUpperCase();
+    
     const { data: student, error: studentError } = await supabase
       .from('student_accounts')
       .select('roll_number, student_email')
-      .eq('roll_number', roll_number.toUpperCase())
+      .ilike('roll_number', normalizedRollNumber)
       .single();
 
     if (studentError || !student) {
@@ -49,7 +51,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!student.student_email) {
+    // If no email in student_accounts, try to find from club_registrations
+    let studentEmail = student.student_email;
+    
+    if (!studentEmail) {
+      const { data: registration } = await supabase
+        .from('club_registrations')
+        .select('student_email')
+        .ilike('roll_number', normalizedRollNumber)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (registration?.student_email) {
+        studentEmail = registration.student_email;
+        
+        // Also update the student_accounts with this email for future use
+        await supabase
+          .from('student_accounts')
+          .update({ student_email: studentEmail })
+          .ilike('roll_number', normalizedRollNumber);
+      }
+    }
+
+    if (!studentEmail) {
       return new Response(
         JSON.stringify({ error: 'No email associated with this account. Please contact admin.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -88,7 +114,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'KMIT Clubs <noreply@kmitclubs.in>',
-        to: [student.student_email],
+        to: [studentEmail],
         subject: 'Reset Your Password - KMIT Clubs',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
