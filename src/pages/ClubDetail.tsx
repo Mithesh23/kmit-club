@@ -4,6 +4,7 @@ import { useClub, useClubMembers, useAnnouncements, useEvents } from '@/hooks/us
 import { useApprovedRegistrations } from '@/hooks/useClubRegistrations';
 import { RegistrationDialog } from '@/components/RegistrationDialog';
 import { ClubCalendar } from '@/components/ClubCalendar';
+import { SocialMediaIcons } from '@/components/SocialMediaIcons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -121,6 +122,8 @@ const ClubDetail = () => {
                 <div className="text-sm text-muted-foreground">
                   📅 Est. {new Date(club.created_at).getFullYear()}
                 </div>
+                {/* Social Media Icons */}
+                <SocialMediaIcons club={club} iconSize="lg" />
               </div>
             </div>
           </div>

@@ -316,35 +316,50 @@ export type Database = {
         Row: {
           created_at: string
           detailed_description: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           is_active: boolean
+          linkedin_url: string | null
           logo_url: string | null
           name: string
           registration_open: boolean
           short_description: string | null
+          twitter_url: string | null
           updated_at: string
+          youtube_url: string | null
         }
         Insert: {
           created_at?: string
           detailed_description?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           is_active?: boolean
+          linkedin_url?: string | null
           logo_url?: string | null
           name: string
           registration_open?: boolean
           short_description?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          youtube_url?: string | null
         }
         Update: {
           created_at?: string
           detailed_description?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           is_active?: boolean
+          linkedin_url?: string | null
           logo_url?: string | null
           name?: string
           registration_open?: boolean
           short_description?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          youtube_url?: string | null
         }
         Relationships: []
       }
