@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Club } from '@/types/club';
 import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import watermarkImage from '@/assets/club-watermark.jpg';
 
 interface ClubCardProps {
@@ -10,7 +10,6 @@ interface ClubCardProps {
 }
 
 export const ClubCard = ({ club }: ClubCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
   const handleKnowMore = () => {
@@ -20,11 +19,9 @@ export const ClubCard = ({ club }: ClubCardProps) => {
   return (
     <Card 
       className="group relative overflow-hidden bg-white border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer h-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={handleKnowMore}
     >
-      {/* Clean Background with subtle watermark */}
+      {/* Background with subtle watermark */}
       <div 
         className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
         style={{
@@ -35,14 +32,14 @@ export const ClubCard = ({ club }: ClubCardProps) => {
         }}
       />
       
-      {/* Clean Hover Effect */}
+      {/* Hover Effect Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
       
       {/* Card Content */}
       <CardContent className="relative p-6 h-full flex flex-col items-center text-center">
-        {/* Clean Club Icon/Logo */}
+        {/* Club Icon/Logo */}
         {club.logo_url ? (
-          <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 shadow-md group-hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden mb-4 shadow-md group-hover:scale-105 transition-transform duration-300">
             <img 
               src={club.logo_url} 
               alt={`${club.name} logo`}
@@ -50,57 +47,41 @@ export const ClubCard = ({ club }: ClubCardProps) => {
             />
           </div>
         ) : (
-          <div className="w-16 h-16 bg-gradient-primary rounded-2xl mb-6 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 bg-gradient-primary rounded-2xl mb-4 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
             {club.name.charAt(0)}
           </div>
         )}
 
         {/* Club Name */}
-        <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-4 group-hover:text-gradient transition-all duration-300 leading-tight">
+        <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-3 group-hover:text-gradient transition-all duration-300 leading-tight">
           {club.name}
         </h3>
         
-        {/* Clean Description */}
-        <div className="relative flex-1 min-h-[60px]">
-          {/* Always visible description */}
-          {club.short_description && (
-            <p className={`text-muted-foreground leading-relaxed transition-all duration-300 ${
-              isHovered ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
-            }`}>
-              {club.short_description.length > 80 
-                ? `${club.short_description.substring(0, 80)}...` 
-                : club.short_description
-              }
-            </p>
-          )}
-          
-          {/* Clean Hover content */}
-          <div className={`absolute inset-0 transition-all duration-300 ${
-            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            {club.short_description && (
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                {club.short_description}
-              </p>
-            )}
-            
-            <Button 
-              variant="default" 
-              size="default"
-              className="w-full group/btn font-medium"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleKnowMore();
-              }}
-            >
-              <span className="group-hover/btn:scale-105 transition-transform duration-300">
-                Explore Club →
-              </span>
-            </Button>
-          </div>
-        </div>
+        {/* Description */}
+        {club.short_description && (
+          <p className="text-muted-foreground leading-relaxed text-sm mb-4 flex-1">
+            {club.short_description.length > 100 
+              ? `${club.short_description.substring(0, 100)}...` 
+              : club.short_description
+            }
+          </p>
+        )}
 
-        {/* Clean Status Badge - Only show when registrations are open */}
+        {/* Explore Button - Appears on hover */}
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="mt-auto opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleKnowMore();
+          }}
+        >
+          Explore Club
+          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+        </Button>
+
+        {/* Status Badge - Only show when registrations are open */}
         {club.registration_open && (
           <div className="absolute top-4 right-4">
             <div className="px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
