@@ -16,6 +16,7 @@ import kmitCampusBuilding from '@/assets/kmit-campus-building.jpeg';
 import kmitAuditorium from '@/assets/kmit-auditorium.jpg';
 import kmitCampusExtra from '@/assets/kmit-campus-extra.avif';
 import kmitLogo from '@/assets/kmit-logo.png';
+import { transformImageUrl } from '@/lib/utils';
 const Home = () => {
   const {
     data: clubs,
@@ -253,7 +254,7 @@ const Home = () => {
                         <CardContent className="flex flex-col items-center p-6 space-y-4">
                           {/* Circular Club Logo */}
                           {club.logo_url ? <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-300">
-                              <img src={club.logo_url} alt={`${club.name} logo`} className="w-full h-full object-cover" />
+                              <img src={transformImageUrl(club.logo_url)} alt={`${club.name} logo`} className="w-full h-full object-cover" />
                             </div> : <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:scale-105 transition-transform duration-300">
                               {club.name.charAt(0)}
                             </div>}

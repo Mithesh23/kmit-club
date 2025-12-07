@@ -11,6 +11,7 @@ import { useStudentAttendance } from '@/hooks/useAttendance';
 import { StudentProfileDialog } from '@/components/StudentProfileDialog';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 import kmitLogo from '@/assets/kmit-logo.png';
+import { transformImageUrl } from '@/lib/utils';
 
 interface StudentClub {
   id: string;
@@ -231,8 +232,8 @@ const StudentDashboard = () => {
                           <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
                             {membership.club?.logo_url ? (
                               <img 
-                                src={membership.club.logo_url} 
-                                alt={membership.club?.name || 'Club'} 
+                                src={transformImageUrl(membership.club.logo_url)} 
+                                alt={membership.club?.name || 'Club'}
                                 className="w-full h-full object-cover"
                               />
                             ) : (

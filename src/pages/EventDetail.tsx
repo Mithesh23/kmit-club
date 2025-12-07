@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, Camera, Loader2 } from 'lucide-react';
 import { format, isPast, parseISO } from 'date-fns';
 import { Event } from '@/types/club';
 import { EventRegistrationDialog } from '@/components/EventRegistrationDialog';
+import { transformImageUrl } from '@/lib/utils';
 
 const EventDetail = () => {
   const { eventId, clubId } = useParams<{ eventId: string; clubId: string }>();
@@ -154,7 +155,7 @@ const EventDetail = () => {
                   >
                     <div className="aspect-[4/3] overflow-hidden">
                       <img
-                        src={image.image_url}
+                        src={transformImageUrl(image.image_url)}
                         alt={`${event.title} - Image ${index + 1}`}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />

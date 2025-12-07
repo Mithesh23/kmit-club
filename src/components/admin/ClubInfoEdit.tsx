@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types/club';
 import { Save, Loader2, Link2, ImageIcon, X, Share2 } from 'lucide-react';
+import { transformImageUrl } from '@/lib/utils';
 
 interface ClubInfoEditProps {
   club: Club;
@@ -162,7 +163,7 @@ export const ClubInfoEdit = ({ club, onSocialMediaClick }: ClubInfoEditProps) =>
               {logoUrl ? (
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden border shadow-sm">
                   <img 
-                    src={logoUrl} 
+                    src={transformImageUrl(logoUrl)} 
                     alt={`${name} logo`}
                     className="w-full h-full object-cover"
                   />
