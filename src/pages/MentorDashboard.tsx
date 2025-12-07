@@ -170,15 +170,19 @@ export default function MentorDashboard() {
     const token = localStorage.getItem('mentor_auth_token');
 
     try {
-      // Use fetch with mentor auth token to satisfy RLS policy
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
+      
+      // Use fetch with mentor token in custom header (x-mentor-token)
+      // Authorization header uses anon key JWT to pass Supabase validation
       const response = await fetch(
         'https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_event_images',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c',
-            'Authorization': `Bearer ${token}`,
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
             'Prefer': 'return=minimal',
           },
           body: JSON.stringify({
