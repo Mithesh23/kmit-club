@@ -45,8 +45,9 @@ export default function MentorDashboard() {
     drive_link: "",
   });
 
-  // upload
-  const [uploading, setUploading] = useState(false);
+  // Image URL input state
+  const [imageUrlInputs, setImageUrlInputs] = useState<Record<number, string>>({});
+  const [addingImage, setAddingImage] = useState<number | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -158,31 +159,32 @@ export default function MentorDashboard() {
     alert("Deleted");
   }
 
-  async function uploadImages(eventId: number, files: FileList | null) {
-    if (!files?.length) return;
-    setUploading(true);
+  async function addImageUrl(eventId: number) {
+    const imageUrl = imageUrlInputs[eventId]?.trim();
+    if (!imageUrl) {
+      alert("Please enter an image URL");
+      return;
+    }
+
+    setAddingImage(eventId);
 
     try {
-      for (let file of Array.from(files)) {
-        const path = `kmit-events/${eventId}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+      const { error } = await supabase.from("kmit_event_images").insert({
+        event_id: eventId,
+        image_url: imageUrl,
+      });
 
-        const { error } = await supabase.storage.from("kmit-events-gallery").upload(path, file);
-        if (error) continue;
-
-        const { data: urlData } = supabase.storage
-          .from("kmit-events-gallery")
-          .getPublicUrl(path);
-
-        await supabase.from("kmit_event_images").insert({
-          event_id: eventId,
-          image_url: urlData.publicUrl,
-        });
+      if (error) {
+        alert("Failed to add image: " + error.message);
+        return;
       }
 
-      alert("Images uploaded!");
+      // Clear the input and reload
+      setImageUrlInputs(prev => ({ ...prev, [eventId]: '' }));
+      alert("Image added!");
       loadEvents();
     } finally {
-      setUploading(false);
+      setAddingImage(null);
     }
   }
 
@@ -493,23 +495,31 @@ export default function MentorDashboard() {
                             </div>
 
                             <div className="flex flex-col items-end gap-2 shrink-0">
-                              <input
-                                id={`file-${ev.id}`}
-                                type="file"
-                                className="hidden"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => uploadImages(ev.id, e.target.files)}
+                            {/* Image URL Input */}
+                            <div className="flex gap-2 flex-1">
+                              <Input
+                                placeholder="Enter image URL (supports Google Drive)"
+                                value={imageUrlInputs[ev.id] || ''}
+                                onChange={(e) => setImageUrlInputs(prev => ({ ...prev, [ev.id]: e.target.value }))}
+                                className="flex-1 h-8 text-sm"
                               />
-
-                              <label htmlFor={`file-${ev.id}`} className="cursor-pointer">
-                                <Button size="sm" variant="outline" className="rounded-lg gap-1.5" asChild>
-                                  <span>
-                                    <ImageIcon className="h-3.5 w-3.5" />
-                                    Upload
-                                  </span>
-                                </Button>
-                              </label>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="rounded-lg gap-1.5"
+                                onClick={() => addImageUrl(ev.id)}
+                                disabled={addingImage === ev.id || !imageUrlInputs[ev.id]?.trim()}
+                              >
+                                {addingImage === ev.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Link2 className="h-3.5 w-3.5" />
+                                    Add
+                                  </>
+                                )}
+                              </Button>
+                            </div>
 
                               <div className="flex gap-1.5">
                                 <Button 
