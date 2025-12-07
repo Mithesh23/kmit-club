@@ -102,8 +102,16 @@ const ClubDetail = () => {
           
           <div className="flex items-start gap-6">
             {/* Club Icon */}
-            <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-elegant">
-              {club.name.charAt(0)}
+            <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-elegant overflow-hidden">
+              {club.logo_url ? (
+                <img 
+                  src={club.logo_url} 
+                  alt={club.name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                club.name.charAt(0)
+              )}
             </div>
             
             <div className="flex-1">
