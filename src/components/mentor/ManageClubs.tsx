@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { mentorRpc } from "@/lib/mentorClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +12,9 @@ import {
   FileText,
   Search,
   Building2,
-  UserCheck,
   ClipboardList,
   Loader2,
   Plus,
-  Power,
-  PowerOff,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -57,14 +52,6 @@ export default function ManageClubs() {
 
   const [confirmAddDialog, setConfirmAddDialog] = useState(false);
 
-  // Toggle club dialog logic (kept but unused here; used in MentorViewReport)
-  const [toggleClubDialog, setToggleClubDialog] = useState<{
-    club: any;
-    action: "enable" | "disable";
-  } | null>(null);
-
-  const [togglingClub, setTogglingClub] = useState(false);
-
   useEffect(() => {
     loadAllData();
   }, []);
@@ -91,17 +78,12 @@ export default function ManageClubs() {
     club.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getApprovedCount = (clubId: string) =>
-    registrations.filter((r) => r.club_id === clubId && r.status === "approved").length;
-
   const totalStats = {
     clubs: clubs.length,
     executiveMembers: members.length,
     reports: reports.length,
-    approvedStudents: registrations.filter((r) => r.status === "approved").length,
     pendingRegistrations: registrations.filter((r) => r.status === "pending").length,
     membersCount: registrations.filter(r => r.status === "approved").length,
-
   };
 
   const handleAddClubSubmit = () => {
@@ -117,13 +99,22 @@ export default function ManageClubs() {
     setConfirmAddDialog(false);
 
     try {
-      const { data, error } = await mentorRpc("mentor_create_club", {
-        p_name: newClubName.trim(),
-        p_short_description: newClubDescription.trim() || null,
-        p_registration_open: true,
+      const mentorToken = localStorage.getItem('mentor_auth_token');
+      if (!mentorToken) {
+        throw new Error('Not authenticated as mentor');
+      }
+
+      const response = await supabase.functions.invoke('create-club', {
+        body: {
+          name: newClubName.trim(),
+          short_description: newClubDescription.trim() || null,
+          registration_open: true,
+          mentor_token: mentorToken,
+        },
       });
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      if (response.data?.error) throw new Error(response.data.error);
 
       toast.success(`Club "${newClubName}" created successfully!`);
       setNewClubName("");
@@ -134,35 +125,6 @@ export default function ManageClubs() {
       toast.error("Failed to create club: " + error.message);
     } finally {
       setAddingClub(false);
-    }
-  };
-
-  const handleToggleClub = async (club: any, action: 'enable' | 'disable') => {
-    setToggleClubDialog({ club, action });
-  };
-
-  const confirmToggleClub = async () => {
-    if (!toggleClubDialog) return;
-    
-    setTogglingClub(true);
-    const { club, action } = toggleClubDialog;
-    const newStatus = action === 'enable';
-
-    try {
-      const { error } = await mentorRpc("mentor_update_club_status", {
-        p_club_id: club.id,
-        p_is_active: newStatus,
-      });
-
-      if (error) throw error;
-
-      toast.success(`Club "${club.name}" has been ${action}d successfully!`);
-      loadAllData();
-    } catch (error: any) {
-      toast.error(`Failed to ${action} club: ${error.message}`);
-    } finally {
-      setTogglingClub(false);
-      setToggleClubDialog(null);
     }
   };
 
@@ -212,13 +174,12 @@ export default function ManageClubs() {
         </Card>
 
         <Card className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-200">
-  <CardContent className="p-4 text-center">
-    <Users className="h-8 w-8 mx-auto mb-2 text-teal-600" />
-    <div className="text-2xl font-bold text-teal-700">{totalStats.membersCount}</div>
-    <div className="text-sm text-muted-foreground">Members</div>
-  </CardContent>
-</Card>
-
+          <CardContent className="p-4 text-center">
+            <Users className="h-8 w-8 mx-auto mb-2 text-teal-600" />
+            <div className="text-2xl font-bold text-teal-700">{totalStats.membersCount}</div>
+            <div className="text-sm text-muted-foreground">Members</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* SEARCH + ADD CLUB */}
@@ -246,7 +207,8 @@ export default function ManageClubs() {
           return (
             <Card
               key={club.id}
-              className={`relative hover:shadow-lg transition rounded-xl ${!isActive ? "opacity-60 bg-muted/50" : ""}`}
+              className={`relative hover:shadow-lg transition rounded-xl cursor-pointer ${!isActive ? "opacity-60 bg-muted/50" : ""}`}
+              onClick={() => navigate(`/mentor/clubs/${club.id}`)}
             >
               <CardContent className="p-4 text-center">
 
@@ -256,10 +218,7 @@ export default function ManageClubs() {
                   </Badge>
                 )}
 
-                <div
-                  className="mx-auto h-20 w-20 rounded-full overflow-hidden border mb-3 flex items-center justify-center bg-white cursor-pointer"
-                  onClick={() => navigate(`/mentor/clubs/${club.id}`)}
-                >
+                <div className="mx-auto h-20 w-20 rounded-full overflow-hidden border mb-3 flex items-center justify-center bg-white">
                   {club.logo_url ? (
                     <img src={club.logo_url} alt={club.name} className="h-full w-full object-cover" />
                   ) : (
@@ -267,10 +226,7 @@ export default function ManageClubs() {
                   )}
                 </div>
 
-                <h3
-                  className="font-semibold text-lg cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => navigate(`/mentor/clubs/${club.id}`)}
-                >
+                <h3 className="font-semibold text-lg hover:text-primary transition-colors">
                   {club.name}
                 </h3>
 
@@ -278,37 +234,10 @@ export default function ManageClubs() {
                   {club.short_description || "No description"}
                 </p>
 
-                <div className="mt-3 flex flex-col gap-2">
+                <div className="mt-3">
                   <Badge variant={club.registration_open ? "default" : "secondary"}>
                     {club.registration_open ? "Register Open" : "Register Closed"}
                   </Badge>
-                  
-                  {/* Toggle Button */}
-                  {isActive ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleClub(club, 'disable');
-                      }}
-                    >
-                      <PowerOff className="h-3 w-3 mr-1" /> Disable
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-green-600 border-green-600/30 hover:bg-green-600/10 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleClub(club, 'enable');
-                      }}
-                    >
-                      <Power className="h-3 w-3 mr-1" /> Enable
-                    </Button>
-                  )}
                 </div>
 
               </CardContent>
@@ -376,34 +305,6 @@ export default function ManageClubs() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmAddClub}>Create</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* TOGGLE CLUB CONFIRMATION */}
-      <AlertDialog open={!!toggleClubDialog} onOpenChange={(open) => !open && setToggleClubDialog(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {toggleClubDialog?.action === 'disable' ? 'Disable Club?' : 'Enable Club?'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {toggleClubDialog?.action === 'disable' 
-                ? `This will hide "${toggleClubDialog?.club?.name}" from the home page and deactivate admin login credentials.`
-                : `This will restore "${toggleClubDialog?.club?.name}" on the home page and reactivate admin login credentials.`
-              }
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={togglingClub}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmToggleClub}
-              disabled={togglingClub}
-              className={toggleClubDialog?.action === 'disable' ? 'bg-destructive hover:bg-destructive/90' : 'bg-green-600 hover:bg-green-700'}
-            >
-              {togglingClub && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {toggleClubDialog?.action === 'disable' ? 'Disable' : 'Enable'}
-            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
