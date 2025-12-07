@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import Autoplay from 'embla-carousel-autoplay';
 import { useClubs } from '@/hooks/useClubs';
 import { useHasNewNotices } from '@/hooks/useNoticeBoard';
 import { ClubCard } from '@/components/ClubCard';
@@ -251,10 +252,20 @@ const Home = () => {
             </div>
             
             <div className="max-w-6xl mx-auto">
-              <Carousel opts={{
-            align: "start",
-            loop: true
-          }} className="w-full">
+              <Carousel 
+                opts={{
+                  align: "start",
+                  loop: true
+                }} 
+                plugins={[
+                  Autoplay({
+                    delay: 3000,
+                    stopOnInteraction: false,
+                    stopOnMouseEnter: true,
+                  }),
+                ]}
+                className="w-full"
+              >
                 <CarouselContent className="-ml-4">
                   {exploreClubs.map(club => <CarouselItem key={club.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
                       <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 group" onClick={() => navigate(`/club/${club.id}`)}>
