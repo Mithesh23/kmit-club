@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClubAuth } from '@/hooks/useClubAuth';
 import { useAdminClub } from '@/hooks/useAdminClubData';
@@ -12,13 +12,14 @@ import { ReportsManager } from '@/components/admin/ReportsManager';
 import { AttendanceManager } from '@/components/admin/AttendanceManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck } from 'lucide-react';
+import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck, Share2 } from 'lucide-react';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { session, logout, loading } = useClubAuth();
   const { data: club, isLoading: clubLoading } = useAdminClub(session?.club_id || '');
+  const [showSocialMedia, setShowSocialMedia] = useState(false);
 
   useEffect(() => {
     if (!loading && !session?.success) {
@@ -103,9 +104,23 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="info">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ClubInfoEdit club={club} />
-              <SocialMediaManager club={club} />
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <Button
+                  variant={showSocialMedia ? "secondary" : "outline"}
+                  onClick={() => setShowSocialMedia(!showSocialMedia)}
+                  className="flex items-center gap-2"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Social Media
+                </Button>
+              </div>
+              
+              {showSocialMedia ? (
+                <SocialMediaManager club={club} />
+              ) : (
+                <ClubInfoEdit club={club} />
+              )}
             </div>
           </TabsContent>
 
