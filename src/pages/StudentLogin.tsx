@@ -6,8 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, GraduationCap, ArrowLeft } from 'lucide-react';
+import { Loader2, GraduationCap, ArrowLeft, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const loginSchema = z.object({
   rollNumber: z.string().min(1, "Roll number is required").max(20, "Roll number too long"),
@@ -18,6 +25,7 @@ const StudentLogin = () => {
   const [rollNumber, setRollNumber] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -124,7 +132,17 @@ const StudentLogin = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="px-0 h-auto text-sm text-primary"
+                    onClick={() => setShowForgotPassword(true)}
+                  >
+                    Forgot Password?
+                  </Button>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -162,9 +180,118 @@ const StudentLogin = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Forgot Password Dialog */}
+        <ForgotPasswordDialog 
+          open={showForgotPassword} 
+          onOpenChange={setShowForgotPassword} 
+        />
       </div>
     </div>
   );
 };
+
+// Forgot Password Dialog Component
+function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [rollNumber, setRollNumber] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!rollNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your roll number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('student-forgot-password', {
+        body: { roll_number: rollNumber.trim() },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setSent(true);
+      toast({
+        title: "Email Sent",
+        description: "If your account exists, you will receive a password reset email.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+    setSent(false);
+    setRollNumber('');
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Forgot Password</DialogTitle>
+          <DialogDescription>
+            {sent 
+              ? "Check your email for a password reset link."
+              : "Enter your roll number and we'll send you a password reset link to your registered email."
+            }
+          </DialogDescription>
+        </DialogHeader>
+
+        {!sent ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="forgot-roll">Roll Number</Label>
+              <Input
+                id="forgot-roll"
+                type="text"
+                placeholder="Enter your roll number"
+                value={rollNumber}
+                onChange={(e) => setRollNumber(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Reset Link
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="text-center py-4">
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+            <p className="text-muted-foreground">
+              If your account exists, you will receive an email with instructions to reset your password.
+            </p>
+            <Button className="mt-4" onClick={handleClose}>
+              Close
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default StudentLogin;

@@ -604,6 +604,33 @@ export type Database = {
         }
         Relationships: []
       }
+      student_password_reset_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          roll_number: string
+          token: string
+          used: boolean
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          roll_number: string
+          token: string
+          used?: boolean
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          roll_number?: string
+          token?: string
+          used?: boolean
+        }
+        Relationships: []
+      }
       student_sessions: {
         Row: {
           created_at: string | null
@@ -755,6 +782,13 @@ export type Database = {
         Returns: boolean
       }
       promote_students_yearly: { Args: never; Returns: undefined }
+      reset_student_password_with_token: {
+        Args: { new_password: string; reset_token: string }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
       update_club_admin_password: {
         Args: { club_admin_email: string; new_password: string }
         Returns: {
