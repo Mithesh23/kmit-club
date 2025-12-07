@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { roll_number } = await req.json();
+    const { roll_number, origin } = await req.json();
 
     if (!roll_number) {
       return new Response(
@@ -104,7 +104,8 @@ Deno.serve(async (req) => {
     }
 
     // Send email using Resend
-    const resetUrl = `https://b8f6bed5-b35f-4f5e-9a29-46c68d6fdfe0.lovableproject.com/reset-password?token=${resetToken}`;
+    const baseUrl = origin || 'https://ce5c82c3-8a66-4701-80ae-5e46506aa579.lovableproject.com';
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
     
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
