@@ -9,12 +9,16 @@ import { Loader2, Trash2, Edit2, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ManageClubs from "@/components/mentor/ManageClubs";
 import MentorCredentialsManager from "@/components/mentor/MentorCredentialsManager";
+import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
+import { useMentorAuth } from "@/hooks/useMentorAuth";
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function MentorDashboard() {
   const navigate = useNavigate();
+  const { session } = useMentorAuth();
+  const mentorEmail = localStorage.getItem('mentor_email') || '';
 
   // form fields
   const [category, setCategory] = useState("");
@@ -187,7 +191,13 @@ export default function MentorDashboard() {
           <h1 className="text-4xl font-display font-bold text-gradient">
             KMIT Mentor Dashboard
           </h1>
-          <Button onClick={() => navigate("/")}>Go Home</Button>
+          <div className="flex items-center gap-3">
+            <ChangePasswordDialog 
+              userType="mentor" 
+              identifier={mentorEmail} 
+            />
+            <Button onClick={() => navigate("/")}>Go Home</Button>
+          </div>
         </div>
 
         {/* ⭐ TABS SYSTEM */}

@@ -46,6 +46,7 @@ export const useMentorAuth = () => {
         if (result.success) {
           localStorage.setItem('mentor_auth_token', result.token);
           localStorage.setItem('mentor_id', result.mentor_id);
+          localStorage.setItem('mentor_email', email);
           setSession(result);
           return { success: true, message: result.message };
         } else {
@@ -65,6 +66,7 @@ export const useMentorAuth = () => {
   function logout() {
     localStorage.removeItem("mentor_auth_token");
     localStorage.removeItem("mentor_id");
+    localStorage.removeItem("mentor_email");
     setSession(null);
   }
 
