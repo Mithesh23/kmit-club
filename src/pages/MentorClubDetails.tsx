@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { mentorRpc } from "@/lib/mentorClient";
 
 import {
   Card,
@@ -127,7 +128,7 @@ export default function MentorClubDetails() {
     setTogglingClub(true);
 
     try {
-      const { error } = await supabase.rpc("mentor_update_club_status", {
+      const { error } = await mentorRpc("mentor_update_club_status", {
         p_club_id: club.id,
         p_is_active: newStatus,
       });
