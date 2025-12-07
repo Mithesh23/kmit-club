@@ -435,10 +435,33 @@ const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; ev
 
       if (error) throw error;
 
-      toast({
-        title: "Emails Sent Successfully",
-        description: `${data.sent} emails sent to registered students.`,
-      });
+      if (data?.summary) {
+        const { sent, retried, failed, total } = data.summary;
+        const successCount = sent + retried;
+        
+        if (failed > 0) {
+          toast({
+            title: "Email Notification Summary",
+            description: `${successCount} of ${total} emails sent successfully. ${failed} failed.`,
+            variant: failed === total ? "destructive" : "default",
+          });
+        } else if (total === 0) {
+          toast({
+            title: "No Registrations",
+            description: "No registered students to send emails to.",
+          });
+        } else {
+          toast({
+            title: "All Emails Sent Successfully",
+            description: `${successCount} emails sent to registered students.`,
+          });
+        }
+      } else {
+        toast({
+          title: "Emails Sent",
+          description: `Emails sent to registered students.`,
+        });
+      }
 
       setEmailDialogOpen(false);
       setEmailSubject('');

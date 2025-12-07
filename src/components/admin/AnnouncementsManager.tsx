@@ -46,14 +46,14 @@ export const AnnouncementsManager = ({ clubId }: AnnouncementsManagerProps) => {
         onSuccess: async () => {
           toast({
             title: "Announcement Created",
-            description: "New announcement has been added successfully.",
+            description: "New announcement has been added successfully. Sending emails...",
           });
           
           // Send email notification to all approved members
           if (club) {
             setSendingEmail(true);
             try {
-              const { error } = await supabase.functions.invoke('send-announcement-email', {
+              const { data, error } = await supabase.functions.invoke('send-announcement-email', {
                 body: {
                   clubId,
                   clubName: club.name,
@@ -65,18 +65,44 @@ export const AnnouncementsManager = ({ clubId }: AnnouncementsManagerProps) => {
               if (error) {
                 console.error('Error sending announcement emails:', error);
                 toast({
-                  title: "Email Notification",
+                  title: "Email Notification Failed",
                   description: "Announcement created but failed to send email notifications.",
                   variant: "destructive",
                 });
+              } else if (data?.summary) {
+                const { sent, retried, failed, total } = data.summary;
+                const successCount = sent + retried;
+                
+                if (failed > 0) {
+                  toast({
+                    title: "Email Notification Summary",
+                    description: `${successCount} of ${total} emails sent successfully. ${failed} failed.`,
+                    variant: failed === total ? "destructive" : "default",
+                  });
+                } else if (total === 0) {
+                  toast({
+                    title: "No Members",
+                    description: "No approved members to send emails to.",
+                  });
+                } else {
+                  toast({
+                    title: "All Emails Sent Successfully",
+                    description: `${successCount} emails sent to club members.`,
+                  });
+                }
               } else {
                 toast({
                   title: "Emails Sent",
-                  description: "Announcement emails sent to all approved members.",
+                  description: "Announcement emails sent to approved members.",
                 });
               }
             } catch (error) {
               console.error('Error invoking email function:', error);
+              toast({
+                title: "Email Error",
+                description: "Failed to send email notifications.",
+                variant: "destructive",
+              });
             } finally {
               setSendingEmail(false);
             }

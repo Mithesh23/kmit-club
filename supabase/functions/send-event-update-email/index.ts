@@ -16,8 +16,117 @@ interface EventUpdateEmailRequest {
   message: string;
 }
 
+interface EmailResult {
+  email: string;
+  status: 'sent' | 'failed' | 'retried';
+  attempts: number;
+  error?: string;
+}
+
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Send a single email with retry logic
+async function sendEmailWithRetry(
+  to: string,
+  name: string,
+  clubName: string,
+  eventTitle: string,
+  subject: string,
+  message: string,
+  maxRetries: number = 2
+): Promise<EmailResult> {
+  let attempts = 0;
+  let lastError: string | undefined;
+
+  while (attempts <= maxRetries) {
+    attempts++;
+    try {
+      console.log(`[Attempt ${attempts}] Sending email to ${to}...`);
+      
+      const { data, error } = await resend.emails.send({
+        from: `${clubName} <noreply@kmitclubs.in>`,
+        to: [to],
+        subject: `${eventTitle}: ${subject}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center; }
+                .header h1 { margin: 0; font-size: 24px; }
+                .content { background: #ffffff; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; }
+                .message { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+                .footer { background: #f9fafb; padding: 20px; text-align: center; font-size: 14px; color: #6b7280; border-radius: 0 0 8px 8px; }
+                .event-title { color: #667eea; font-weight: 600; margin: 10px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>📢 Event Update</h1>
+                </div>
+                <div class="content">
+                  <p>Hello ${name},</p>
+                  <p class="event-title">Event: ${eventTitle}</p>
+                  <div class="message">
+                    ${message.replace(/\n/g, '<br>')}
+                  </div>
+                  <p>Thank you for your registration!</p>
+                  <p>Best regards,<br><strong>${clubName}</strong></p>
+                </div>
+                <div class="footer">
+                  <p>This email was sent to registered participants of ${eventTitle}</p>
+                  <p>© ${new Date().getFullYear()} ${clubName}. All rights reserved.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+      });
+
+      if (error) {
+        console.error(`[Attempt ${attempts}] Email error for ${to}:`, error);
+        lastError = error.message || 'Unknown error';
+        
+        if (attempts <= maxRetries) {
+          console.log(`[Attempt ${attempts}] Retrying after delay...`);
+          await delay(1000);
+          continue;
+        }
+      } else {
+        console.log(`[Attempt ${attempts}] Email sent successfully to ${to}: ${data?.id}`);
+        return {
+          email: to,
+          status: attempts > 1 ? 'retried' : 'sent',
+          attempts,
+        };
+      }
+    } catch (error: any) {
+      console.error(`[Attempt ${attempts}] Exception sending to ${to}:`, error);
+      lastError = error.message || 'Unknown exception';
+      
+      if (attempts <= maxRetries) {
+        console.log(`[Attempt ${attempts}] Retrying after delay...`);
+        await delay(1000);
+        continue;
+      }
+    }
+  }
+
+  return {
+    email: to,
+    status: 'failed',
+    attempts,
+    error: lastError,
+  };
+}
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -25,10 +134,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("Starting event update email process...");
 
-    // Get request body
     const { eventId, subject, message }: EventUpdateEmailRequest = await req.json();
 
-    // Validate input
     if (!eventId || !subject || !message) {
       console.error("Missing required fields");
       return new Response(
@@ -40,7 +147,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create Supabase client with service role for admin operations
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -52,7 +158,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Get authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       console.error("No authorization header");
@@ -65,10 +170,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Extract token
-    const token = authHeader.replace("Bearer ", "");
-
-    // Verify admin session
     const { data: sessionData, error: sessionError } = await supabaseAdmin.rpc(
       "get_current_admin_session",
       {},
@@ -93,7 +194,6 @@ const handler = async (req: Request): Promise<Response> => {
     const adminSession = sessionData[0];
     console.log("Admin session verified for club:", adminSession.club_id);
 
-    // Get event details and verify it belongs to the admin's club
     const { data: event, error: eventError } = await supabaseAdmin
       .from("events")
       .select("id, title, club_id, clubs(name)")
@@ -111,7 +211,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verify admin has permission for this event
     if (event.club_id !== adminSession.club_id) {
       console.error("Admin does not have permission for this event");
       return new Response(
@@ -123,7 +222,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get all registrations for the event
     const { data: registrations, error: registrationsError } = await supabaseAdmin
       .from("event_registrations")
       .select("student_name, student_email")
@@ -146,7 +244,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           success: true, 
           message: "No registrations found for this event",
-          sent: 0 
+          summary: { total: 0, sent: 0, failed: 0, retried: 0 }
         }),
         {
           status: 200,
@@ -155,84 +253,52 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Found ${registrations.length} registrations. Sending emails...`);
+    console.log(`Found ${registrations.length} registrations. Starting sequential email sending with throttling...`);
 
-    // Send emails to all registered students
     const clubName = event.clubs?.name || "Club";
-    let successCount = 0;
-    let failCount = 0;
+    const results: EmailResult[] = [];
 
-    const emailPromises = registrations.map(async (registration) => {
-      try {
-        const { data, error } = await resend.emails.send({
-          from: `${clubName} <noreply@kmitclubs.in>`,
-          to: [registration.student_email],
-          subject: `${event.title}: ${subject}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center; }
-                  .header h1 { margin: 0; font-size: 24px; }
-                  .content { background: #ffffff; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; }
-                  .message { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
-                  .footer { background: #f9fafb; padding: 20px; text-align: center; font-size: 14px; color: #6b7280; border-radius: 0 0 8px 8px; }
-                  .event-title { color: #667eea; font-weight: 600; margin: 10px 0; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="header">
-                    <h1>📢 Event Update</h1>
-                  </div>
-                  <div class="content">
-                    <p>Hello ${registration.student_name},</p>
-                    <p class="event-title">Event: ${event.title}</p>
-                    <div class="message">
-                      ${message.replace(/\n/g, '<br>')}
-                    </div>
-                    <p>Thank you for your registration!</p>
-                    <p>Best regards,<br><strong>${clubName}</strong></p>
-                  </div>
-                  <div class="footer">
-                    <p>This email was sent to registered participants of ${event.title}</p>
-                    <p>© ${new Date().getFullYear()} ${clubName}. All rights reserved.</p>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `,
-        });
-
-        if (error) {
-          console.error(`Failed to send email to ${registration.student_email}:`, error);
-          failCount++;
-        } else {
-          console.log(`Email sent successfully to ${registration.student_email}`);
-          successCount++;
-        }
-      } catch (error) {
-        console.error(`Error sending email to ${registration.student_email}:`, error);
-        failCount++;
+    // Send emails sequentially with 2-second delay between each
+    for (let i = 0; i < registrations.length; i++) {
+      const registration = registrations[i];
+      
+      console.log(`Processing email ${i + 1}/${registrations.length} for ${registration.student_email}`);
+      
+      const result = await sendEmailWithRetry(
+        registration.student_email,
+        registration.student_name,
+        clubName,
+        event.title,
+        subject,
+        message
+      );
+      
+      results.push(result);
+      
+      // Add 2-second delay between emails (except for the last one)
+      if (i < registrations.length - 1) {
+        console.log(`Waiting 2 seconds before next email...`);
+        await delay(2000);
       }
-    });
+    }
 
-    await Promise.all(emailPromises);
+    // Calculate summary
+    const summary = {
+      total: results.length,
+      sent: results.filter(r => r.status === 'sent').length,
+      retried: results.filter(r => r.status === 'retried').length,
+      failed: results.filter(r => r.status === 'failed').length,
+    };
 
-    console.log(`Email sending complete. Success: ${successCount}, Failed: ${failCount}`);
+    console.log(`Email sending complete. Summary:`, summary);
+    console.log(`Detailed results:`, JSON.stringify(results, null, 2));
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Emails sent: ${successCount} successful, ${failCount} failed`,
-        sent: successCount,
-        failed: failCount,
-        total: registrations.length,
+        message: `Emails sent: ${summary.sent + summary.retried} successful, ${summary.failed} failed`,
+        summary,
+        results,
       }),
       {
         status: 200,
