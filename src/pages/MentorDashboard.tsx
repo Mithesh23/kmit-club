@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Trash2, Edit2, Camera } from "lucide-react";
+import { Loader2, Trash2, Edit2, Camera, Plus, Calendar, Link2, FolderOpen, ImageIcon, X, Home, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ManageClubs from "@/components/mentor/ManageClubs";
 import MentorCredentialsManager from "@/components/mentor/MentorCredentialsManager";
 import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useMentorAuth } from "@/hooks/useMentorAuth";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -183,160 +185,224 @@ export default function MentorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/20 to-orange-50/20 py-12">
-      <div className="container mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary-50 to-accent-light">
+      <div className="container mx-auto px-4 md:px-6 py-8">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-10">
-          <h1 className="text-4xl font-display font-bold text-gradient">
-            KMIT Mentor Dashboard
-          </h1>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-gradient">
+              Mentor Dashboard
+            </h1>
+            <p className="text-muted-foreground">Manage clubs, events, and credentials</p>
+          </div>
           <div className="flex items-center gap-3">
             <ChangePasswordDialog 
               userType="mentor" 
               identifier={mentorEmail} 
             />
-            <Button onClick={() => navigate("/")}>Go Home</Button>
+            <Button variant="outline" className="gap-2" onClick={() => navigate("/")}>
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
           </div>
         </div>
 
         {/* ⭐ TABS SYSTEM */}
         <Tabs defaultValue="clubs" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full mb-8">
-            <TabsTrigger value="clubs">Manage Clubs</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="mentors">Mentor Credentials</TabsTrigger>
+          <TabsList className="grid grid-cols-3 w-full mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
+            <TabsTrigger value="clubs" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+              Manage Clubs
+            </TabsTrigger>
+            <TabsTrigger value="events" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="mentors" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+              Credentials
+            </TabsTrigger>
           </TabsList>
 
           {/* ============================================================
              EVENTS TAB
           ============================================================ */}
-          <TabsContent value="events">
+          <TabsContent value="events" className="animate-fade-in">
 
             {/* EDIT PANEL */}
             {editingId && (
-              <Card className="mb-8 card-neon rounded-2xl shadow-xl bg-white/80">
-                <CardContent className="p-6">
-
-                  <h3 className="text-xl font-semibold mb-4">Edit Event</h3>
-
+              <Card className="mb-8 border-primary/20 shadow-xl bg-background/95 backdrop-blur-sm overflow-hidden">
+                <div className="h-1.5 bg-gradient-to-r from-primary to-accent" />
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Edit2 className="h-5 w-5 text-primary" />
+                      Edit Event
+                    </CardTitle>
+                    <Button variant="ghost" size="icon" onClick={cancelEdit}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Category</Label>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Category</Label>
                       <select
                         value={editValues.category}
-                        onChange={(e) =>
-                          setEditValues((s) => ({ ...s, category: e.target.value }))
-                        }
-                        className="border rounded-md p-2 w-full"
+                        onChange={(e) => setEditValues((s) => ({ ...s, category: e.target.value }))}
+                        className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
-                        <option value="">Select</option>
+                        <option value="">Select category</option>
                         <option>KMIT Evening</option>
                         <option>NAVRAAS</option>
                         <option>PATANG UTHSAV</option>
                       </select>
                     </div>
 
-                    <div>
-                      <Label>Event Date</Label>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        Event Date
+                      </Label>
                       <Input
                         type="date"
                         value={editValues.date}
-                        onChange={(e) =>
-                          setEditValues((s) => ({ ...s, date: e.target.value }))
-                        }
+                        onChange={(e) => setEditValues((s) => ({ ...s, date: e.target.value }))}
+                        className="rounded-lg"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <Label>Event Name</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Event Name</Label>
                     <Input
                       value={editValues.name}
-                      onChange={(e) =>
-                        setEditValues((s) => ({ ...s, name: e.target.value }))
-                      }
+                      onChange={(e) => setEditValues((s) => ({ ...s, name: e.target.value }))}
+                      className="rounded-lg"
                     />
                   </div>
 
-                  <div className="mt-4">
-                    <Label>Description</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description</Label>
                     <Textarea
                       value={editValues.description}
-                      onChange={(e) =>
-                        setEditValues((s) => ({ ...s, description: e.target.value }))
-                      }
+                      onChange={(e) => setEditValues((s) => ({ ...s, description: e.target.value }))}
+                      className="rounded-lg min-h-[100px]"
                     />
                   </div>
 
-                  <div className="mt-4">
-                    <Label>Drive Link</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                      Drive Link
+                    </Label>
                     <Input
                       value={editValues.drive_link}
-                      onChange={(e) =>
-                        setEditValues((s) => ({ ...s, drive_link: e.target.value }))
-                      }
+                      onChange={(e) => setEditValues((s) => ({ ...s, drive_link: e.target.value }))}
+                      className="rounded-lg"
+                      placeholder="Google Drive folder link"
                     />
                   </div>
 
-                  <div className="flex gap-3 mt-4">
-                    <Button onClick={saveEdit}>Save</Button>
-                    <Button variant="ghost" onClick={cancelEdit}>Cancel</Button>
-                  </div>
+                  <Separator />
 
+                  <div className="flex gap-3 justify-end">
+                    <Button variant="outline" onClick={cancelEdit} className="rounded-lg">
+                      Cancel
+                    </Button>
+                    <Button onClick={saveEdit} className="rounded-lg bg-primary hover:bg-primary/90">
+                      Save Changes
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
             {/* ADD & LIST PANEL */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
               {/* ADD EVENT FORM */}
-              <Card className="card-neon rounded-2xl shadow-xl bg-white/80">
-                <CardContent className="p-6">
-
-                  <h3 className="text-2xl font-semibold mb-4">Add Event</h3>
-
-                  <Label>Category</Label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="border rounded-md p-2 w-full"
-                  >
-                    <option value="">Select category</option>
-                    <option>KMIT Evening</option>
-                    <option>NAVRAAS</option>
-                    <option>PATANG UTHSAV</option>
-                  </select>
-
-                  <div className="mt-3">
-                    <Label>Event Name</Label>
-                    <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Card className="border-border/50 shadow-lg bg-background/95 backdrop-blur-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Plus className="h-5 w-5 text-primary" />
+                    </div>
+                    Add New Event
+                  </CardTitle>
+                  <CardDescription>Create a new KMIT event</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Category *</Label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="">Select category</option>
+                      <option>KMIT Evening</option>
+                      <option>NAVRAAS</option>
+                      <option>PATANG UTHSAV</option>
+                    </select>
                   </div>
 
-                  <div className="mt-3">
-                    <Label>Description</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Event Name *</Label>
+                    <Input 
+                      value={name} 
+                      onChange={(e) => setName(e.target.value)} 
+                      placeholder="Enter event name"
+                      className="rounded-lg"
+                    />
                   </div>
 
-                  <div className="mt-3">
-                    <Label>Event Date</Label>
-                    <Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description</Label>
+                    <Textarea 
+                      value={description} 
+                      onChange={(e) => setDescription(e.target.value)} 
+                      placeholder="Brief description of the event"
+                      className="rounded-lg min-h-[100px]"
+                    />
                   </div>
 
-                  <div className="mt-3">
-                    <Label>Drive Link</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      Event Date *
+                    </Label>
+                    <Input 
+                      type="date" 
+                      value={eventDate} 
+                      onChange={(e) => setEventDate(e.target.value)} 
+                      className="rounded-lg"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                      Drive Link
+                    </Label>
                     <Input
                       value={driveLink}
                       onChange={(e) => setDriveLink(e.target.value)}
                       placeholder="Google Drive folder link"
+                      className="rounded-lg"
                     />
                   </div>
 
-                  <div className="flex gap-3 mt-4">
-                    <Button onClick={addEvent}>Add Event</Button>
+                  <Separator />
+
+                  <div className="flex gap-3">
+                    <Button onClick={addEvent} className="flex-1 rounded-lg bg-primary hover:bg-primary/90">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Event
+                    </Button>
                     <Button
-                      variant="ghost"
+                      variant="outline"
+                      className="rounded-lg"
                       onClick={() => {
                         setCategory("");
                         setName("");
@@ -348,52 +414,80 @@ export default function MentorDashboard() {
                       Clear
                     </Button>
                   </div>
-
                 </CardContent>
               </Card>
 
               {/* EVENT LIST */}
-              <Card className="rounded-2xl shadow-xl bg-white/80">
-                <CardContent className="p-6">
-
-                  <h3 className="text-2xl font-semibold mb-4">Existing Events</h3>
-
+              <Card className="border-border/50 shadow-lg bg-background/95 backdrop-blur-sm overflow-hidden">
+                <CardHeader className="border-b border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Calendar className="h-5 w-5 text-accent" />
+                        </div>
+                        Existing Events
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {events.length} event{events.length !== 1 ? 's' : ''} created
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4">
                   {loading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="animate-spin h-6 w-6 text-primary" />
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
+                      <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                      <p className="text-sm text-muted-foreground">Loading events...</p>
                     </div>
                   ) : events.length === 0 ? (
-                    <p className="text-muted-foreground">No events yet</p>
+                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                      <div className="p-4 rounded-full bg-muted">
+                        <Calendar className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground">No events created yet</p>
+                      <p className="text-sm text-muted-foreground">Add your first event using the form</p>
+                    </div>
                   ) : (
-                    <div className="space-y-4 max-h-[520px] overflow-y-auto">
-
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                       {events.map((ev) => (
-                        <div key={ev.id} className="p-4 border rounded-lg bg-white">
-
-                          <div className="flex items-start justify-between">
-                            {/* LEFT — DETAILS */}
-                            <div>
-                              <div className="font-semibold text-lg">{ev.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {ev.category} • {ev.date}
+                        <div 
+                          key={ev.id} 
+                          className="p-4 border border-border/50 rounded-xl bg-background hover:bg-muted/30 hover:border-primary/30 transition-all duration-200 group"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-semibold text-foreground truncate">{ev.name}</h4>
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                  {ev.category}
+                                </Badge>
                               </div>
-                              <div className="text-sm mt-2">{ev.description}</div>
-
+                              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(ev.date).toLocaleDateString('en-US', { 
+                                  year: 'numeric', 
+                                  month: 'short', 
+                                  day: 'numeric' 
+                                })}
+                              </p>
+                              {ev.description && (
+                                <p className="text-sm mt-2 text-muted-foreground line-clamp-2">{ev.description}</p>
+                              )}
                               {ev.drive_link && (
                                 <a
-                                  className="text-primary underline text-sm block mt-1"
+                                  className="inline-flex items-center gap-1 text-primary hover:text-primary/80 text-sm mt-2 underline-offset-4 hover:underline"
                                   target="_blank"
                                   href={ev.drive_link}
+                                  rel="noopener noreferrer"
                                 >
-                                  Drive Folder
+                                  <FolderOpen className="h-3 w-3" />
+                                  View Drive Folder
                                 </a>
                               )}
                             </div>
 
-                            {/* RIGHT — ACTION BUTTONS */}
-                            <div className="flex flex-col items-end gap-2">
-
-                              {/* IMAGE UPLOAD */}
+                            <div className="flex flex-col items-end gap-2 shrink-0">
                               <input
                                 id={`file-${ev.id}`}
                                 type="file"
@@ -403,42 +497,45 @@ export default function MentorDashboard() {
                                 onChange={(e) => uploadImages(ev.id, e.target.files)}
                               />
 
-                              <label htmlFor={`file-${ev.id}`}>
-                                <Button size="sm" variant="outline">
-                                  <Camera className="mr-2" /> Upload Images
+                              <label htmlFor={`file-${ev.id}`} className="cursor-pointer">
+                                <Button size="sm" variant="outline" className="rounded-lg gap-1.5" asChild>
+                                  <span>
+                                    <ImageIcon className="h-3.5 w-3.5" />
+                                    Upload
+                                  </span>
                                 </Button>
                               </label>
 
-                              {/* EDIT + DELETE */}
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="ghost" onClick={() => beginEdit(ev)}>
-                                  <Edit2 />
+                              <div className="flex gap-1.5">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                  onClick={() => beginEdit(ev)}
+                                >
+                                  <Edit2 className="h-4 w-4" />
                                 </Button>
 
                                 <Button
-                                  size="sm"
-                                  variant="destructive"
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
                                   onClick={() => deleteEvent(ev.id)}
                                 >
-                                  <Trash2 />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                           </div>
 
                           <EventImagesPreview eventId={ev.id} />
-
                         </div>
                       ))}
-
                     </div>
                   )}
-
                 </CardContent>
               </Card>
-
             </div>
-
           </TabsContent>
 
           {/* ============================================================
