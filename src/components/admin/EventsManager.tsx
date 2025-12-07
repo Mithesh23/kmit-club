@@ -72,14 +72,51 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
         event_date: eventDate ? eventDate.toISOString() : null
       },
       {
-        onSuccess: () => {
+        onSuccess: async (newEvent) => {
           toast({
             title: "Event Created",
-            description: "New event has been added successfully.",
+            description: "New event has been added successfully. Sending notifications...",
           });
           setTitle('');
           setDescription('');
           setEventDate(undefined);
+
+          // Send new event email notifications to club members and mentors
+          try {
+            const { data, error } = await supabase.functions.invoke('send-new-event-email', {
+              body: {
+                eventId: newEvent.id,
+                clubId: clubId,
+              },
+            });
+
+            if (error) {
+              console.error('Error sending new event emails:', error);
+              toast({
+                title: "Email Notification Failed",
+                description: "Event created but failed to send email notifications.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            if (data?.summary) {
+              const { sent, retried, failed, members, mentors } = data.summary;
+              const successCount = sent + retried;
+              
+              toast({
+                title: "Notifications Sent",
+                description: `${successCount} emails sent (${members} members, ${mentors} mentors). ${failed > 0 ? `${failed} failed.` : ''}`,
+              });
+            }
+          } catch (emailError: any) {
+            console.error('Error sending new event emails:', emailError);
+            toast({
+              title: "Email Notification Error",
+              description: "Event created but email notifications encountered an error.",
+              variant: "destructive",
+            });
+          }
         },
         onError: (error: any) => {
           toast({
