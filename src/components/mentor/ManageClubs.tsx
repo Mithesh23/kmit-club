@@ -16,6 +16,7 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
+import { transformImageUrl } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -220,7 +221,7 @@ export default function ManageClubs() {
 
                 <div className="mx-auto h-20 w-20 rounded-full overflow-hidden border mb-3 flex items-center justify-center bg-white">
                   {club.logo_url ? (
-                    <img src={club.logo_url} alt={club.name} className="h-full w-full object-cover" />
+                    <img src={transformImageUrl(club.logo_url)} alt={club.name} className="h-full w-full object-cover" />
                   ) : (
                     <Building2 className="h-8 w-8 text-muted-foreground" />
                   )}

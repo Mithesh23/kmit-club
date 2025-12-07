@@ -14,6 +14,7 @@ import { useMentorAuth } from "@/hooks/useMentorAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import kmitLogo from '@/assets/kmit-logo.png';
+import { transformImageUrl } from '@/lib/utils';
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -591,7 +592,7 @@ function EventImagesPreview({ eventId }: { eventId: number }) {
       {images.map((im) => (
         <img
           key={im.id}
-          src={im.image_url}
+          src={transformImageUrl(im.image_url)}
           className="h-20 w-28 object-cover rounded-md shadow-sm"
           alt=""
         />

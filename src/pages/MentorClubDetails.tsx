@@ -28,6 +28,7 @@ import {
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { transformImageUrl } from '@/lib/utils';
 import { toast } from "sonner";
 
 import {
@@ -219,7 +220,7 @@ export default function MentorClubDetails() {
           <div className="flex gap-4">
             <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted">
               {club?.logo_url ? (
-                <img src={club.logo_url} className="w-full h-full object-cover" />
+                <img src={transformImageUrl(club.logo_url)} className="w-full h-full object-cover" />
               ) : (
                 <div className="text-muted-foreground">No Logo</div>
               )}

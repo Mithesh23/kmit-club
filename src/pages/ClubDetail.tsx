@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Calendar, Users, Megaphone, Camera, Loader2, ImageIcon, GraduationCap, History } from 'lucide-react';
 import { format, isPast, parseISO } from 'date-fns';
+import { transformImageUrl } from '@/lib/utils';
 
 const ClubDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -105,8 +106,8 @@ const ClubDetail = () => {
             <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-elegant overflow-hidden">
               {club.logo_url ? (
                 <img 
-                  src={club.logo_url} 
-                  alt={club.name} 
+                  src={transformImageUrl(club.logo_url)} 
+                  alt={club.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -284,7 +285,7 @@ const ClubDetail = () => {
                                 style={{ animationDelay: `${(index * 100) + (imgIndex * 50)}ms` }}
                               >
                                 <img
-                                  src={image.image_url}
+                                  src={transformImageUrl(image.image_url)}
                                   alt="Event"
                                   className="w-full h-32 object-cover transition-transform duration-300 group-hover/img:scale-110"
                                 />
@@ -512,7 +513,7 @@ const ClubDetail = () => {
                                     >
                                       <div className="relative aspect-[4/3] overflow-hidden">
                                         <img
-                                          src={image.image_url}
+                                          src={transformImageUrl(image.image_url)}
                                           alt={event.title}
                                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />

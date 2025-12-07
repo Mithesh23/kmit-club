@@ -18,7 +18,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, CalendarIcon, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, transformImageUrl } from '@/lib/utils';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
@@ -324,7 +324,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                         {event.event_images.map((image) => (
                           <div key={image.id} className="relative group">
                             <img
-                              src={image.image_url}
+                              src={transformImageUrl(image.image_url)}
                               alt="Event"
                               className="w-full h-16 object-cover rounded-md"
                             />

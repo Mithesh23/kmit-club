@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera, ArrowLeft } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { transformImageUrl } from '@/lib/utils';
 
 const KmitEventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,7 +77,7 @@ const KmitEventDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {imagesData.map((img: any) => (
                   <div key={img.id} className="rounded-xl overflow-hidden">
-                    <img src={img.image_url} alt="event" className="w-full h-48 object-cover" />
+                    <img src={transformImageUrl(img.image_url)} alt="event" className="w-full h-48 object-cover" />
                   </div>
                 ))}
               </div>

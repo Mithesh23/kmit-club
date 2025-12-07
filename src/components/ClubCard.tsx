@@ -4,6 +4,7 @@ import { Club } from '@/types/club';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import watermarkImage from '@/assets/club-watermark.jpg';
+import { transformImageUrl } from '@/lib/utils';
 
 interface ClubCardProps {
   club: Club;
@@ -41,7 +42,7 @@ export const ClubCard = ({ club }: ClubCardProps) => {
         {club.logo_url ? (
           <div className="w-16 h-16 rounded-2xl overflow-hidden mb-4 shadow-md group-hover:scale-105 transition-transform duration-300">
             <img 
-              src={club.logo_url} 
+              src={transformImageUrl(club.logo_url)} 
               alt={`${club.name} logo`}
               className="w-full h-full object-cover"
             />
