@@ -167,15 +167,30 @@ export default function MentorDashboard() {
     }
 
     setAddingImage(eventId);
+    const token = localStorage.getItem('mentor_auth_token');
 
     try {
-      const { error } = await supabase.from("kmit_event_images").insert({
-        event_id: eventId,
-        image_url: imageUrl,
-      });
+      // Use fetch with mentor auth token to satisfy RLS policy
+      const response = await fetch(
+        'https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_event_images',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c',
+            'Authorization': `Bearer ${token}`,
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            event_id: eventId,
+            image_url: imageUrl,
+          }),
+        }
+      );
 
-      if (error) {
-        alert("Failed to add image: " + error.message);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        alert("Failed to add image: " + (errorData.message || 'Unknown error'));
         return;
       }
 
@@ -183,6 +198,8 @@ export default function MentorDashboard() {
       setImageUrlInputs(prev => ({ ...prev, [eventId]: '' }));
       alert("Image added!");
       loadEvents();
+    } catch (err: any) {
+      alert("Failed to add image: " + (err.message || 'Unknown error'));
     } finally {
       setAddingImage(null);
     }
