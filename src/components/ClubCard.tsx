@@ -39,7 +39,7 @@ export const ClubCard = ({ club }: ClubCardProps) => {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
       
       {/* Card Content */}
-      <CardContent className="relative p-6 h-full flex flex-col">
+      <CardContent className="relative p-6 h-full flex flex-col items-center text-center">
         {/* Clean Club Icon/Logo */}
         {club.logo_url ? (
           <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 shadow-md group-hover:scale-105 transition-transform duration-300">
