@@ -9,6 +9,7 @@ import { Loader2, LogOut, Users, Calendar, FileText, CheckCircle2, Clock } from 
 import { format } from 'date-fns';
 import { useStudentAttendance } from '@/hooks/useAttendance';
 import { StudentProfileDialog } from '@/components/StudentProfileDialog';
+import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 
 interface StudentClub {
   id: string;
@@ -184,6 +185,10 @@ const StudentDashboard = () => {
                 currentEmail={clubs[0]?.student_email}
                 currentPhone={clubs[0]?.phone}
                 onUpdate={() => rollNumber && fetchStudentData(rollNumber)}
+              />
+              <ChangePasswordDialog 
+                userType="student" 
+                identifier={rollNumber || ''} 
               />
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />

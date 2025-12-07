@@ -668,6 +668,39 @@ export type Database = {
           token: string
         }[]
       }
+      change_club_admin_password: {
+        Args: {
+          admin_club_id: string
+          new_password: string
+          old_password: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
+      change_mentor_password: {
+        Args: {
+          mentor_email_param: string
+          new_password: string
+          old_password: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
+      change_student_password: {
+        Args: {
+          new_password: string
+          old_password: string
+          student_roll_number: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
       create_club_admin: {
         Args: { admin_email: string; admin_password: string; club_id: string }
         Returns: {

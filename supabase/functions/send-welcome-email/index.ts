@@ -1,7 +1,24 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+const sendEmail = async (options: { from: string; to: string[]; subject: string; html: string }) => {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify(options),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to send email");
+  }
+  
+  return response.json();
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     ` : '';
 
-    const { data, error } = await resend.emails.send({
+    const data = await sendEmail({
       from: `${clubName} <noreply@kmitclubs.in>`,
       to: [studentEmail],
       subject: `Welcome to ${clubName}! 🎉`,
@@ -91,11 +108,6 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `,
     });
-
-    if (error) {
-      console.error("Error sending welcome email:", error);
-      throw error;
-    }
 
     console.log("Welcome email sent successfully:", data.id);
 

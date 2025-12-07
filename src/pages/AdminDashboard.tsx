@@ -12,6 +12,7 @@ import { AttendanceManager } from '@/components/admin/AttendanceManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck } from 'lucide-react';
+import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -54,6 +55,10 @@ const AdminDashboard = () => {
             <Button variant="outline" onClick={() => navigate(`/club/${club.id}`)}>
               View Public Page
             </Button>
+            <ChangePasswordDialog 
+              userType="club" 
+              identifier={club.id} 
+            />
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
