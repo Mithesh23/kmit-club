@@ -9,7 +9,7 @@ import { useUpdateClub } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types/club';
-import { Save, Loader2, Upload, ImageIcon, X } from 'lucide-react';
+import { Save, Loader2, Link2, ImageIcon, X } from 'lucide-react';
 
 interface ClubInfoEditProps {
   club: Club;
@@ -21,73 +21,39 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
   const [detailedDescription, setDetailedDescription] = useState(club.detailed_description || '');
   const [registrationOpen, setRegistrationOpen] = useState(club.registration_open);
   const [logoUrl, setLogoUrl] = useState(club.logo_url || '');
-  const [isUploading, setIsUploading] = useState(false);
+  const [logoUrlInput, setLogoUrlInput] = useState(club.logo_url || '');
+  const [isUpdating, setIsUpdating] = useState(false);
   
   const { mutate: updateClub, isPending } = useUpdateClub();
   const { toast } = useToast();
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+  const handleUpdateLogoUrl = async () => {
+    if (!logoUrlInput.trim()) {
       toast({
-        title: "Invalid File",
-        description: "Please upload an image file.",
+        title: "Invalid URL",
+        description: "Please enter a valid logo URL.",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File Too Large",
-        description: "Please upload an image smaller than 5MB.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsUploading(true);
+    setIsUpdating(true);
 
     try {
-      // Create unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${club.id}/logo.${fileExt}`;
+      setLogoUrl(logoUrlInput.trim());
 
-      // Upload to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('club-logos')
-        .upload(fileName, file, {
-          upsert: true, // Replace existing file
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('club-logos')
-        .getPublicUrl(fileName);
-
-      setLogoUrl(publicUrl);
-
-      // Update club with new logo URL
       updateClub(
         {
           clubId: club.id,
           updates: {
-            logo_url: publicUrl
+            logo_url: logoUrlInput.trim()
           }
         },
         {
           onSuccess: () => {
             toast({
-              title: "Logo Uploaded",
-              description: "Club logo has been successfully updated.",
+              title: "Logo Updated",
+              description: "Club logo URL has been successfully updated.",
             });
           },
           onError: (error: any) => {
@@ -99,31 +65,18 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
           }
         }
       );
-
-    } catch (error: any) {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload logo.",
-        variant: "destructive",
-      });
     } finally {
-      setIsUploading(false);
+      setIsUpdating(false);
     }
   };
 
   const handleRemoveLogo = async () => {
-    setIsUploading(true);
+    setIsUpdating(true);
 
     try {
-      // Remove from storage if exists
-      if (logoUrl) {
-        const fileName = `${club.id}/logo.jpg`; // Try common extensions
-        await supabase.storage.from('club-logos').remove([fileName]);
-      }
-
       setLogoUrl('');
+      setLogoUrlInput('');
 
-      // Update club to remove logo URL
       updateClub(
         {
           clubId: club.id,
@@ -147,15 +100,8 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
           }
         }
       );
-
-    } catch (error: any) {
-      toast({
-        title: "Remove Failed",
-        description: error.message || "Failed to remove logo.",
-        variant: "destructive",
-      });
     } finally {
-      setIsUploading(false);
+      setIsUpdating(false);
     }
   };
 
@@ -213,7 +159,7 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
                     variant="destructive"
                     className="absolute top-1 right-1 h-6 w-6 p-0"
                     onClick={handleRemoveLogo}
-                    disabled={isUploading}
+                    disabled={isUpdating}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -225,50 +171,35 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
               )}
             </div>
             
-            {/* Upload Controls */}
+            {/* URL Input Controls */}
             <div className="flex-1 space-y-2">
               <div className="flex gap-2">
+                <Input
+                  placeholder="Enter logo URL (e.g., https://example.com/logo.png)"
+                  value={logoUrlInput}
+                  onChange={(e) => setLogoUrlInput(e.target.value)}
+                  className="flex-1"
+                />
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  disabled={isUploading}
-                  onClick={() => document.getElementById('logo-upload')?.click()}
+                  size="default"
+                  disabled={isUpdating || !logoUrlInput.trim()}
+                  onClick={handleUpdateLogoUrl}
                 >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
-                    </>
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                      <Link2 className="mr-2 h-4 w-4" />
+                      Update
                     </>
                   )}
                 </Button>
-                {logoUrl && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRemoveLogo}
-                    disabled={isUploading}
-                  >
-                    Remove
-                  </Button>
-                )}
               </div>
               <p className="text-sm text-muted-foreground">
-                Upload a square image (recommended: 200x200px or larger). Max size: 5MB
+                Paste the URL of your club logo image
               </p>
-              <input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-              />
             </div>
           </div>
         </div>
