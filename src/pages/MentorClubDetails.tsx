@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { mentorRpc } from "@/lib/mentorClient";
+
 
 import {
   Card,
@@ -128,12 +128,21 @@ export default function MentorClubDetails() {
     setTogglingClub(true);
 
     try {
-      const { error } = await mentorRpc("mentor_update_club_status", {
-        p_club_id: club.id,
-        p_is_active: newStatus,
+      const mentorToken = localStorage.getItem('mentor_auth_token');
+      if (!mentorToken) {
+        throw new Error('Not authenticated as mentor');
+      }
+
+      const response = await supabase.functions.invoke('update-club-status', {
+        body: {
+          club_id: club.id,
+          is_active: newStatus,
+          mentor_token: mentorToken,
+        },
       });
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      if (response.data?.error) throw new Error(response.data.error);
 
       toast.success(
         `Club "${club.name}" has been ${toggleClubDialog.action}d successfully!`

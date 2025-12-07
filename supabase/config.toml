@@ -1,5 +1,11 @@
 project_id = "qvsrhfzdkjygjuwmfwmh"
 
+[functions.update-club-status]
+verify_jwt = false
+
+[functions.create-club]
+verify_jwt = false
+
 [functions.send-announcement-email]
 verify_jwt = false
 
