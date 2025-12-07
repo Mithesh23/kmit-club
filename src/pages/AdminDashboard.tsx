@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useClubAuth } from '@/hooks/useClubAuth';
 import { useAdminClub } from '@/hooks/useAdminClubData';
 import { ClubInfoEdit } from '@/components/admin/ClubInfoEdit';
+import { SocialMediaManager } from '@/components/admin/SocialMediaManager';
 import { AnnouncementsManager } from '@/components/admin/AnnouncementsManager';
 import { MembersManager } from '@/components/admin/MembersManager';
 import { EventsManager } from '@/components/admin/EventsManager';
@@ -102,7 +103,10 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="info">
-            <ClubInfoEdit club={club} />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ClubInfoEdit club={club} />
+              <SocialMediaManager club={club} />
+            </div>
           </TabsContent>
 
           <TabsContent value="announcements">
