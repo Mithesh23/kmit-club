@@ -147,17 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
+    // Get auth token from request header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       console.error("No authorization header");
@@ -170,20 +160,32 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { data: sessionData, error: sessionError } = await supabaseAdmin.rpc(
-      "get_current_admin_session",
-      {},
+    // Create admin client with service role for database operations
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       {
-        headers: {
-          authorization: authHeader,
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
         },
       }
     );
 
-    if (sessionError || !sessionData || sessionData.length === 0) {
+    // Validate admin session by checking the token directly in club_admin_sessions table
+    const token = authHeader.replace('Bearer ', '');
+    
+    const { data: sessionData, error: sessionError } = await supabaseAdmin
+      .from("club_admin_sessions")
+      .select("admin_id, club_admins(club_id)")
+      .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+
+    if (sessionError || !sessionData) {
       console.error("Invalid admin session:", sessionError);
       return new Response(
-        JSON.stringify({ error: "Unauthorized: Invalid session" }),
+        JSON.stringify({ error: "Unauthorized: Invalid or expired session" }),
         {
           status: 401,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -191,9 +193,21 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const adminSession = sessionData[0];
-    console.log("Admin session verified for club:", adminSession.club_id);
+    const clubId = (sessionData.club_admins as any)?.club_id;
+    if (!clubId) {
+      console.error("Could not determine club_id from session");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Could not determine club" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
+    console.log("Admin session verified for club:", clubId);
+
+    // Fetch event details
     const { data: event, error: eventError } = await supabaseAdmin
       .from("events")
       .select("id, title, club_id, clubs(name)")
@@ -211,7 +225,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    if (event.club_id !== adminSession.club_id) {
+    // Verify admin has permission for this event's club
+    if (event.club_id !== clubId) {
       console.error("Admin does not have permission for this event");
       return new Response(
         JSON.stringify({ error: "Unauthorized: You don't have permission for this event" }),
@@ -222,6 +237,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Fetch event registrations
     const { data: registrations, error: registrationsError } = await supabaseAdmin
       .from("event_registrations")
       .select("student_name, student_email")
@@ -255,7 +271,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${registrations.length} registrations. Starting sequential email sending with throttling...`);
 
-    const clubName = event.clubs?.name || "Club";
+    const clubName = (event.clubs as any)?.name || "Club";
     const results: EmailResult[] = [];
 
     // Send emails sequentially with 2-second delay between each
