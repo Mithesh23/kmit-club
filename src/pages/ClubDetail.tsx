@@ -415,7 +415,6 @@ const ClubDetail = () => {
                             <TableHeader>
                               <TableRow>
                                 <TableHead>Name</TableHead>
-                                <TableHead>Roll Number</TableHead>
                                 <TableHead>Branch</TableHead>
                                 <TableHead>Year</TableHead>
                               </TableRow>
@@ -424,7 +423,6 @@ const ClubDetail = () => {
                               {approvedRegistrations.map((registration) => (
                                 <TableRow key={registration.id}>
                                   <TableCell className="font-medium">{registration.student_name}</TableCell>
-                                  <TableCell>{registration.roll_number || 'N/A'}</TableCell>
                                   <TableCell>{registration.branch || 'N/A'}</TableCell>
                                   <TableCell>{registration.year || 'N/A'}</TableCell>
                                 </TableRow>
