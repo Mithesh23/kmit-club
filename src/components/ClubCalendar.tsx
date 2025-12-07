@@ -70,75 +70,75 @@ export const ClubCalendar = ({ events, clubId }: ClubCalendarProps) => {
   };
 
   return (
-    <Card className="card-elegant border-0 shadow-lg overflow-hidden animate-fade-in">
-      <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 via-transparent to-accent/5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <CardTitle className="flex items-center gap-3 text-2xl font-display">
-            <div className="p-2.5 bg-gradient-primary rounded-xl shadow-lg animate-scale-in">
-              <CalendarDays className="h-5 w-5 text-white" />
+    <Card className="border border-border/50 shadow-md overflow-hidden animate-fade-in bg-card/80 backdrop-blur-sm max-w-3xl mx-auto">
+      <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 border-b border-border/30">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-base font-display">
+            <div className="p-1.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow-sm">
+              <CalendarDays className="h-4 w-4 text-white" />
             </div>
-            <span className="text-gradient">Club Calendar</span>
+            <span className="text-foreground font-semibold">Events Calendar</span>
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               onClick={goToToday}
-              className="bg-primary/10 border-primary/20 hover:bg-primary/20 hover:border-primary/30 transition-all duration-300"
+              className="h-7 px-2 text-xs bg-primary/10 hover:bg-primary/20 text-primary"
             >
               <Sparkles className="h-3 w-3 mr-1" />
               Today
             </Button>
-            <div className="flex items-center bg-card rounded-lg border border-border/50 shadow-sm">
+            <div className="flex items-center bg-muted/50 rounded-md border border-border/50">
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={prevMonth}
-                className="rounded-r-none hover:bg-primary/10 transition-colors"
+                className="h-7 w-7 rounded-r-none hover:bg-primary/10"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="min-w-[140px] text-center font-display font-semibold px-2">
-                {format(currentMonth, 'MMMM yyyy')}
+              <span className="min-w-[100px] text-center text-xs font-semibold px-1">
+                {format(currentMonth, 'MMM yyyy')}
               </span>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={nextMonth}
-                className="rounded-l-none hover:bg-primary/10 transition-colors"
+                className="h-7 w-7 rounded-l-none hover:bg-primary/10"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-6">
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 p-3 bg-gradient-secondary rounded-xl border border-primary/10">
-          <div className="flex items-center gap-2 group cursor-default">
-            <div className="w-3 h-3 rounded-full bg-gradient-primary shadow-sm group-hover:scale-125 transition-transform" />
-            <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Upcoming</span>
+      <CardContent className="p-3">
+        {/* Compact Legend */}
+        <div className="flex items-center justify-center gap-4 mb-3 text-[10px]">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <span className="text-muted-foreground">Upcoming</span>
           </div>
-          <div className="flex items-center gap-2 group cursor-default">
-            <div className="w-3 h-3 rounded-full bg-success shadow-sm animate-pulse group-hover:scale-125 transition-transform" />
-            <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Today</span>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-muted-foreground">Today</span>
           </div>
-          <div className="flex items-center gap-2 group cursor-default">
-            <div className="w-3 h-3 rounded-full bg-muted-foreground/50 shadow-sm group-hover:scale-125 transition-transform" />
-            <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Completed</span>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+            <span className="text-muted-foreground">Past</span>
           </div>
         </div>
 
         {/* Calendar Grid */}
-        <div className="rounded-2xl overflow-hidden border border-border/50 shadow-inner bg-card">
+        <div className="rounded-xl overflow-hidden border border-border/40 bg-gradient-to-b from-background to-muted/20">
           {/* Week Headers */}
-          <div className="grid grid-cols-7">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+          <div className="grid grid-cols-7 bg-muted/60">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
               <div 
-                key={day} 
-                className={`py-3 text-center font-display font-semibold text-sm bg-gradient-to-b from-muted to-muted/50 border-b border-border/50 ${
-                  idx === 0 || idx === 6 ? 'text-primary/70' : 'text-foreground'
+                key={`${day}-${idx}`} 
+                className={`py-1.5 text-center font-semibold text-[10px] ${
+                  idx === 0 || idx === 6 ? 'text-primary/70' : 'text-muted-foreground'
                 }`}
               >
                 {day}
@@ -161,39 +161,38 @@ export const ClubCalendar = ({ events, clubId }: ClubCalendarProps) => {
                 <div 
                   key={idx} 
                   className={`
-                    relative min-h-[100px] p-2 border-b border-r border-border/30
-                    transition-all duration-300 ease-out
-                    ${!inCurrentMonth ? 'bg-muted/20' : isWeekend ? 'bg-primary/[0.02]' : 'bg-card'}
-                    ${today ? 'ring-2 ring-inset ring-primary/50 bg-primary/5' : ''}
-                    ${hasEvents && inCurrentMonth ? 'hover:bg-primary/5 hover:shadow-inner cursor-pointer' : ''}
-                    ${isHovered && hasEvents ? 'z-10 scale-[1.02] shadow-lg' : ''}
+                    relative h-14 p-0.5 border-t border-border/20
+                    transition-all duration-200
+                    ${!inCurrentMonth ? 'bg-muted/10' : isWeekend ? 'bg-primary/[0.02]' : ''}
+                    ${today ? 'bg-primary/10 ring-1 ring-inset ring-primary/30' : ''}
+                    ${hasEvents && inCurrentMonth ? 'hover:bg-primary/5 cursor-pointer' : ''}
+                    ${isHovered && hasEvents ? 'z-10' : ''}
                   `}
                   onMouseEnter={() => hasEvents && setHoveredDay(dateKey)}
                   onMouseLeave={() => setHoveredDay(null)}
                 >
                   {/* Day Number */}
                   <div className={`
-                    inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium mb-1
-                    transition-all duration-200
-                    ${today ? 'bg-gradient-primary text-white shadow-md font-bold' : ''}
-                    ${!inCurrentMonth ? 'text-muted-foreground/50' : isWeekend ? 'text-primary/70' : 'text-foreground'}
+                    flex items-center justify-center w-5 h-5 mx-auto rounded-full text-[10px] font-medium
+                    ${today ? 'bg-primary text-white font-bold shadow-sm' : ''}
+                    ${!inCurrentMonth ? 'text-muted-foreground/40' : isWeekend ? 'text-primary/60' : 'text-foreground/80'}
                   `}>
                     {format(day, 'd')}
                   </div>
 
                   {/* Today indicator */}
                   {today && (
-                    <div className="absolute top-1 right-1">
-                      <span className="relative flex h-2 w-2">
+                    <div className="absolute top-0.5 right-0.5">
+                      <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
                       </span>
                     </div>
                   )}
 
                   {/* Events */}
-                  <div className="space-y-1 overflow-hidden">
-                    {dayEvents.slice(0, 2).map((event, eventIdx) => {
+                  <div className="mt-0.5 space-y-0.5 px-0.5 overflow-hidden">
+                    {dayEvents.slice(0, 1).map((event) => {
                       const status = getEventStatus(event);
                       return (
                         <div
@@ -203,42 +202,39 @@ export const ClubCalendar = ({ events, clubId }: ClubCalendarProps) => {
                             navigate(`/club/${clubId}/event/${event.id}`);
                           }}
                           className={`
-                            text-xs px-2 py-1 rounded-md truncate cursor-pointer
-                            transform transition-all duration-200 ease-out
-                            hover:scale-[1.02] hover:shadow-md active:scale-95
-                            animate-fade-in
+                            text-[8px] px-1 py-0.5 rounded truncate cursor-pointer
+                            transition-all duration-150 hover:scale-[1.02]
                             ${status === 'today' 
-                              ? 'bg-gradient-to-r from-success to-success/80 text-white shadow-sm' 
+                              ? 'bg-emerald-500 text-white' 
                               : status === 'past' 
-                                ? 'bg-muted/80 text-muted-foreground hover:bg-muted' 
-                                : 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-sm'
+                                ? 'bg-muted text-muted-foreground' 
+                                : 'bg-primary text-white'
                             }
                           `}
-                          style={{ animationDelay: `${eventIdx * 50}ms` }}
                           title={event.title}
                         >
                           {event.title}
                         </div>
                       );
                     })}
-                    {dayEvents.length > 2 && (
+                    {dayEvents.length > 1 && (
                       <Badge 
                         variant="secondary" 
-                        className="text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer"
+                        className="text-[7px] px-1 py-0 h-3 bg-primary/20 text-primary border-0 hover:bg-primary/30 cursor-pointer"
                         onClick={() => dayEvents[0] && navigate(`/club/${clubId}/event/${dayEvents[0].id}`)}
                       >
-                        +{dayEvents.length - 2} more
+                        +{dayEvents.length - 1}
                       </Badge>
                     )}
                   </div>
 
                   {/* Has events indicator dot */}
-                  {hasEvents && inCurrentMonth && !today && (
-                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${
+                  {hasEvents && inCurrentMonth && !today && dayEvents.length === 0 && (
+                    <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2">
+                      <div className={`w-1 h-1 rounded-full ${
                         dayEvents.some(e => getEventStatus(e) === 'upcoming') 
                           ? 'bg-primary' 
-                          : 'bg-muted-foreground/50'
+                          : 'bg-muted-foreground/40'
                       }`} />
                     </div>
                   )}
@@ -249,9 +245,9 @@ export const ClubCalendar = ({ events, clubId }: ClubCalendarProps) => {
         </div>
 
         {/* Events count summary */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <CalendarDays className="h-4 w-4" />
-          <span>{events.filter(e => e.event_date).length} events scheduled</span>
+        <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+          <CalendarDays className="h-3 w-3" />
+          <span>{events.filter(e => e.event_date).length} events</span>
         </div>
       </CardContent>
     </Card>
