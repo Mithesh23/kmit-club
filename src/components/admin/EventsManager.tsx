@@ -298,12 +298,11 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                     </div>
                     
                     {/* Registration Controls */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         size="sm"
                         variant={event.registration_open ? 'destructive' : 'default'}
                         onClick={() => toggleRegistration(event.id, event.registration_open ?? true)}
-                        className="flex-1"
                       >
                         {event.registration_open ? (
                           <>
@@ -348,7 +347,6 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                         size="sm"
                         onClick={() => handleAddImageUrl(event.id)}
                         disabled={adding}
-                        className="w-full"
                       >
                         {adding ? (
                           <>
@@ -518,7 +516,7 @@ const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; ev
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="flex-1">
+        <Button size="sm" variant="outline">
           <Users className="h-3 w-3 mr-1" />
           View Registrations ({registrations?.length || 0})
         </Button>
