@@ -21,6 +21,7 @@ import KmitEventsPast from "@/pages/KmitEventsPast";
 import KmitEventDetail from "@/pages/KmitEventDetail";
 import NoticeBoard from "./pages/NoticeBoard";
 import MentorViewReport from "@/pages/MentorViewReport";
+import MentorClubReports from "@/pages/MentorClubReports";
 import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
           <Route path="/mentor/clubs/:id" element={<MentorClubDetails />} />  {/* ✅ NOW WORKING */}
           <Route path="/mentor/view-report/:reportId" element={<MentorViewReport />} />
+          <Route path="/mentor/clubs/:id/reports" element={<MentorClubReports />} />
 
 
 
