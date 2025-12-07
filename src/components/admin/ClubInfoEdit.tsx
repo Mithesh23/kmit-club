@@ -9,13 +9,14 @@ import { useUpdateClub } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types/club';
-import { Save, Loader2, Link2, ImageIcon, X } from 'lucide-react';
+import { Save, Loader2, Link2, ImageIcon, X, Share2 } from 'lucide-react';
 
 interface ClubInfoEditProps {
   club: Club;
+  onSocialMediaClick?: () => void;
 }
 
-export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
+export const ClubInfoEdit = ({ club, onSocialMediaClick }: ClubInfoEditProps) => {
   const [name, setName] = useState(club.name);
   const [shortDescription, setShortDescription] = useState(club.short_description || '');
   const [detailedDescription, setDetailedDescription] = useState(club.detailed_description || '');
@@ -137,8 +138,19 @@ export const ClubInfoEdit = ({ club }: ClubInfoEditProps) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Club Information</CardTitle>
+        {onSocialMediaClick && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSocialMediaClick}
+            className="flex items-center gap-2"
+          >
+            <Share2 className="h-4 w-4" />
+            Social Media
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Club Logo Section */}

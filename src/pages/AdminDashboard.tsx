@@ -108,24 +108,17 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="info">
-            <div className="space-y-6">
-              <div className="flex justify-end">
-                <Button
-                  variant={showSocialMedia ? "secondary" : "outline"}
-                  onClick={() => setShowSocialMedia(!showSocialMedia)}
-                  className="flex items-center gap-2"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Social Media
-                </Button>
-              </div>
-              
-              {showSocialMedia ? (
-                <SocialMediaManager club={club} />
-              ) : (
-                <ClubInfoEdit club={club} />
-              )}
-            </div>
+            {showSocialMedia ? (
+              <SocialMediaManager 
+                club={club} 
+                onBack={() => setShowSocialMedia(false)}
+              />
+            ) : (
+              <ClubInfoEdit 
+                club={club} 
+                onSocialMediaClick={() => setShowSocialMedia(true)}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="announcements">
