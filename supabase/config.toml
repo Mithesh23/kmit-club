@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.student-forgot-password]
 verify_jwt = false
+
+[functions.send-new-event-email]
+verify_jwt = false
