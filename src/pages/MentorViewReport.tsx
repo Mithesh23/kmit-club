@@ -6,7 +6,7 @@ import { ArrowLeft, Download, Calendar, Users, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
-
+import kmitLogo from "@/assets/kmit-logo.png";
 export default function MentorViewReport() {
   const { reportId } = useParams();
   const navigate = useNavigate();
@@ -211,16 +211,23 @@ export default function MentorViewReport() {
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
+            {/* Left side - Logo and Title */}
+            <div className="flex items-center gap-4">
+              <img src={kmitLogo} alt="KMIT Logo" className="h-10 w-auto" />
+              <h1 className="text-xl font-semibold text-gray-800">Report</h1>
+            </div>
 
-            {/* PDF DOWNLOAD BUTTON */}
-            <Button onClick={handleDownloadPDF}>
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
-            </Button>
+            {/* Right side - Buttons */}
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" onClick={() => navigate(-1)}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button onClick={handleDownloadPDF}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
           </div>
         </div>
       </header>
