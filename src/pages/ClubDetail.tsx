@@ -51,6 +51,12 @@ const ClubDetail = () => {
     return { upcomingEvents: upcoming, pastEvents: past };
   }, [events]);
 
+  // Filter out "Pass Out" students from approved registrations
+  const activeMembers = useMemo(() => {
+    if (!approvedRegistrations) return [];
+    return approvedRegistrations.filter(reg => reg.year !== 'Pass Out');
+  }, [approvedRegistrations]);
+
   if (clubLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -409,7 +415,7 @@ const ClubDetail = () => {
                         <div className="flex items-center justify-center h-40">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
-                      ) : approvedRegistrations && approvedRegistrations.length > 0 ? (
+                      ) : activeMembers && activeMembers.length > 0 ? (
                         <div className="rounded-lg border">
                           <Table>
                             <TableHeader>
@@ -420,7 +426,7 @@ const ClubDetail = () => {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {approvedRegistrations.map((registration) => (
+                              {activeMembers.map((registration) => (
                                 <TableRow key={registration.id}>
                                   <TableCell className="font-medium">{registration.student_name}</TableCell>
                                   <TableCell>{registration.branch || 'N/A'}</TableCell>
