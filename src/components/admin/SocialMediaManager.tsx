@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { useUpdateClub } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
 import { Club } from '@/types/club';
-import { Save, Loader2, Instagram, Youtube, Facebook, Linkedin, Twitter, X, ExternalLink } from 'lucide-react';
+import { Save, Loader2, Instagram, Youtube, Facebook, Linkedin, Twitter, X, ExternalLink, ArrowLeft } from 'lucide-react';
 
 interface SocialMediaManagerProps {
   club: Club;
+  onBack?: () => void;
 }
 
 const SOCIAL_PLATFORMS = [
@@ -22,7 +23,7 @@ const SOCIAL_PLATFORMS = [
 
 type SocialKey = typeof SOCIAL_PLATFORMS[number]['key'];
 
-export const SocialMediaManager = ({ club }: SocialMediaManagerProps) => {
+export const SocialMediaManager = ({ club, onBack }: SocialMediaManagerProps) => {
   const [socialLinks, setSocialLinks] = useState<Record<SocialKey, string>>({
     instagram_url: club.instagram_url || '',
     youtube_url: club.youtube_url || '',
@@ -121,11 +122,22 @@ export const SocialMediaManager = ({ club }: SocialMediaManagerProps) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <ExternalLink className="h-5 w-5" />
           Social Media Handles
         </CardTitle>
+        {onBack && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBack}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Club Info
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-sm text-muted-foreground">
