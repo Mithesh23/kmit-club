@@ -214,7 +214,10 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
 
     try {
       const { data, error } = await supabase.functions.invoke('student-forgot-password', {
-        body: { roll_number: rollNumber.trim() },
+        body: { 
+          roll_number: rollNumber.trim(),
+          origin: window.location.origin 
+        },
       });
 
       if (error) throw error;
