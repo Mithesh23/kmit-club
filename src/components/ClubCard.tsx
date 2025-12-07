@@ -100,16 +100,14 @@ export const ClubCard = ({ club }: ClubCardProps) => {
           </div>
         </div>
 
-        {/* Clean Status Badge */}
-        <div className="absolute top-4 right-4">
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-            club.registration_open 
-              ? 'bg-success/10 text-success border border-success/20' 
-              : 'bg-muted text-muted-foreground border border-border'
-          }`}>
-            {club.registration_open ? '● OPEN' : '○ CLOSED'}
+        {/* Clean Status Badge - Only show when registrations are open */}
+        {club.registration_open && (
+          <div className="absolute top-4 right-4">
+            <div className="px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+              ● OPEN
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Subtle Decorative Elements */}
         <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-primary/5 rounded-full group-hover:scale-125 group-hover:bg-gradient-primary/10 transition-all duration-300 blur-sm" />
