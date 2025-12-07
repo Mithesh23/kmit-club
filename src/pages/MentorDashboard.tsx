@@ -13,6 +13,7 @@ import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useMentorAuth } from "@/hooks/useMentorAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import kmitLogo from '@/assets/kmit-logo.png';
 
 /* ⭐ TABS */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -191,7 +192,7 @@ export default function MentorDashboard() {
         {/* HEADER */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <img src="/src/assets/kmit-logo.png" alt="KMIT Logo" className="h-14 w-auto" />
+            <img src={kmitLogo} alt="KMIT Logo" className="h-14 w-auto" />
             <div className="space-y-1">
               <h1 className="text-3xl md:text-4xl font-display font-bold text-gradient">
                 Mentor Dashboard

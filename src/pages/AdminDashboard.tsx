@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck, Share2 } from 'lucide-react';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
+import kmitLogo from '@/assets/kmit-logo.png';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <img src="/src/assets/kmit-logo.png" alt="KMIT Logo" className="h-12 w-auto" />
+            <img src={kmitLogo} alt="KMIT Logo" className="h-12 w-auto" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">{club.name} - Admin Dashboard</h1>
               <p className="text-sm text-muted-foreground">Manage your club information and activities</p>
