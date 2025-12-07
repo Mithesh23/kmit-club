@@ -227,8 +227,16 @@ const StudentDashboard = () => {
                         onClick={() => navigate(`/club/${membership.club_id}`)}
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0">
-                            {membership.club?.name?.charAt(0) || 'C'}
+                          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
+                            {membership.club?.logo_url ? (
+                              <img 
+                                src={membership.club.logo_url} 
+                                alt={membership.club?.name || 'Club'} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              membership.club?.name?.charAt(0) || 'C'
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
