@@ -85,7 +85,7 @@ export const ClubCard = ({ club }: ClubCardProps) => {
         {club.registration_open && (
           <div className="absolute top-4 right-4">
             <div className="px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
-              ● OPEN
+              ● Registrations Open
             </div>
           </div>
         )}
