@@ -83,65 +83,46 @@ const Home = () => {
       {/* Modern Clean Header */}
       <header className="relative bg-white/80 backdrop-blur-lg border-b border-border shadow-lg">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-16">
-            <div className="animate-fade-in flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-8">
+            <div className="animate-fade-in flex items-center gap-3 lg:gap-4">
               <img 
                 src={kmitLogo} 
                 alt="KMIT Logo" 
-                className="w-[100px] h-[100px] object-contain flex-shrink-0"
+                className="w-14 h-14 sm:w-20 sm:h-20 lg:w-[100px] lg:h-[100px] object-contain flex-shrink-0"
               />
-              <div className="space-y-3">
-                <h1 className="text-4xl md:text-5xl font-display text-gradient font-bold whitespace-nowrap">
+              <div className="space-y-1 sm:space-y-2 lg:space-y-3">
+                <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-display text-gradient font-bold whitespace-nowrap">
                   Keshav Memorial Institute of Technology
                 </h1>
-                <p className="text-muted-foreground text-3xl font-normal">
+                <p className="text-muted-foreground text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-normal">
                   KMIT Clubs Hub 
                 </p>
-                <div className="w-24 h-1 bg-gradient-primary rounded-full"></div>
+                <div className="w-16 sm:w-20 lg:w-24 h-1 bg-gradient-primary rounded-full"></div>
               </div>
             </div>
 
-
-            
-            {/* <div className="animate-scale-in flex items-center gap-3">
+            <div className="animate-scale-in flex items-center gap-2 flex-shrink-0">
               <Button
+                size="sm"
                 variant="outline"
                 onClick={() => navigate('/notice-board')}
-                className="border-amber-500/30 hover:bg-amber-500/10 text-amber-700 relative"
+                className="border-amber-500/30 hover:bg-amber-500/10 text-amber-700 px-2 sm:px-4 py-2 text-xs sm:text-sm flex items-center whitespace-nowrap"
               >
-                <Megaphone className="h-4 w-4 mr-2" />
-                Notice Board
-                {hasNewNotices && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                )}
+                <Megaphone className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Notice
               </Button>
+
               <Button
+                size="sm"
                 variant="outline"
                 onClick={() => navigate('/student/login')}
-                className="border-primary/30 hover:bg-primary/10"
+                className="border-primary/30 hover:bg-primary/10 px-2 sm:px-4 py-2 text-xs sm:text-sm flex items-center whitespace-nowrap"
               >
                 Student Login
               </Button>
-              <ClubLoginDialog />
-            </div> */}
 
-
-            <div className="animate-scale-in flex items-center gap-2">
-    <Button
-    size="sm"
-    variant="outline"
-    onClick={() => navigate('/notice-board')}
-    className="border-amber-500/30 hover:bg-amber-500/10 text-amber-700 px-4 py-2 text-sm flex items-center">
-    <Megaphone className="h-4 w-4 mr-2" />Notice</Button>
-
-  <Button
-    size="sm"
-    variant="outline"
-    onClick={() => navigate('/student/login')}
-    className="border-primary/30 hover:bg-primary/10 px-4 py-2 text-sm flex items-center">Student Login</Button>
-
-  <ClubLoginDialog buttonSize="sm" />
-</div>
+              <ClubLoginDialog buttonSize="sm" />
+            </div>
 
 
             
