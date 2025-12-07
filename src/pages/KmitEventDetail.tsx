@@ -76,8 +76,16 @@ const KmitEventDetail = () => {
             {imagesData && imagesData.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {imagesData.map((img: any) => (
-                  <div key={img.id} className="rounded-xl overflow-hidden">
-                    <img src={transformImageUrl(img.image_url)} alt="event" className="w-full h-48 object-cover" />
+                  <div key={img.id} className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img 
+                      src={transformImageUrl(img.image_url)} 
+                      alt="event" 
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        console.error('Image failed to load:', img.image_url);
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
+                    />
                   </div>
                 ))}
               </div>
@@ -88,23 +96,19 @@ const KmitEventDetail = () => {
                 </div>
                 <h3 className="text-2xl font-display font-bold mt-6 text-gradient">Photos Coming Soon</h3>
                 <p className="text-muted-foreground mt-2">No images uploaded for this event yet.</p>
-
-                {/* ⭐ NEW: View Full Gallery Button (Drive Link) */}
-{event.drive_link && (
-  <div className="mt-8 flex justify-center">
-    <Button
-      className="px-8 py-3 text-lg bg-primary text-white hover:bg-primary/90 shadow-lg rounded-xl"
-      onClick={() => window.open(event.drive_link, "_blank")}
-    >
-      View Full Gallery
-    </Button>
-  </div>
-)}
-
-
               </div>
-                
+            )}
 
+            {/* View Full Gallery Button (Drive Link) - Always shown if drive_link exists */}
+            {event.drive_link && (
+              <div className="mt-8 flex justify-center">
+                <Button
+                  className="px-8 py-3 text-lg bg-primary text-white hover:bg-primary/90 shadow-lg rounded-xl"
+                  onClick={() => window.open(event.drive_link, "_blank")}
+                >
+                  View Full Gallery
+                </Button>
+              </div>
             )}
           </div>
         </div>
