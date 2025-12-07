@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import kmitLogo from "@/assets/kmit-logo.png";
 
 export default function KmitEvents() {
   const navigate = useNavigate();
@@ -57,9 +58,12 @@ export default function KmitEvents() {
       {/* header */}
       <header className="relative bg-card/40 backdrop-blur-xl border-b border-border shadow-xl">
         <div className="container mx-auto px-6 py-10 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient">KMIT Major Events</h1>
-            <div className="w-32 h-1 bg-gradient-primary rounded-full mt-2"></div>
+          <div className="flex items-center gap-4">
+            <img src={kmitLogo} alt="KMIT Logo" className="h-14 w-auto" />
+            <div>
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient">KMIT Major Events</h1>
+              <div className="w-32 h-1 bg-gradient-primary rounded-full mt-2"></div>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
