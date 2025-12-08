@@ -85,18 +85,6 @@ const KmitEventDetail = () => {
             <p className="text-lg text-muted-foreground leading-relaxed">{event.description}</p>
           </div>
 
-          {/* Grab your Pass button in content area - only for NAVRAAS with ticket_url and not past */}
-          {showTicketButton && (
-            <div className="mt-6">
-              <Button 
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg px-8 py-3"
-                onClick={() => window.open(event.ticket_url, "_blank")}
-              >
-                <Ticket className="h-5 w-5 mr-2" />
-                Grab your Pass
-              </Button>
-            </div>
-          )}
 
           {/* Images */}
           <div className="mt-8">
