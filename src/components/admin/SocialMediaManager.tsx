@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useUpdateClub } from '@/hooks/useAdminClubData';
 import { useToast } from '@/hooks/use-toast';
 import { Club } from '@/types/club';
-import { Save, Loader2, Instagram, Youtube, Facebook, Linkedin, Twitter, X, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Save, Loader2, Instagram, Youtube, Facebook, Linkedin, Twitter, X, ExternalLink, ArrowLeft, MessageCircle, Globe } from 'lucide-react';
 
 interface SocialMediaManagerProps {
   club: Club;
@@ -19,6 +19,8 @@ const SOCIAL_PLATFORMS = [
   { key: 'facebook_url', label: 'Facebook', icon: Facebook, placeholder: 'https://facebook.com/yourclub', pattern: /^https?:\/\/(www\.)?facebook\.com\/.+/i },
   { key: 'linkedin_url', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/company/yourclub', pattern: /^https?:\/\/(www\.)?linkedin\.com\/.+/i },
   { key: 'twitter_url', label: 'X (Twitter)', icon: Twitter, placeholder: 'https://x.com/yourclub', pattern: /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/.+/i },
+  { key: 'whatsapp_url', label: 'WhatsApp Channel', icon: MessageCircle, placeholder: 'https://whatsapp.com/channel/yourclub', pattern: /^https?:\/\/(www\.)?(whatsapp\.com|wa\.me)\/.+/i },
+  { key: 'website_url', label: 'Website', icon: Globe, placeholder: 'https://yourclub.com', pattern: /^https?:\/\/.+/i },
 ] as const;
 
 type SocialKey = typeof SOCIAL_PLATFORMS[number]['key'];
@@ -30,6 +32,8 @@ export const SocialMediaManager = ({ club, onBack }: SocialMediaManagerProps) =>
     facebook_url: club.facebook_url || '',
     linkedin_url: club.linkedin_url || '',
     twitter_url: club.twitter_url || '',
+    whatsapp_url: (club as any).whatsapp_url || '',
+    website_url: (club as any).website_url || '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
