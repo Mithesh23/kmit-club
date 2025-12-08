@@ -327,6 +327,8 @@ export type Database = {
           short_description: string | null
           twitter_url: string | null
           updated_at: string
+          website_url: string | null
+          whatsapp_url: string | null
           youtube_url: string | null
         }
         Insert: {
@@ -343,6 +345,8 @@ export type Database = {
           short_description?: string | null
           twitter_url?: string | null
           updated_at?: string
+          website_url?: string | null
+          whatsapp_url?: string | null
           youtube_url?: string | null
         }
         Update: {
@@ -359,6 +363,8 @@ export type Database = {
           short_description?: string | null
           twitter_url?: string | null
           updated_at?: string
+          website_url?: string | null
+          whatsapp_url?: string | null
           youtube_url?: string | null
         }
         Relationships: []
