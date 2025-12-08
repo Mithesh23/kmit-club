@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Loader2 } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { Calendar, Loader2, Ticket } from "lucide-react";
+import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import kmitLogo from "@/assets/kmit-logo.png";
 
 export default function KmitEvents() {
@@ -47,6 +47,11 @@ export default function KmitEvents() {
     if (filterCategory !== "all" && ev.category !== filterCategory) return false;
     return true;
   });
+
+  // Check if event date has passed (event is in the past)
+  function isEventPast(eventDate: string) {
+    return isBefore(parseISO(eventDate), startOfDay(new Date()));
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -107,6 +112,9 @@ export default function KmitEvents() {
                 );
               }
 
+              const isPast = ev?.date ? isEventPast(ev.date) : false;
+              const showTicketButton = ev?.ticket_url && ev?.category === "NAVRAAS" && !isPast;
+
               return (
                 <div key={category} className="card-neon bg-white/80 backdrop-blur-xl shadow-xl rounded-2xl p-8">
                   <h2 className="text-3xl font-display font-bold text-gradient mb-2">{ev ? ev.name : category}</h2>
@@ -121,11 +129,24 @@ export default function KmitEvents() {
                     {ev?.description || "This event has not been added by the mentor yet."}
                   </p>
 
-                  {ev ? (
-                    <Button className="mt-6 w-full" onClick={() => navigate(`/kmit-events/${ev.id}`)}>View Details</Button>
-                  ) : (
-                    <Button disabled className="mt-6 w-full opacity-60">Coming Soon</Button>
-                  )}
+                  <div className="mt-6 space-y-3">
+                    {/* Grab your Pass button - only for NAVRAAS with ticket_url and not past */}
+                    {showTicketButton && (
+                      <Button 
+                        className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg"
+                        onClick={() => window.open(ev.ticket_url, "_blank")}
+                      >
+                        <Ticket className="h-4 w-4 mr-2" />
+                        Grab your Pass
+                      </Button>
+                    )}
+
+                    {ev ? (
+                      <Button className="w-full" variant={showTicketButton ? "outline" : "default"} onClick={() => navigate(`/kmit-events/${ev.id}`)}>View Details</Button>
+                    ) : (
+                      <Button disabled className="w-full opacity-60">Coming Soon</Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
