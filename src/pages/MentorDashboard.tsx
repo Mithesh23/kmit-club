@@ -30,6 +30,7 @@ export default function MentorDashboard() {
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [driveLink, setDriveLink] = useState("");
+  const [ticketUrl, setTicketUrl] = useState("");
 
   // list & loading
   const [events, setEvents] = useState<any[]>([]);
@@ -43,6 +44,7 @@ export default function MentorDashboard() {
     category: "",
     date: "",
     drive_link: "",
+    ticket_url: "",
   });
 
   // Image URL input state
@@ -85,6 +87,7 @@ export default function MentorDashboard() {
       date: eventDate,
       year,
       drive_link: driveLink,
+      ticket_url: category === "NAVRAAS" ? ticketUrl : null,
     });
 
     if (error) {
@@ -97,6 +100,7 @@ export default function MentorDashboard() {
     setDescription("");
     setEventDate("");
     setDriveLink("");
+    setTicketUrl("");
 
     loadEvents();
     alert("Event added!");
@@ -110,6 +114,7 @@ export default function MentorDashboard() {
       category: ev.category,
       date: ev.date,
       drive_link: ev.drive_link,
+      ticket_url: ev.ticket_url || "",
     });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -118,7 +123,7 @@ export default function MentorDashboard() {
   async function saveEdit() {
     if (!editingId) return;
 
-    const { name: en, description: ed, category: ec, date: edate, drive_link } = editValues;
+    const { name: en, description: ed, category: ec, date: edate, drive_link, ticket_url } = editValues;
 
     if (!en || !ec || !edate) {
       alert("Category, Name & Date required");
@@ -129,7 +134,15 @@ export default function MentorDashboard() {
 
     const { error } = await supabase
       .from("kmit_events")
-      .update({ name: en, description: ed, category: ec, date: edate, year, drive_link })
+      .update({ 
+        name: en, 
+        description: ed, 
+        category: ec, 
+        date: edate, 
+        year, 
+        drive_link,
+        ticket_url: ec === "NAVRAAS" ? ticket_url : null,
+      })
       .eq("id", editingId);
 
     if (error) {
@@ -138,14 +151,14 @@ export default function MentorDashboard() {
     }
 
     setEditingId(null);
-    setEditValues({ name: "", description: "", category: "", date: "", drive_link: "" });
+    setEditValues({ name: "", description: "", category: "", date: "", drive_link: "", ticket_url: "" });
     loadEvents();
     alert("Event updated!");
   }
 
   async function cancelEdit() {
     setEditingId(null);
-    setEditValues({ name: "", description: "", category: "", date: "", drive_link: "" });
+    setEditValues({ name: "", description: "", category: "", date: "", drive_link: "", ticket_url: "" });
   }
 
   async function deleteEvent(id: number) {
@@ -331,6 +344,22 @@ export default function MentorDashboard() {
                     />
                   </div>
 
+                  {/* Ticket URL field - only for NAVRAAS */}
+                  {editValues.category === "NAVRAAS" && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <Link2 className="h-4 w-4 text-muted-foreground" />
+                        Ticket Booking URL
+                      </Label>
+                      <Input
+                        value={editValues.ticket_url}
+                        onChange={(e) => setEditValues((s) => ({ ...s, ticket_url: e.target.value }))}
+                        className="rounded-lg"
+                        placeholder="Ticket booking URL for NAVRAAS"
+                      />
+                    </div>
+                  )}
+
                   <Separator />
 
                   <div className="flex gap-3 justify-end">
@@ -421,6 +450,22 @@ export default function MentorDashboard() {
                     />
                   </div>
 
+                  {/* Ticket URL field - only for NAVRAAS */}
+                  {category === "NAVRAAS" && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <Link2 className="h-4 w-4 text-muted-foreground" />
+                        Ticket Booking URL
+                      </Label>
+                      <Input
+                        value={ticketUrl}
+                        onChange={(e) => setTicketUrl(e.target.value)}
+                        placeholder="Ticket booking URL for NAVRAAS"
+                        className="rounded-lg"
+                      />
+                    </div>
+                  )}
+
                   <Separator />
 
                   <div className="flex gap-3">
@@ -437,6 +482,7 @@ export default function MentorDashboard() {
                         setDescription("");
                         setEventDate("");
                         setDriveLink("");
+                        setTicketUrl("");
                       }}
                     >
                       Clear

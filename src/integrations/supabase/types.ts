@@ -509,6 +509,7 @@ export type Database = {
           drive_link: string | null
           id: number
           name: string
+          ticket_url: string | null
           year: number
         }
         Insert: {
@@ -519,6 +520,7 @@ export type Database = {
           drive_link?: string | null
           id?: never
           name: string
+          ticket_url?: string | null
           year: number
         }
         Update: {
@@ -529,6 +531,7 @@ export type Database = {
           drive_link?: string | null
           id?: never
           name?: string
+          ticket_url?: string | null
           year?: number
         }
         Relationships: []

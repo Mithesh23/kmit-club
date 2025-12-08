@@ -2,8 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Camera, ArrowLeft } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { Loader2, Camera, ArrowLeft, Ticket } from "lucide-react";
+import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import { transformImageUrl } from '@/lib/utils';
 
 const KmitEventDetail = () => {
@@ -46,6 +46,10 @@ const KmitEventDetail = () => {
     );
   }
 
+  // Check if event date has passed
+  const isEventPast = event.date ? isBefore(parseISO(event.date), startOfDay(new Date())) : false;
+  const showTicketButton = event.ticket_url && event.category === "NAVRAAS" && !isEventPast;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card/40 backdrop-blur-xl border-b border-border shadow-elegant">
@@ -54,7 +58,17 @@ const KmitEventDetail = () => {
             <h1 className="text-4xl font-display font-bold text-gradient">{event.name}</h1>
             <div className="w-32 h-1 bg-gradient-primary mt-3 rounded-full"></div>
           </div>
-          <div>
+          <div className="flex items-center gap-3">
+            {/* Grab your Pass button in header - only for NAVRAAS with ticket_url and not past */}
+            {showTicketButton && (
+              <Button 
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg"
+                onClick={() => window.open(event.ticket_url, "_blank")}
+              >
+                <Ticket className="h-4 w-4 mr-2" />
+                Grab your Pass
+              </Button>
+            )}
             <Button variant="ghost" onClick={() => navigate("/kmit-events")}><ArrowLeft /> Back</Button>
           </div>
         </div>
@@ -70,6 +84,19 @@ const KmitEventDetail = () => {
           <div className="prose max-w-none">
             <p className="text-lg text-muted-foreground leading-relaxed">{event.description}</p>
           </div>
+
+          {/* Grab your Pass button in content area - only for NAVRAAS with ticket_url and not past */}
+          {showTicketButton && (
+            <div className="mt-6">
+              <Button 
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg px-8 py-3"
+                onClick={() => window.open(event.ticket_url, "_blank")}
+              >
+                <Ticket className="h-5 w-5 mr-2" />
+                Grab your Pass
+              </Button>
+            </div>
+          )}
 
           {/* Images */}
           <div className="mt-8">
