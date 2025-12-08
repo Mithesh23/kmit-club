@@ -219,7 +219,7 @@ export default function MentorViewReport() {
 
             {/* Right side - Buttons */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" onClick={() => navigate(`/mentor/club/${report.club_id}`)}>
+              <Button variant="ghost" onClick={() => navigate(`/mentor/club/${report.club_id}/reports`)}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Button>
