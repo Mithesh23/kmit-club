@@ -50,6 +50,7 @@ export default function MentorDashboard() {
   // Image URL input state
   const [imageUrlInputs, setImageUrlInputs] = useState<Record<number, string>>({});
   const [addingImage, setAddingImage] = useState<number | null>(null);
+  const [imageRefreshKey, setImageRefreshKey] = useState(0);
 
   useEffect(() => {
     loadEvents();
@@ -273,14 +274,45 @@ export default function MentorDashboard() {
         return;
       }
 
-      // Clear the input and reload
+      // Clear the input and trigger image preview refresh
       setImageUrlInputs(prev => ({ ...prev, [eventId]: '' }));
+      setImageRefreshKey(prev => prev + 1);
       alert("Image added!");
-      loadEvents();
     } catch (err: any) {
       alert("Failed to add image: " + (err.message || 'Unknown error'));
     } finally {
       setAddingImage(null);
+    }
+  }
+
+  async function deleteImage(imageId: number) {
+    const ok = confirm("Delete this image?");
+    if (!ok) return;
+
+    const token = localStorage.getItem('mentor_auth_token');
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
+
+    try {
+      const response = await fetch(
+        `https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_event_images?id=eq.${imageId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        alert("Failed to delete image");
+        return;
+      }
+
+      setImageRefreshKey(prev => prev + 1);
+    } catch (err: any) {
+      alert("Failed to delete image: " + err.message);
     }
   }
 
@@ -672,7 +704,7 @@ export default function MentorDashboard() {
                             </div>
                           </div>
 
-                          <EventImagesPreview eventId={ev.id} />
+                          <EventImagesPreview eventId={ev.id} refreshKey={imageRefreshKey} onDeleteImage={deleteImage} />
                         </div>
                       ))}
                     </div>
@@ -705,7 +737,7 @@ export default function MentorDashboard() {
 /* ============================================================
    IMAGE PREVIEW COMPONENT
 ============================================================ */
-function EventImagesPreview({ eventId }: { eventId: number }) {
+function EventImagesPreview({ eventId, refreshKey, onDeleteImage }: { eventId: number; refreshKey: number; onDeleteImage?: (imageId: number) => void }) {
   const [images, setImages] = useState<any[]>([]);
 
   useEffect(() => {
@@ -722,19 +754,28 @@ function EventImagesPreview({ eventId }: { eventId: number }) {
     })();
 
     return () => { active = false; };
-  }, [eventId]);
+  }, [eventId, refreshKey]);
 
   if (!images.length) return null;
 
   return (
     <div className="mt-3 flex gap-3 overflow-x-auto">
       {images.map((im) => (
-        <img
-          key={im.id}
-          src={transformImageUrl(im.image_url)}
-          className="h-20 w-28 object-cover rounded-md shadow-sm"
-          alt=""
-        />
+        <div key={im.id} className="relative group shrink-0">
+          <img
+            src={transformImageUrl(im.image_url)}
+            className="h-20 w-28 object-cover rounded-md shadow-sm"
+            alt=""
+          />
+          {onDeleteImage && (
+            <button
+              onClick={() => onDeleteImage(im.id)}
+              className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
       ))}
     </div>
   );
