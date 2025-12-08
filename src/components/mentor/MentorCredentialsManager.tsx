@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, UserPlus, Users, Eye, EyeOff, Mail, User, ShieldCheck, KeyRound } from 'lucide-react';
+import { Loader2, UserPlus, Users, Eye, EyeOff, Mail, User, ShieldCheck, KeyRound, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const mentorSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -124,6 +125,43 @@ export default function MentorCredentialsManager() {
   function getInitials(name: string | null): string {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  async function handleDeleteMentor(mentorId: string) {
+    const token = localStorage.getItem('mentor_auth_token');
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
+
+    try {
+      const response = await fetch(
+        `https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/mentors?id=eq.${mentorId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete mentor');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Credential deleted successfully',
+      });
+
+      loadMentors();
+    } catch (error) {
+      console.error('Error deleting mentor:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete credential',
+        variant: 'destructive',
+      });
+    }
   }
 
   return (
@@ -296,6 +334,34 @@ export default function MentorCredentialsManager() {
                         {mentor.email}
                       </p>
                     </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Credential</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete the credential for <strong>{mentor.name || mentor.email}</strong>? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteMentor(mentor.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               ))}
