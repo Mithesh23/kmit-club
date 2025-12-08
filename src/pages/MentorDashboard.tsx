@@ -67,7 +67,7 @@ export default function MentorDashboard() {
     const { data } = await supabase
       .from("kmit_events")
       .select("*")
-      .order("date", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (data) setEvents(data);
     setLoading(false);
