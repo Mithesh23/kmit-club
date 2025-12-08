@@ -79,19 +79,40 @@ export default function MentorDashboard() {
     }
 
     const year = new Date(eventDate).getFullYear();
+    const token = localStorage.getItem('mentor_auth_token');
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
 
-    const { error } = await supabase.from("kmit_events").insert({
-      name,
-      description,
-      category,
-      date: eventDate,
-      year,
-      drive_link: driveLink,
-      ticket_url: category === "NAVRAAS" ? ticketUrl : null,
-    });
+    try {
+      const response = await fetch(
+        'https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_events',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            name,
+            description,
+            category,
+            date: eventDate,
+            year,
+            drive_link: driveLink,
+            ticket_url: category === "NAVRAAS" ? ticketUrl : null,
+          }),
+        }
+      );
 
-    if (error) {
-      alert("Error adding: " + error.message);
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert("Error adding: " + (errorData.message || 'Failed to add event'));
+        return;
+      }
+    } catch (err: any) {
+      alert("Error adding: " + err.message);
       return;
     }
 
@@ -131,22 +152,40 @@ export default function MentorDashboard() {
     }
 
     const year = new Date(edate).getFullYear();
+    const token = localStorage.getItem('mentor_auth_token');
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
 
-    const { error } = await supabase
-      .from("kmit_events")
-      .update({ 
-        name: en, 
-        description: ed, 
-        category: ec, 
-        date: edate, 
-        year, 
-        drive_link,
-        ticket_url: ec === "NAVRAAS" ? ticket_url : null,
-      })
-      .eq("id", editingId);
+    try {
+      const response = await fetch(
+        `https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_events?id=eq.${editingId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            name: en,
+            description: ed,
+            category: ec,
+            date: edate,
+            year,
+            drive_link,
+            ticket_url: ec === "NAVRAAS" ? ticket_url : null,
+          }),
+        }
+      );
 
-    if (error) {
-      alert("Update failed: " + error.message);
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert("Update failed: " + (errorData.message || 'Failed to update event'));
+        return;
+      }
+    } catch (err: any) {
+      alert("Update failed: " + err.message);
       return;
     }
 
@@ -165,8 +204,31 @@ export default function MentorDashboard() {
     const ok = confirm("Delete this event?");
     if (!ok) return;
 
-    const { error } = await supabase.from("kmit_events").delete().eq("id", id);
-    if (error) return alert(error.message);
+    const token = localStorage.getItem('mentor_auth_token');
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c';
+
+    try {
+      const response = await fetch(
+        `https://qvsrhfzdkjygjuwmfwmh.supabase.co/rest/v1/kmit_events?id=eq.${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'x-mentor-token': token || '',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert("Delete failed: " + (errorData.message || 'Failed to delete event'));
+        return;
+      }
+    } catch (err: any) {
+      alert("Delete failed: " + err.message);
+      return;
+    }
 
     loadEvents();
     alert("Deleted");
