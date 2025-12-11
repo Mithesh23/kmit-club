@@ -138,7 +138,7 @@ const ClubDetail = () => {
                   📅 Est. {new Date(club.created_at).getFullYear()}
                 </div>
                 {/* Social Media Icons */}
-                <SocialMediaIcons club={club} iconSize="lg" />
+                <SocialMediaIcons club={club} iconSize="lg" className="ml-auto" />
               </div>
             </div>
           </div>
