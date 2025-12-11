@@ -63,7 +63,7 @@ async function sendEmailWithRetry(
             </div>
             <hr style="border: 1px solid #eee; margin: 30px 0;">
             <p style="color: #999; font-size: 12px;">
-              This is an official announcement from ${clubName}. You received this because you are an approved member.
+              This is an official announcement from ${clubName}. You received this because you are an official club member.
             </p>
           </div>
         `,
