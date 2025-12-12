@@ -133,12 +133,12 @@ const AdminDashboard = () => {
             <EventsManager clubId={club.id} />
           </TabsContent>
 
-          <TabsContent value="attendance">
-            <AttendanceManager clubId={club.id} />
-          </TabsContent>
-
           <TabsContent value="registrations">
             <RegistrationsView clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="attendance">
+            <AttendanceManager clubId={club.id} />
           </TabsContent>
 
           <TabsContent value="reports">
