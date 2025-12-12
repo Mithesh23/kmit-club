@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Camera, Loader2, Share2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { format, isPast, parseISO } from 'date-fns';
 import { Event } from '@/types/club';
 import { EventRegistrationDialog } from '@/components/EventRegistrationDialog';
@@ -13,6 +14,35 @@ import { transformImageUrl } from '@/lib/utils';
 const EventDetail = () => {
   const { eventId, clubId } = useParams<{ eventId: string; clubId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event?.title || 'Event',
+          text: `Check out this event: ${event?.title}`,
+          url,
+        });
+      } catch (err) {
+        // User cancelled or share failed, fallback to clipboard
+        if ((err as Error).name !== 'AbortError') {
+          copyToClipboard(url);
+        }
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast({
+      title: 'Link copied!',
+      description: 'Event link copied to clipboard',
+    });
+  };
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -76,7 +106,7 @@ const EventDetail = () => {
       {/* Header */}
       <header className="relative bg-card/50 backdrop-blur-glass border-b border-border shadow-elegant">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center justify-between mb-6">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -85,6 +115,15 @@ const EventDetail = () => {
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Club
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              className="bg-card/50 hover:bg-card/80 backdrop-blur-sm border border-border"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
             </Button>
           </div>
           
