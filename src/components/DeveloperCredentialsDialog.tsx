@@ -56,30 +56,63 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
   useEffect(() => {
     if (open) {
       fetchAllCredentials();
+      
+      // Set up real-time subscriptions for updates
+      const studentChannel = supabase
+        .channel('dev-student-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'student_accounts' }, () => {
+          fetchStudentCredentials();
+        })
+        .subscribe();
+
+      const mentorChannel = supabase
+        .channel('dev-mentor-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'mentors' }, () => {
+          fetchMentorCredentials();
+        })
+        .subscribe();
+
+      const clubChannel = supabase
+        .channel('dev-club-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'club_admins' }, () => {
+          fetchClubCredentials();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(studentChannel);
+        supabase.removeChannel(mentorChannel);
+        supabase.removeChannel(clubChannel);
+      };
     }
   }, [open]);
+
+  const fetchClubCredentials = async () => {
+    const { data, error } = await supabase.rpc('get_all_club_credentials');
+    if (!error && data) setClubs(data);
+  };
+
+  const fetchMentorCredentials = async () => {
+    const { data, error } = await supabase.rpc('get_all_mentor_credentials');
+    if (!error && data) setMentors(data);
+  };
+
+  const fetchStudentCredentials = async () => {
+    const { data, error } = await supabase.rpc('get_all_student_credentials');
+    if (!error && data) setStudents(data);
+  };
 
   const fetchAllCredentials = async () => {
     setLoading(true);
     try {
-      // Fetch club credentials
-      const { data: clubData, error: clubError } = await supabase.rpc('get_all_club_credentials');
-      if (clubError) throw clubError;
-      setClubs(clubData || []);
+      // Fetch club credentials using RPC
+      await fetchClubCredentials();
 
-      // Fetch mentors
-      const { data: mentorData, error: mentorError } = await supabase
-        .from('mentors')
-        .select('id, name, email, password');
-      if (mentorError) throw mentorError;
-      setMentors(mentorData || []);
+      // Fetch mentors using RPC
+      await fetchMentorCredentials();
 
-      // Fetch students
-      const { data: studentData, error: studentError } = await supabase
-        .from('student_accounts')
-        .select('id, roll_number, student_email, phone, year, branch');
-      if (studentError) throw studentError;
-      setStudents(studentData || []);
+      // Fetch students using RPC
+      await fetchStudentCredentials();
 
     } catch (error) {
       console.error('Error fetching credentials:', error);

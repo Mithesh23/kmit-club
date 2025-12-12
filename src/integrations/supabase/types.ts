@@ -767,6 +767,26 @@ export type Database = {
           plain_password: string
         }[]
       }
+      get_all_mentor_credentials: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+          name: string
+          password: string
+        }[]
+      }
+      get_all_student_credentials: {
+        Args: never
+        Returns: {
+          branch: string
+          id: string
+          phone: string
+          roll_number: string
+          student_email: string
+          year: string
+        }[]
+      }
       get_current_admin_session: {
         Args: never
         Returns: {
