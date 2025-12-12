@@ -61,7 +61,21 @@ export const StudentProfileDialog = ({
     try {
       const token = localStorage.getItem('student_auth_token');
       
-      const { error } = await supabase
+      // Create a client with the auth token for RLS
+      const { createClient } = await import('@supabase/supabase-js');
+      const authClient = createClient(
+        'https://qvsrhfzdkjygjuwmfwmh.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c',
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        }
+      );
+      
+      const { error } = await authClient
         .from('student_accounts')
         .update({
           student_email: email.trim(),
@@ -72,7 +86,7 @@ export const StudentProfileDialog = ({
       if (error) throw error;
 
       // Also update club_registrations for consistency
-      await supabase
+      await authClient
         .from('club_registrations')
         .update({
           student_email: email.trim(),
