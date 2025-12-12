@@ -11,13 +11,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Search, Copy, Users, GraduationCap, Shield, 
-  ArrowUpDown, Eye, EyeOff, Loader2, X 
+  ArrowUpDown, Eye, EyeOff, Loader2, X, AlertCircle 
 } from 'lucide-react';
 
 interface ClubCredential {
   club_name: string;
   admin_email: string;
   plain_password: string;
+  password_changed: boolean;
 }
 
 interface MentorCredential {
@@ -34,6 +35,7 @@ interface StudentCredential {
   phone: string | null;
   year: string | null;
   branch: string | null;
+  password_changed: boolean;
 }
 
 interface DeveloperCredentialsDialogProps {
@@ -204,7 +206,8 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
     email, 
     password, 
     id,
-    extraInfo 
+    extraInfo,
+    passwordChanged = false
   }: { 
     title: string; 
     subtitle?: string; 
@@ -212,6 +215,7 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
     password: string; 
     id: string;
     extraInfo?: React.ReactNode;
+    passwordChanged?: boolean;
   }) => (
     <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-colors">
       <CardContent className="p-4 space-y-3">
@@ -239,25 +243,34 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
           
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground w-16">Password:</span>
-            <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
-              {visiblePasswords.has(id) ? password : '••••••••'}
-            </code>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6"
-              onClick={() => togglePasswordVisibility(id)}
-            >
-              {visiblePasswords.has(id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6"
-              onClick={() => copyToClipboard(password, 'Password')}
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
+            {passwordChanged ? (
+              <div className="flex items-center gap-1 text-xs text-amber-500 flex-1">
+                <AlertCircle className="h-3 w-3" />
+                <span>Password changed (default: {password})</span>
+              </div>
+            ) : (
+              <>
+                <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
+                  {visiblePasswords.has(id) ? password : '••••••••'}
+                </code>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  onClick={() => togglePasswordVisibility(id)}
+                >
+                  {visiblePasswords.has(id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  onClick={() => copyToClipboard(password, 'Password')}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </CardContent>
@@ -339,6 +352,7 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
                         title={club.club_name}
                         email={club.admin_email}
                         password={club.plain_password}
+                        passwordChanged={club.password_changed}
                       />
                     ))
                   )}
@@ -413,6 +427,7 @@ export const DeveloperCredentialsDialog = ({ open, onOpenChange }: DeveloperCred
                         subtitle={student.student_email || undefined}
                         email={student.roll_number}
                         password="Kmitclubs123"
+                        passwordChanged={student.password_changed}
                         extraInfo={
                           <div className="flex gap-1">
                             {student.year && <Badge variant="secondary" className="text-xs">{student.year}</Badge>}

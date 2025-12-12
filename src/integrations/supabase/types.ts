@@ -764,6 +764,7 @@ export type Database = {
         Returns: {
           admin_email: string
           club_name: string
+          password_changed: boolean
           plain_password: string
         }[]
       }
@@ -781,6 +782,7 @@ export type Database = {
         Returns: {
           branch: string
           id: string
+          password_changed: boolean
           phone: string
           roll_number: string
           student_email: string
