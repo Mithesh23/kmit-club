@@ -9,9 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
+import { DeveloperCredentialsDialog } from './DeveloperCredentialsDialog';
 
 // Tabs
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+// Developer secret credentials
+const DEV_EMAIL = 'Developer.secrets@kmit.mi';
+const DEV_PASSWORD = 'kmitclubs.secret.mithesh';
 
 interface ClubLoginDialogProps {
   buttonSize?: "sm" | "default" | "lg" | "icon";
@@ -19,6 +24,7 @@ interface ClubLoginDialogProps {
 
 export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps) => {
   const [open, setOpen] = useState(false);
+  const [devDialogOpen, setDevDialogOpen] = useState(false);
 
   // Club login
   const [email, setEmail] = useState('');
@@ -100,6 +106,15 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
       return;
     }
 
+    // Check for developer secret credentials
+    if (mentorEmail === DEV_EMAIL && mentorPassword === DEV_PASSWORD) {
+      setOpen(false);
+      setMentorEmail('');
+      setMentorPassword('');
+      setDevDialogOpen(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -142,6 +157,8 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
   };
 
   return (
+    <>
+      <DeveloperCredentialsDialog open={devDialogOpen} onOpenChange={setDevDialogOpen} />
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size={buttonSize} className="gap-2">
@@ -299,5 +316,6 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
         </Tabs>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
