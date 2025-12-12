@@ -8,8 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAdminReports, useCreateReport, useDeleteReport } from '@/hooks/useAdminClubData';
-import { FileText, Loader2, Trash2, Upload, CalendarIcon, Eye, Plus, Download, Filter } from 'lucide-react';
+import { useAdminReports, useCreateReport, useDeleteReport, useAdminRegistrations } from '@/hooks/useAdminClubData';
+import { FileText, Loader2, Trash2, Upload, CalendarIcon, Eye, Plus, Download, Filter, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const [title, setTitle] = useState('');
   const [reportType, setReportType] = useState<'mom' | 'monthly' | 'yearly' | 'event'>('mom');
   const [reportDate, setReportDate] = useState<Date>();
-  const [participants, setParticipants] = useState('');
+  const [selectedRollNumbers, setSelectedRollNumbers] = useState<string[]>([]);
   
   // Filtering and sorting
   const [filterType, setFilterType] = useState<string>('all');
@@ -50,9 +50,37 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const [plans, setPlans] = useState('');
 
   const { data: reports, isLoading } = useAdminReports(clubId);
+  const { data: registrations, isLoading: registrationsLoading } = useAdminRegistrations(clubId);
   const { mutate: createReport, isPending: creating } = useCreateReport();
   const { mutate: deleteReport } = useDeleteReport();
   const { toast } = useToast();
+
+  // Get approved students with roll numbers (excluding Pass Out students)
+  const approvedStudents = useMemo(() => {
+    if (!registrations) return [];
+    return registrations
+      .filter(r => r.status === 'approved' && r.roll_number && r.year !== 'Pass Out')
+      .map(r => ({
+        roll_number: r.roll_number!,
+        name: r.student_name,
+      }));
+  }, [registrations]);
+
+  const toggleRollNumber = (rollNumber: string) => {
+    setSelectedRollNumbers(prev => 
+      prev.includes(rollNumber) 
+        ? prev.filter(r => r !== rollNumber)
+        : [...prev, rollNumber]
+    );
+  };
+
+  const selectAllParticipants = () => {
+    setSelectedRollNumbers(approvedStudents.map(s => s.roll_number));
+  };
+
+  const deselectAllParticipants = () => {
+    setSelectedRollNumbers([]);
+  };
 
   // Filter and sort reports
   const filteredAndSortedReports = useMemo(() => {
@@ -92,10 +120,10 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !reportDate || !participants) {
+    if (!title || !reportDate || selectedRollNumbers.length === 0) {
       toast({
         title: 'Missing information',
-        description: 'Please fill in all common fields',
+        description: 'Please fill in all common fields and select at least one participant',
         variant: 'destructive',
       });
       return;
@@ -121,14 +149,12 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
       reportData.plans = plans;
     }
 
-    const rollNumbers = participants.split(',').map(r => r.trim()).filter(r => r);
-
     createReport({
       club_id: clubId,
       title,
       report_type: reportType,
       report_date: format(reportDate, 'yyyy-MM-dd'),
-      participants_roll_numbers: rollNumbers,
+      participants_roll_numbers: selectedRollNumbers,
       report_data: reportData,
       file_url: null,
     }, {
@@ -140,7 +166,7 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
         // Reset form
         setTitle('');
         setReportDate(undefined);
-        setParticipants('');
+        setSelectedRollNumbers([]);
         setAgenda('');
         setDiscussions('');
         setDecisions('');
@@ -325,16 +351,55 @@ export const ReportsManager = ({ clubId }: ReportsManagerProps) => {
                 </Popover>
               </div>
 
-              <div>
-                <Label htmlFor="participants">Participants Roll Numbers *</Label>
-                <Textarea
-                  id="participants"
-                  value={participants}
-                  onChange={(e) => setParticipants(e.target.value)}
-                  placeholder="Enter roll numbers separated by commas (e.g., 001, 002, 003)"
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">Separate multiple roll numbers with commas</p>
+              {/* Roll Number Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base">Select Participants *</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Click on roll numbers to select participants ({selectedRollNumbers.length}/{approvedStudents.length} selected)
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={selectAllParticipants}>
+                      Select All
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={deselectAllParticipants}>
+                      Deselect All
+                    </Button>
+                  </div>
+                </div>
+
+                {registrationsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : approvedStudents.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 p-4 bg-muted/50 rounded-lg max-h-64 overflow-y-auto">
+                    {approvedStudents.map((student) => (
+                      <Button
+                        key={student.roll_number}
+                        type="button"
+                        variant={selectedRollNumbers.includes(student.roll_number) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleRollNumber(student.roll_number)}
+                        className={cn(
+                          "transition-all",
+                          selectedRollNumbers.includes(student.roll_number) 
+                            ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
+                            : "hover:border-green-500"
+                        )}
+                      >
+                        {student.roll_number}
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-muted/50 rounded-lg">
+                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">No approved members with roll numbers found.</p>
+                  </div>
+                )}
               </div>
             </div>
 
