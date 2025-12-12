@@ -93,18 +93,22 @@ const AdminDashboard = () => {
               <Calendar className="h-4 w-4" />
               Events
             </TabsTrigger>
-            <TabsTrigger value="attendance" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ClipboardCheck className="h-4 w-4" />
-              Attendance
-            </TabsTrigger>
+
             <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <UserCheck className="h-4 w-4" />
               Registrations
             </TabsTrigger>
+            
+            <TabsTrigger value="attendance" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ClipboardCheck className="h-4 w-4" />
+              Attendance
+            </TabsTrigger>
+                  
             <TabsTrigger value="reports" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <FileText className="h-4 w-4" />
               Reports
             </TabsTrigger>
+            
           </TabsList>
 
           <TabsContent value="info">
