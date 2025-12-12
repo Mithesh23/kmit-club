@@ -10,8 +10,10 @@ import { format } from 'date-fns';
 import { useStudentAttendance } from '@/hooks/useAttendance';
 import { StudentProfileDialog } from '@/components/StudentProfileDialog';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
+import { ReportDetailsDialog } from '@/components/ReportDetailsDialog';
 import kmitLogo from '@/assets/kmit-logo.png';
 import { transformImageUrl } from '@/lib/utils';
+import type { Json } from '@/integrations/supabase/types';
 
 interface StudentClub {
   id: string;
@@ -37,6 +39,9 @@ interface StudentReport {
   report_type: string;
   report_date: string | null;
   created_at: string;
+  file_url: string | null;
+  report_data: Json | null;
+  participants_roll_numbers: string[] | null;
   club: {
     name: string;
   };
@@ -47,6 +52,8 @@ const StudentDashboard = () => {
   const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [reports, setReports] = useState<StudentReport[]>([]);
   const [rollNumber, setRollNumber] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<StudentReport | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -100,6 +107,9 @@ const StudentDashboard = () => {
           report_type,
           report_date,
           created_at,
+          file_url,
+          report_data,
+          participants_roll_numbers,
           club:clubs(name)
         `)
         .contains('participants_roll_numbers', [roll])
@@ -391,7 +401,10 @@ const StudentDashboard = () => {
                       <div
                         key={report.id}
                         className="p-3 bg-gradient-secondary rounded-lg border border-primary/10 cursor-pointer hover:shadow-sm transition-all"
-                        onClick={() => navigate(`/report/${report.id}`)}
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setReportDialogOpen(true);
+                        }}
                       >
                         <h4 className="font-medium text-sm truncate">{report.title}</h4>
                         <div className="flex items-center gap-2 mt-1">
@@ -422,6 +435,16 @@ const StudentDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Report Details Dialog */}
+      <ReportDetailsDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        report={selectedReport ? {
+          ...selectedReport,
+          report_data: selectedReport.report_data as Record<string, string> | null
+        } : null}
+      />
     </div>
   );
 };
