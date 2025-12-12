@@ -77,27 +77,32 @@ const AdminDashboard = () => {
       <main className="container mx-auto px-6 py-8">
         <Tabs defaultValue="info" className="space-y-6">
           <TabsList className="grid w-full grid-cols-7 bg-white shadow-sm">
+
+            
             <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Settings className="h-4 w-4" />
               Club Info
             </TabsTrigger>
+            
             <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Megaphone className="h-4 w-4" />
               Announcements
             </TabsTrigger>
-            <TabsTrigger value="members" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Users className="h-4 w-4" />
-              Members
-            </TabsTrigger>
+
             <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Calendar className="h-4 w-4" />
               Events
             </TabsTrigger>
-
-            <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                      
+            <TabsTrigger value="members" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Users className="h-4 w-4" />
+              Members
+            </TabsTrigger>
+            
+             <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <UserCheck className="h-4 w-4" />
               Registrations
-            </TabsTrigger>
+            </TabsTrigger>         
             
             <TabsTrigger value="attendance" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ClipboardCheck className="h-4 w-4" />
