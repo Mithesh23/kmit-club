@@ -325,63 +325,6 @@ const StudentDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Attended Events */}
-            <Card className="card-elegant border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg font-display">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  Events Attended
-                </CardTitle>
-                <CardDescription>
-                  Your attendance history
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {attendanceLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  </div>
-                ) : attendedEvents && attendedEvents.length > 0 ? (
-                  <div className="space-y-3">
-                    {attendedEvents.slice(0, 5).map((event) => (
-                      <div
-                        key={event.id}
-                        className="p-3 bg-green-50 border border-green-200 rounded-lg"
-                      >
-                        <h4 className="font-medium text-sm truncate">{event.title}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Attended
-                          </Badge>
-                          {event.club?.name && (
-                            <span className="text-xs text-muted-foreground">
-                              {event.club.name}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(event.event_date), 'PP')}
-                          <Clock className="h-3 w-3 ml-2" />
-                          {event.event_time}
-                        </div>
-                        {event.description && (
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {event.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <CheckCircle2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No attendance records yet</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Recent Reports */}
             <Card className="card-elegant border-0 shadow-lg">
