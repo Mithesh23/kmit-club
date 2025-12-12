@@ -61,7 +61,7 @@ export const StudentProfileDialog = ({
     try {
       const token = localStorage.getItem('student_auth_token');
       
-      // Create a client with the auth token for RLS
+      // Create a client with the custom x-student-token header for RLS
       const { createClient } = await import('@supabase/supabase-js');
       const authClient = createClient(
         'https://qvsrhfzdkjygjuwmfwmh.supabase.co',
@@ -69,7 +69,7 @@ export const StudentProfileDialog = ({
         {
           global: {
             headers: {
-              Authorization: `Bearer ${token}`
+              'x-student-token': token || ''
             }
           }
         }
