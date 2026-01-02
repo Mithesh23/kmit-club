@@ -176,7 +176,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               maxLength={10}
               required
             />
-            <p className="text-xs text-muted-foreground">Format: 2 digits + BD + 1 digit + A + 4 digits</p>
+            
           </div>
             
           <div className="grid grid-cols-2 gap-4">
