@@ -20,6 +20,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
   const [studentEmail, setStudentEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [rollNumber, setRollNumber] = useState('');
+  const [rollNumberTouched, setRollNumberTouched] = useState(false);
   const [year, setYear] = useState('');
   const [branch, setBranch] = useState('');
   const [whyJoin, setWhyJoin] = useState('');
@@ -28,10 +29,12 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
   const { toast } = useToast();
 
   // Roll number validation: 2 digits + "bd" + 1 digit + "a" + 4 digits (case-insensitive)
+  const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{4}$/;
   const validateRollNumber = (rollNo: string): boolean => {
-    const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{4}$/;
     return rollNumberRegex.test(rollNo);
   };
+  const isRollNumberValid = rollNumber === '' || validateRollNumber(rollNumber);
+  const showRollNumberError = rollNumberTouched && rollNumber !== '' && !isRollNumberValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,11 +175,14 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               placeholder="e.g., 24BD1A2345"
               value={rollNumber}
               onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-              className="h-12 bg-white/50 border-primary/20 focus:border-primary"
+              onBlur={() => setRollNumberTouched(true)}
+              className={`h-12 bg-white/50 focus:border-primary ${showRollNumberError ? 'border-destructive' : 'border-primary/20'}`}
               maxLength={10}
               required
             />
-            
+            {showRollNumberError && (
+              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345</p>
+            )}
           </div>
             
           <div className="grid grid-cols-2 gap-4">

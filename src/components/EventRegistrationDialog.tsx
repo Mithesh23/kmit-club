@@ -32,6 +32,7 @@ interface EventRegistrationDialogProps {
 export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen }: EventRegistrationDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rollNumberTouched, setRollNumberTouched] = useState(false);
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -41,6 +42,9 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
     branch: '',
     year: '',
   });
+
+  const isRollNumberValid = formData.roll_number === '' || rollNumberRegex.test(formData.roll_number);
+  const showRollNumberError = rollNumberTouched && formData.roll_number !== '' && !isRollNumberValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,11 +166,15 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
               id="roll_number"
               value={formData.roll_number}
               onChange={(e) => setFormData({ ...formData, roll_number: e.target.value.toUpperCase() })}
+              onBlur={() => setRollNumberTouched(true)}
               placeholder="e.g., 24BD1A2345"
               required
               maxLength={10}
+              className={showRollNumberError ? 'border-destructive' : ''}
             />
-            
+            {showRollNumberError && (
+              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345</p>
+            )}
           </div>
 
           <div className="space-y-2">
