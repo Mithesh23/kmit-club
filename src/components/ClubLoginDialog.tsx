@@ -33,12 +33,7 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
 
   // Password visibility toggles
   const [showClubPass, setShowClubPass] = useState(false);
-  const [showStudentPass, setShowStudentPass] = useState(false);
   const [showMentorPass, setShowMentorPass] = useState(false);
-
-  // Student login
-  const [studentRoll, setStudentRoll] = useState('');
-  const [studentPass, setStudentPass] = useState('');
 
   // Mentor login
   const [mentorEmail, setMentorEmail] = useState('');
@@ -81,16 +76,6 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
     } finally {
       setLoading(false);
     }
-  };
-
-  /* ------------------------ STUDENT LOGIN HANDLER ------------------------ */
-  const handleStudentLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    toast({
-      title: "Student Login",
-      description: "Student login functionality will be added soon.",
-    });
   };
 
   /* ------------------------ MENTOR LOGIN HANDLER ------------------------ */
@@ -173,9 +158,8 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
         </DialogHeader>
 
         <Tabs defaultValue="club" className="w-full mt-2">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="club">Club</TabsTrigger>
-            <TabsTrigger value="student">Student</TabsTrigger>
             <TabsTrigger value="faculty">Principal</TabsTrigger>
           </TabsList>
 
@@ -223,47 +207,6 @@ export const ClubLoginDialog = ({ buttonSize = "default" }: ClubLoginDialogProps
                 ) : (
                   "Login"
                 )}
-              </Button>
-            </form>
-          </TabsContent>
-
-          {/* ---------------- STUDENT LOGIN TAB ---------------- */}
-          <TabsContent value="student">
-            <form onSubmit={handleStudentLogin} className="space-y-4 mt-4">
-
-              {/* Roll Number */}
-              <div className="space-y-2">
-                <Label>Roll Number</Label>
-                <Input
-                  placeholder="Enter roll number"
-                  value={studentRoll}
-                  onChange={(e) => setStudentRoll(e.target.value)}
-                />
-              </div>
-
-              {/* Password with Eye Toggle */}
-              <div className="space-y-2">
-                <Label>Password</Label>
-                <div className="relative">
-                  <Input
-                    type={showStudentPass ? "text" : "password"}
-                    placeholder="Enter password"
-                    value={studentPass}
-                    onChange={(e) => setStudentPass(e.target.value)}
-                  />
-
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    onClick={() => setShowStudentPass(!showStudentPass)}
-                  >
-                    {showStudentPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full">
-                Login as Student
               </Button>
             </form>
           </TabsContent>
