@@ -55,7 +55,7 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
         event_id: eventId,
         student_name: validatedData.student_name,
         student_email: validatedData.student_email,
-        roll_number: validatedData.roll_number,
+        roll_number: validatedData.roll_number.toUpperCase(),
         branch: validatedData.branch,
         year: validatedData.year,
       };
