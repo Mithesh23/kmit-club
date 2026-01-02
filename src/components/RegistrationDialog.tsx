@@ -62,7 +62,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
         student_name: studentName,
         student_email: studentEmail,
         phone: phone || null,
-        roll_number: rollNumber || null,
+        roll_number: rollNumber.toUpperCase() || null,
         year: year || null,
         branch: branch || null,
         why_join: whyJoin || null,
