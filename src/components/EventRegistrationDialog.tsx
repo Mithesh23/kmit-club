@@ -166,7 +166,7 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
               required
               maxLength={10}
             />
-            <p className="text-xs text-muted-foreground">Format: 2 digits + BD + 1 digit + A + 4 digits</p>
+            
           </div>
 
           <div className="space-y-2">
