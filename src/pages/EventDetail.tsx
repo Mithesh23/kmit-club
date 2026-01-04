@@ -18,26 +18,30 @@ const EventDetail = () => {
 
   const handleShare = async () => {
     const url = window.location.href;
+    const shareTitle = `KMIT Clubs | ${event?.title || 'Event'}`;
+    const shareText = `Check out this event from KMIT Clubs: ${event?.title}\n\n${event?.description?.substring(0, 100)}${(event?.description?.length || 0) > 100 ? '...' : ''}`;
+    
     if (navigator.share) {
       try {
         await navigator.share({
-          title: event?.title || 'Event',
-          text: `Check out this event: ${event?.title}`,
+          title: shareTitle,
+          text: shareText,
           url,
         });
       } catch (err) {
         // User cancelled or share failed, fallback to clipboard
         if ((err as Error).name !== 'AbortError') {
-          copyToClipboard(url);
+          copyToClipboard(url, shareTitle, shareText);
         }
       }
     } else {
-      copyToClipboard(url);
+      copyToClipboard(url, shareTitle, shareText);
     }
   };
 
-  const copyToClipboard = (url: string) => {
-    navigator.clipboard.writeText(url);
+  const copyToClipboard = (url: string, title: string, text: string) => {
+    const fullMessage = `${title}\n\n${text}\n\n${url}`;
+    navigator.clipboard.writeText(fullMessage);
     toast({
       title: 'Link copied!',
       description: 'Event link copied to clipboard',
