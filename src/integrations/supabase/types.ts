@@ -809,6 +809,7 @@ export type Database = {
           student_id: string
         }[]
       }
+      insert_daily_student_session: { Args: never; Returns: undefined }
       is_admin_for_event_storage: {
         Args: { event_id_param: string }
         Returns: boolean
