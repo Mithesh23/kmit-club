@@ -16,9 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, CalendarIcon, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail } from 'lucide-react';
+import { Calendar, CalendarIcon, Plus, Loader2, Camera, Link, Users, Lock, LockOpen, Download, Mail, QrCode, ClipboardCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn, transformImageUrl } from '@/lib/utils';
+import { QRScannerDialog } from './QRScannerDialog';
+import { EventAttendanceDialog } from './EventAttendanceDialog';
 
 const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
@@ -49,6 +51,8 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState<string | null>(null);
+  const [attendanceOpen, setAttendanceOpen] = useState<string | null>(null);
   
   const { data: events, isLoading, refetch } = useAdminEvents(clubId);
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
@@ -316,8 +320,45 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                           </>
                         )}
                       </Button>
-                      <EventRegistrationsDialog eventId={event.id} eventTitle={event.title} />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setAttendanceOpen(event.id)}
+                      >
+                        <ClipboardCheck className="h-3 w-3 mr-1" />
+                        View Attendance
+                      </Button>
+                      <EventRegistrationsDialog eventId={event.id} eventTitle={event.title} clubId={clubId} />
                     </div>
+                    
+                    {/* QR Scan Button */}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setScannerOpen(event.id)}
+                        className="bg-primary/10 hover:bg-primary/20 text-primary"
+                      >
+                        <QrCode className="h-3 w-3 mr-1" />
+                        Scan QR
+                      </Button>
+                    </div>
+                    
+                    {/* QR Scanner Dialog */}
+                    <QRScannerDialog
+                      open={scannerOpen === event.id}
+                      onOpenChange={(open) => setScannerOpen(open ? event.id : null)}
+                      eventId={event.id}
+                      eventTitle={event.title}
+                    />
+                    
+                    {/* Event Attendance Dialog */}
+                    <EventAttendanceDialog
+                      open={attendanceOpen === event.id}
+                      onOpenChange={(open) => setAttendanceOpen(open ? event.id : null)}
+                      eventId={event.id}
+                      eventTitle={event.title}
+                    />
 
                     {event.event_images && event.event_images.length > 0 && (
                       <div className="grid grid-cols-3 gap-2">
@@ -382,7 +423,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
 };
 
 // Event Registrations Dialog Component
-const EventRegistrationsDialog = ({ eventId, eventTitle }: { eventId: string; eventTitle: string }) => {
+const EventRegistrationsDialog = ({ eventId, eventTitle, clubId }: { eventId: string; eventTitle: string; clubId: string }) => {
   const { data: registrations, isLoading } = useEventRegistrations(eventId);
   const { toast } = useToast();
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
