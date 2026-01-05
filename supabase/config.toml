@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.send-new-event-email]
 verify_jwt = false
+
+[functions.send-event-registration-qr]
+verify_jwt = false

@@ -369,6 +369,60 @@ export type Database = {
         }
         Relationships: []
       }
+      event_attendance: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          is_present: boolean
+          qr_token: string
+          registration_id: string
+          roll_number: string
+          scanned_at: string | null
+          student_email: string
+          student_name: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          is_present?: boolean
+          qr_token: string
+          registration_id: string
+          roll_number: string
+          scanned_at?: string | null
+          student_email: string
+          student_name: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_present?: boolean
+          qr_token?: string
+          registration_id?: string
+          roll_number?: string
+          scanned_at?: string | null
+          student_email?: string
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendance_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_images: {
         Row: {
           created_at: string
@@ -816,6 +870,16 @@ export type Database = {
       }
       is_club_active: { Args: { club_id_param: string }; Returns: boolean }
       is_mentor: { Args: never; Returns: boolean }
+      mark_event_attendance: {
+        Args: { p_event_id: string; p_qr_token: string }
+        Returns: {
+          message: string
+          roll_number: string
+          scanned_at: string
+          student_name: string
+          success: boolean
+        }[]
+      }
       mentor_create_club: {
         Args: {
           p_name: string

@@ -55,7 +55,8 @@ const EventDetail = () => {
         .from('events')
         .select(`
           *,
-          event_images(*)
+          event_images(*),
+          club:clubs(name)
         `)
         .eq('id', eventId!)
         .single();
@@ -65,6 +66,8 @@ const EventDetail = () => {
     },
     enabled: !!eventId
   });
+
+  const clubName = (event as any)?.club?.name || 'KMIT Club';
 
   if (isLoading) {
     return (
@@ -175,6 +178,8 @@ const EventDetail = () => {
                 eventId={event.id} 
                 eventTitle={event.title}
                 registrationOpen={event.registration_open ?? true}
+                eventDate={event.event_date}
+                clubName={clubName}
               />
             </div>
           </div>

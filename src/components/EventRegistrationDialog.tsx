@@ -27,9 +27,17 @@ interface EventRegistrationDialogProps {
   eventId: string;
   eventTitle: string;
   registrationOpen: boolean;
+  eventDate?: string | null;
+  clubName?: string;
 }
 
-export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen }: EventRegistrationDialogProps) => {
+export const EventRegistrationDialog = ({ 
+  eventId, 
+  eventTitle, 
+  registrationOpen,
+  eventDate,
+  clubName = 'KMIT Club'
+}: EventRegistrationDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rollNumberTouched, setRollNumberTouched] = useState(false);
@@ -64,9 +72,11 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
         year: validatedData.year,
       };
 
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('event_registrations')
-        .insert([registrationData as any]);
+        .insert([registrationData as any])
+        .select()
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -81,10 +91,42 @@ export const EventRegistrationDialog = ({ eventId, eventTitle, registrationOpen 
         return;
       }
 
-      toast({
-        title: 'Registration Successful!',
-        description: `You have been registered for ${eventTitle}`,
-      });
+      // Send QR code email
+      try {
+        console.log('Sending QR code email...');
+        const { error: qrError } = await supabase.functions.invoke('send-event-registration-qr', {
+          body: {
+            registration_id: insertedData.id,
+            event_id: eventId,
+            event_title: eventTitle,
+            event_date: eventDate,
+            student_name: validatedData.student_name,
+            student_email: validatedData.student_email,
+            roll_number: validatedData.roll_number.toUpperCase(),
+            club_name: clubName,
+          },
+        });
+
+        if (qrError) {
+          console.error('Failed to send QR email:', qrError);
+          // Registration succeeded, but QR email failed - still show success
+          toast({
+            title: 'Registration Successful!',
+            description: `You have been registered for ${eventTitle}. QR code email may be delayed.`,
+          });
+        } else {
+          toast({
+            title: 'Registration Successful! 🎉',
+            description: `Check your email for your entry QR code!`,
+          });
+        }
+      } catch (qrEmailError) {
+        console.error('QR email error:', qrEmailError);
+        toast({
+          title: 'Registration Successful!',
+          description: `You have been registered for ${eventTitle}.`,
+        });
+      }
 
       setFormData({
         student_name: '',
