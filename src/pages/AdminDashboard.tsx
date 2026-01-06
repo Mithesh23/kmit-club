@@ -10,9 +10,10 @@ import { EventsManager } from '@/components/admin/EventsManager';
 import { RegistrationsView } from '@/components/admin/RegistrationsView';
 import { ReportsManager } from '@/components/admin/ReportsManager';
 import { AttendanceManager } from '@/components/admin/AttendanceManager';
+import { CertificatesManager } from '@/components/admin/CertificatesManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck, Share2 } from 'lucide-react';
+import { LogOut, Settings, Users, Calendar, Megaphone, UserCheck, FileText, Loader2, ClipboardCheck, Award } from 'lucide-react';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 import kmitLogo from '@/assets/kmit-logo.png';
 
@@ -76,8 +77,7 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-white shadow-sm">
-
+          <TabsList className="grid w-full grid-cols-8 bg-white shadow-sm">
             
             <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Settings className="h-4 w-4" />
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
               Members
             </TabsTrigger>
             
-             <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="registrations" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <UserCheck className="h-4 w-4" />
               Registrations
             </TabsTrigger>         
@@ -107,6 +107,11 @@ const AdminDashboard = () => {
             <TabsTrigger value="attendance" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ClipboardCheck className="h-4 w-4" />
               Attendance
+            </TabsTrigger>
+
+            <TabsTrigger value="certificates" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Award className="h-4 w-4" />
+              Certificates
             </TabsTrigger>
                   
             <TabsTrigger value="reports" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -148,6 +153,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="attendance">
             <AttendanceManager clubId={club.id} />
+          </TabsContent>
+
+          <TabsContent value="certificates">
+            <CertificatesManager clubId={club.id} />
           </TabsContent>
 
           <TabsContent value="reports">

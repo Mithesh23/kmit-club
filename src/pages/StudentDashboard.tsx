@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, LogOut, Users, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { Loader2, LogOut, Users, Calendar, FileText, CheckCircle2, Clock, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import { useStudentAttendance } from '@/hooks/useAttendance';
 import { StudentProfileDialog } from '@/components/StudentProfileDialog';
 import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 import { ReportDetailsDialog } from '@/components/ReportDetailsDialog';
+import { StudentCertificatesSection } from '@/components/StudentCertificatesSection';
 import kmitLogo from '@/assets/kmit-logo.png';
 import { transformImageUrl } from '@/lib/utils';
 import type { Json } from '@/integrations/supabase/types';
@@ -215,8 +216,9 @@ const StudentDashboard = () => {
       {/* Main Content */}
       <main className="relative container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* My Clubs */}
-          <div className="lg:col-span-2">
+          {/* Left Column - My Clubs and Certificates */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* My Clubs */}
             <Card className="card-elegant border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-xl font-display">
@@ -289,6 +291,9 @@ const StudentDashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* My Certificates */}
+            <StudentCertificatesSection rollNumber={rollNumber || ''} />
           </div>
 
           {/* Sidebar */}
