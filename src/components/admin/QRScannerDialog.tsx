@@ -2,15 +2,23 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Camera, CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+
+interface Event {
+  id: string;
+  title: string;
+}
 
 interface QRScannerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventId: string;
   eventTitle: string;
+  events?: Event[];
+  onEventChange?: (event: { id: string; title: string }) => void;
 }
 
 interface ScanResult {
@@ -21,12 +29,20 @@ interface ScanResult {
   scanned_at: string | null;
 }
 
-export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRScannerDialogProps) {
+export function QRScannerDialog({ 
+  open, 
+  onOpenChange, 
+  eventId, 
+  eventTitle, 
+  events = [], 
+  onEventChange 
+}: QRScannerDialogProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoResumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startScanning = async () => {
     if (!containerRef.current) return;
@@ -120,19 +136,27 @@ export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRS
       }
 
       const resultData = data?.[0];
-      setScanResult({
+      const scanResultData = {
         success: resultData?.success || false,
         message: resultData?.message || "Unknown error",
         student_name: resultData?.student_name || null,
         roll_number: resultData?.roll_number || null,
         scanned_at: resultData?.scanned_at || null,
-      });
+      };
+      
+      setScanResult(scanResultData);
 
       if (resultData?.success) {
         toast({
           title: "Attendance Marked!",
           description: `${resultData.student_name} (${resultData.roll_number}) is now present.`,
         });
+        
+        // Auto-resume scanning after 2.5 seconds for successful scans
+        autoResumeTimerRef.current = setTimeout(() => {
+          setScanResult(null);
+          startScanning();
+        }, 2500);
       }
 
     } catch (err) {
@@ -150,6 +174,11 @@ export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRS
   };
 
   const handleScanAnother = () => {
+    // Clear any auto-resume timer
+    if (autoResumeTimerRef.current) {
+      clearTimeout(autoResumeTimerRef.current);
+      autoResumeTimerRef.current = null;
+    }
     setScanResult(null);
     startScanning();
   };
@@ -159,12 +188,20 @@ export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRS
     if (!open) {
       stopScanning();
       setScanResult(null);
+      if (autoResumeTimerRef.current) {
+        clearTimeout(autoResumeTimerRef.current);
+        autoResumeTimerRef.current = null;
+      }
     }
   }, [open]);
 
   useEffect(() => {
     return () => {
       stopScanning();
+      if (autoResumeTimerRef.current) {
+        clearTimeout(autoResumeTimerRef.current);
+        autoResumeTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -183,13 +220,40 @@ export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRS
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5" />
-            Scan QR Code - {eventTitle}
+            Scan QR Code
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Event Selector */}
+          {events.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select Event</label>
+              <Select
+                value={eventId}
+                onValueChange={(value) => {
+                  const selectedEvent = events.find(e => e.id === value);
+                  if (selectedEvent && onEventChange) {
+                    onEventChange({ id: selectedEvent.id, title: selectedEvent.title });
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an event" />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.map((event) => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Scanner Container */}
-          {!scanResult && (
+          {!scanResult && eventId && (
             <div className="space-y-4">
               <div 
                 id="qr-reader" 
@@ -238,6 +302,9 @@ export function QRScannerDialog({ open, onOpenChange, eventId, eventTitle }: QRS
                       <span className="font-medium">{formatTime(scanResult.scanned_at)}</span>
                     </div>
                   </div>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-3 text-center">
+                    Resuming scanner in a moment...
+                  </p>
                 </div>
               ) : (
                 <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
