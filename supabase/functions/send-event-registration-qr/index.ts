@@ -75,8 +75,8 @@ const handler = async (req: Request): Promise<Response> => {
       registration_id: registration_id,
     });
 
-    // Generate QR code as base64 data URL
-    const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+    // Generate QR code as base64 string (without data URL prefix)
+    const qrCodeBase64 = await QRCode.toDataURL(qrData, {
       width: 300,
       margin: 2,
       color: {
@@ -84,6 +84,9 @@ const handler = async (req: Request): Promise<Response> => {
         light: '#ffffff',
       },
     });
+
+    // Extract pure base64 content (remove data:image/png;base64, prefix)
+    const base64Content = qrCodeBase64.replace(/^data:image\/png;base64,/, '');
 
     console.log("QR code generated successfully");
 
@@ -122,11 +125,18 @@ const handler = async (req: Request): Promise<Response> => {
         })
       : 'Date TBA';
 
-    // Send email with QR code
+    // Send email with QR code as inline attachment
     const emailResponse = await resend.emails.send({
       from: "KMIT Clubs <noreply@kmitclubs.in>",
       to: [student_email],
       subject: `🎫 Your Entry Pass for ${event_title} - KMIT Clubs`,
+      attachments: [
+        {
+          filename: 'qr-code.png',
+          content: base64Content,
+          content_type: 'image/png',
+        },
+      ],
       html: `
         <!DOCTYPE html>
         <html>
@@ -154,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
                         Dear <strong>${student_name}</strong>,
                       </p>
                       <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 25px;">
-                        Your registration for the event has been confirmed! Please present this QR code at the venue for entry.
+                        Your registration for the event has been confirmed! Please find your QR code attached to this email. Present this QR code at the venue for entry.
                       </p>
                       
                       <!-- Event Details Card -->
@@ -175,13 +185,15 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                       </table>
                       
-                      <!-- QR Code Section -->
+                      <!-- QR Code Notice -->
                       <div style="text-align: center; margin: 30px 0;">
                         <p style="color: #6b7280; font-size: 14px; margin: 0 0 15px;">
                           <strong>📱 Your Entry QR Code</strong>
                         </p>
                         <div style="background: #ffffff; border: 3px solid #6366f1; border-radius: 16px; padding: 20px; display: inline-block;">
-                          <img src="${qrCodeDataUrl}" alt="Event Entry QR Code" style="width: 250px; height: 250px; display: block;" />
+                          <p style="color: #374151; margin: 0; font-size: 14px;">
+                            📎 <strong>Check the attachment</strong> for your QR code image
+                          </p>
                         </div>
                         <p style="color: #9ca3af; font-size: 12px; margin: 15px 0 0;">
                           This QR code is unique to you and can only be used once
@@ -193,7 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
                         <tr>
                           <td>
                             <p style="color: #92400e; font-size: 13px; margin: 0; line-height: 1.5;">
-                              <strong>⚠️ Important:</strong> Please save this email or take a screenshot of the QR code. You will need to show this at the venue for entry. Each QR code can only be scanned once.
+                              <strong>⚠️ Important:</strong> Please save the attached QR code image or take a screenshot. You will need to show this at the venue for entry. Each QR code can only be scanned once.
                             </p>
                           </td>
                         </tr>
