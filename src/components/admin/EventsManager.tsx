@@ -51,7 +51,8 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
-  const [scannerOpen, setScannerOpen] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [selectedEventForScan, setSelectedEventForScan] = useState<{ id: string; title: string } | null>(null);
   const [attendanceOpen, setAttendanceOpen] = useState<string | null>(null);
   
   const { data: events, isLoading, refetch } = useAdminEvents(clubId);
@@ -272,7 +273,23 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
 
         {/* Existing Events */}
         <div>
-          <h4 className="font-semibold mb-3">Existing Events</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold">Existing Events</h4>
+            <Button
+              size="icon"
+              className="rounded-full bg-green-600 hover:bg-green-700 text-white h-10 w-10"
+              onClick={() => {
+                if (events && events.length > 0) {
+                  setSelectedEventForScan({ id: events[0].id, title: events[0].title });
+                  setScannerOpen(true);
+                }
+              }}
+              disabled={!events || events.length === 0}
+              title="Scan QR Code"
+            >
+              <QrCode className="h-5 w-5" />
+            </Button>
+          </div>
           <ScrollArea className="h-[600px] border rounded-lg">
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
@@ -330,27 +347,6 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                       </Button>
                       <EventRegistrationsDialog eventId={event.id} eventTitle={event.title} clubId={clubId} />
                     </div>
-                    
-                    {/* QR Scan Button */}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setScannerOpen(event.id)}
-                        className="bg-primary/10 hover:bg-primary/20 text-primary"
-                      >
-                        <QrCode className="h-3 w-3 mr-1" />
-                        Scan QR
-                      </Button>
-                    </div>
-                    
-                    {/* QR Scanner Dialog */}
-                    <QRScannerDialog
-                      open={scannerOpen === event.id}
-                      onOpenChange={(open) => setScannerOpen(open ? event.id : null)}
-                      eventId={event.id}
-                      eventTitle={event.title}
-                    />
                     
                     {/* Event Attendance Dialog */}
                     <EventAttendanceDialog
@@ -417,6 +413,19 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
             Add image URLs for events. Images will be displayed in the club page and detailed event views.
           </p>
         </div>
+
+        {/* Global QR Scanner Dialog */}
+        <QRScannerDialog
+          open={scannerOpen}
+          onOpenChange={(open) => {
+            setScannerOpen(open);
+            if (!open) setSelectedEventForScan(null);
+          }}
+          eventId={selectedEventForScan?.id || ''}
+          eventTitle={selectedEventForScan?.title || ''}
+          events={events || []}
+          onEventChange={(event) => setSelectedEventForScan(event)}
+        />
       </CardContent>
     </Card>
   );
