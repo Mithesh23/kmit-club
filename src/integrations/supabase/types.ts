@@ -119,6 +119,63 @@ export type Database = {
           },
         ]
       }
+      certificates: {
+        Row: {
+          certificate_number: string
+          certificate_title: string
+          club_id: string
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          issued_at: string
+          roll_number: string
+          student_email: string
+          student_name: string
+        }
+        Insert: {
+          certificate_number?: string
+          certificate_title: string
+          club_id: string
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          issued_at?: string
+          roll_number: string
+          student_email: string
+          student_name: string
+        }
+        Update: {
+          certificate_number?: string
+          certificate_title?: string
+          club_id?: string
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          issued_at?: string
+          roll_number?: string
+          student_email?: string
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_admin_sessions: {
         Row: {
           admin_id: string
