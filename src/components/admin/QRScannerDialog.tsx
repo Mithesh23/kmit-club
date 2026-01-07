@@ -85,6 +85,15 @@ export function QRScannerDialog({
     }
   };
 
+  const setResultAndAutoResume = (result: ScanResult) => {
+    setScanResult(result);
+    // Auto-resume scanning after 2 seconds for all scans
+    autoResumeTimerRef.current = setTimeout(() => {
+      setScanResult(null);
+      startScanning();
+    }, 2000);
+  };
+
   const onScanSuccess = async (decodedText: string, result: Html5QrcodeResult) => {
     // Stop scanning immediately to prevent duplicate scans
     await stopScanning();
@@ -95,7 +104,7 @@ export function QRScannerDialog({
       const qrData = JSON.parse(decodedText);
       
       if (!qrData.token || !qrData.event_id) {
-        setScanResult({
+        setResultAndAutoResume({
           success: false,
           message: "Invalid QR Code format",
           student_name: null,
@@ -107,7 +116,7 @@ export function QRScannerDialog({
 
       // Validate that QR is for this event
       if (qrData.event_id !== eventId) {
-        setScanResult({
+        setResultAndAutoResume({
           success: false,
           message: "This QR code is for a different event",
           student_name: null,
@@ -125,7 +134,7 @@ export function QRScannerDialog({
 
       if (error) {
         console.error("Error marking attendance:", error);
-        setScanResult({
+        setResultAndAutoResume({
           success: false,
           message: "Database error. Please try again.",
           student_name: null,
@@ -136,32 +145,17 @@ export function QRScannerDialog({
       }
 
       const resultData = data?.[0];
-      const scanResultData = {
+      setResultAndAutoResume({
         success: resultData?.success || false,
         message: resultData?.message || "Unknown error",
         student_name: resultData?.student_name || null,
         roll_number: resultData?.roll_number || null,
         scanned_at: resultData?.scanned_at || null,
-      };
-      
-      setScanResult(scanResultData);
-
-      if (resultData?.success) {
-        toast({
-          title: "Attendance Marked!",
-          description: `${resultData.student_name} (${resultData.roll_number}) is now present.`,
-        });
-        
-        // Auto-resume scanning after 2.5 seconds for successful scans
-        autoResumeTimerRef.current = setTimeout(() => {
-          setScanResult(null);
-          startScanning();
-        }, 2500);
-      }
+      });
 
     } catch (err) {
       console.error("Error processing QR:", err);
-      setScanResult({
+      setResultAndAutoResume({
         success: false,
         message: "Invalid QR Code",
         student_name: null,
@@ -173,15 +167,17 @@ export function QRScannerDialog({
     }
   };
 
-  const handleScanAnother = () => {
-    // Clear any auto-resume timer
-    if (autoResumeTimerRef.current) {
-      clearTimeout(autoResumeTimerRef.current);
-      autoResumeTimerRef.current = null;
+
+  // Auto-start camera when dialog opens
+  useEffect(() => {
+    if (open && eventId && !isScanning && !scanResult && !isProcessing) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        startScanning();
+      }, 300);
+      return () => clearTimeout(timer);
     }
-    setScanResult(null);
-    startScanning();
-  };
+  }, [open, eventId]);
 
   // Cleanup on unmount or close
   useEffect(() => {
@@ -262,10 +258,10 @@ export function QRScannerDialog({
               />
               
               {!isScanning && !isProcessing && (
-                <Button onClick={startScanning} className="w-full">
-                  <Camera className="mr-2 h-4 w-4" />
-                  Start Camera
-                </Button>
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Starting camera...</span>
+                </div>
               )}
 
               {isProcessing && (
@@ -302,8 +298,9 @@ export function QRScannerDialog({
                       <span className="font-medium">{formatTime(scanResult.scanned_at)}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-3 text-center">
-                    Resuming scanner in a moment...
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-3 text-center flex items-center justify-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Resuming scanner...
                   </p>
                 </div>
               ) : (
@@ -335,15 +332,13 @@ export function QRScannerDialog({
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <Button onClick={handleScanAnother} className="flex-1">
-                  <Camera className="mr-2 h-4 w-4" />
-                  Scan Another
-                </Button>
-                <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-                  Close
-                </Button>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Resuming scanner...</span>
               </div>
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+                Close Scanner
+              </Button>
             </div>
           )}
         </div>
