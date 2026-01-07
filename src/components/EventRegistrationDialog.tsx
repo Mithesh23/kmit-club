@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, UserPlus } from 'lucide-react';
 import { z } from 'zod';
+import { isPast, parseISO, startOfDay } from 'date-fns';
 
 // Roll number validation: 2 digits + "BD" + 1 digit + "A" + 2 digits + 2 alphanumeric (case-insensitive)
 const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{2}[0-9A-Za-z]{2}$/;
@@ -53,6 +54,10 @@ export const EventRegistrationDialog = ({
 
   const isRollNumberValid = formData.roll_number === '' || rollNumberRegex.test(formData.roll_number);
   const showRollNumberError = rollNumberTouched && formData.roll_number !== '' && !isRollNumberValid;
+
+  // Check if event date has passed - auto-close registration
+  const isEventDatePassed = eventDate ? isPast(startOfDay(parseISO(eventDate))) : false;
+  const isRegistrationActuallyOpen = registrationOpen && !isEventDatePassed;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,10 +161,10 @@ export const EventRegistrationDialog = ({
     }
   };
 
-  if (!registrationOpen) {
+  if (!isRegistrationActuallyOpen) {
     return (
       <Button disabled className="w-full" size="lg">
-        Registration Closed
+        {isEventDatePassed ? 'Event Completed' : 'Registration Closed'}
       </Button>
     );
   }
