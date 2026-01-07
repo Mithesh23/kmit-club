@@ -28,8 +28,8 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
   const { mutate: register, isPending } = useRegisterForClub();
   const { toast } = useToast();
 
-  // Roll number validation: 2 digits + "bd" + 1 digit + "a" + 4 digits (case-insensitive)
-  const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{4}$/;
+  // Roll number validation: 2 digits + "BD" + 1 digit + "A" + 2 digits + 2 alphanumeric (case-insensitive)
+  const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{2}[0-9A-Za-z]{2}$/;
   const validateRollNumber = (rollNo: string): boolean => {
     return rollNumberRegex.test(rollNo);
   };
@@ -43,7 +43,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
     if (!validateRollNumber(rollNumber)) {
       toast({
         title: "Invalid Roll Number",
-        description: "Roll number must follow format: 2 digits + BD + 1 digit + A + 4 digits (e.g., 24BD1A2345)",
+        description: "Roll number must follow format: e.g., 24BD1A2345 or 24BD1A23AB",
         variant: "destructive",
       });
       return;
@@ -172,7 +172,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
             <Label htmlFor="rollNumber" className="text-sm font-semibold">Roll Number</Label>
             <Input
               id="rollNumber"
-              placeholder="e.g., 24BD1A2345"
+              placeholder="e.g., 24BD1A2345 or 24BD1A23AB"
               value={rollNumber}
               onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
               onBlur={() => setRollNumberTouched(true)}
@@ -181,7 +181,7 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
               required
             />
             {showRollNumberError && (
-              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345</p>
+              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345 or 24BD1A23AB</p>
             )}
           </div>
             
