@@ -552,6 +552,7 @@ export type Database = {
       }
       events: {
         Row: {
+          certificate_permission: boolean
           club_id: string
           created_at: string
           description: string
@@ -561,6 +562,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          certificate_permission?: boolean
           club_id: string
           created_at?: string
           description: string
@@ -570,6 +572,7 @@ export type Database = {
           title: string
         }
         Update: {
+          certificate_permission?: boolean
           club_id?: string
           created_at?: string
           description?: string

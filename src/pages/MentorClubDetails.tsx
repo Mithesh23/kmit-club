@@ -23,6 +23,7 @@ import {
   Search,
   Power,
   PowerOff,
+  Award,
 } from "lucide-react";
 
 import { format } from "date-fns";
@@ -30,6 +31,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { transformImageUrl } from '@/lib/utils';
 import { toast } from "sonner";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
+
+const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
+
+const getMentorSupabaseClient = () => {
+  const token = localStorage.getItem('mentor_auth_token');
+  
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: localStorage,
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: token ? { authorization: token } : {},
+    },
+  });
+};
 
 import {
   AlertDialog,
@@ -332,25 +353,13 @@ export default function MentorClubDetails() {
                 ) : (
                   <div className="space-y-4">
                     {filteredEvents.map((ev) => (
-                      <div key={ev.id} className="p-4 border rounded-lg bg-card">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold text-lg">{ev.title}</h3>
-                            <p className="text-muted-foreground text-sm">{ev.description}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {ev.event_date ? format(new Date(ev.event_date), "PPP") : ""}
-                            </p>
-                          </div>
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/club/${clubId}/event/${ev.id}`)}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
+                      <EventCard 
+                        key={ev.id} 
+                        event={ev} 
+                        clubId={clubId!} 
+                        navigate={navigate}
+                        onRefresh={loadAll}
+                      />
                     ))}
                   </div>
                 )}
@@ -592,6 +601,90 @@ export default function MentorClubDetails() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+// Event Card Component with Certificate Permission Toggle
+function EventCard({ 
+  event, 
+  clubId, 
+  navigate, 
+  onRefresh 
+}: { 
+  event: any; 
+  clubId: string; 
+  navigate: any;
+  onRefresh: () => void;
+}) {
+  const [toggling, setToggling] = useState(false);
+
+  const toggleCertificatePermission = async () => {
+    setToggling(true);
+    try {
+      const mentorClient = getMentorSupabaseClient();
+      const newValue = !event.certificate_permission;
+      
+      const { error } = await mentorClient
+        .from('events')
+        .update({ certificate_permission: newValue })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success(
+        newValue 
+          ? "Certificate permission granted. Club admin can now issue certificates." 
+          : "Certificate permission revoked."
+      );
+      onRefresh();
+    } catch (err: any) {
+      toast.error(`Failed to update permission: ${err.message}`);
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  return (
+    <div className="p-4 border rounded-lg bg-card">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="font-semibold text-lg">{event.title}</h3>
+          <p className="text-muted-foreground text-sm">{event.description}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {event.event_date ? format(new Date(event.event_date), "PPP") : ""}
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={event.certificate_permission ? "default" : "outline"}
+            className={event.certificate_permission 
+              ? "bg-yellow-500 hover:bg-yellow-600 text-black" 
+              : "border-yellow-500 text-yellow-600 hover:bg-yellow-50"}
+            onClick={toggleCertificatePermission}
+            disabled={toggling}
+          >
+            {toggling ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Award className="h-4 w-4 mr-1" />
+                {event.certificate_permission ? "Permission Granted" : "Grant Certificate"}
+              </>
+            )}
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/club/${clubId}/event/${event.id}`)}
+          >
+            View Details
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
