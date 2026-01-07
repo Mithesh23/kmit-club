@@ -9,8 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, UserPlus } from 'lucide-react';
 import { z } from 'zod';
 
-// Roll number validation: 2 digits + "bd" + 1 digit + "a" + 4 digits (case-insensitive)
-const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{4}$/;
+// Roll number validation: 2 digits + "BD" + 1 digit + "A" + 2 digits + 2 alphanumeric (case-insensitive)
+const rollNumberRegex = /^\d{2}[bB][dD]\d[aA]\d{2}[0-9A-Za-z]{2}$/;
 
 const registrationSchema = z.object({
   student_name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -18,7 +18,7 @@ const registrationSchema = z.object({
   roll_number: z.string().trim()
     .min(1, 'Roll number is required')
     .length(10, 'Roll number must be exactly 10 characters')
-    .regex(rollNumberRegex, 'Roll number must follow format: 2 digits + BD + 1 digit + A + 4 digits (e.g., 24BD1A2345)'),
+    .regex(rollNumberRegex, 'Roll number must follow format: e.g., 24BD1A2345 or 24BD1A23AB'),
   branch: z.string().min(1, 'Branch is required'),
   year: z.string().min(1, 'Year is required'),
 });
@@ -209,13 +209,13 @@ export const EventRegistrationDialog = ({
               value={formData.roll_number}
               onChange={(e) => setFormData({ ...formData, roll_number: e.target.value.toUpperCase() })}
               onBlur={() => setRollNumberTouched(true)}
-              placeholder="e.g., 24BD1A2345"
+              placeholder="e.g., 24BD1A2345 or 24BD1A23AB"
               required
               maxLength={10}
               className={showRollNumberError ? 'border-destructive' : ''}
             />
             {showRollNumberError && (
-              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345</p>
+              <p className="text-xs text-destructive">Invalid format. Example: 24BD1A2345 or 24BD1A23AB</p>
             )}
           </div>
 
