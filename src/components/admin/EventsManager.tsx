@@ -354,6 +354,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                       onOpenChange={(open) => setAttendanceOpen(open ? event.id : null)}
                       eventId={event.id}
                       eventTitle={event.title}
+                      clubId={clubId}
                     />
 
                     {event.event_images && event.event_images.length > 0 && (
