@@ -22,6 +22,10 @@ export const ClubInfoEdit = ({ club, onSocialMediaClick }: ClubInfoEditProps) =>
   const [shortDescription, setShortDescription] = useState(club.short_description || '');
   const [detailedDescription, setDetailedDescription] = useState(club.detailed_description || '');
   const [registrationOpen, setRegistrationOpen] = useState(club.registration_open);
+  const [registration1stYear, setRegistration1stYear] = useState(club.registration_1st_year ?? true);
+  const [registration2ndYear, setRegistration2ndYear] = useState(club.registration_2nd_year ?? true);
+  const [registration3rdYear, setRegistration3rdYear] = useState(club.registration_3rd_year ?? true);
+  const [registration4thYear, setRegistration4thYear] = useState(club.registration_4th_year ?? true);
   const [logoUrl, setLogoUrl] = useState(club.logo_url || '');
   const [logoUrlInput, setLogoUrlInput] = useState(club.logo_url || '');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -116,6 +120,10 @@ export const ClubInfoEdit = ({ club, onSocialMediaClick }: ClubInfoEditProps) =>
           short_description: shortDescription,
           detailed_description: detailedDescription,
           registration_open: registrationOpen,
+          registration_1st_year: registration1stYear,
+          registration_2nd_year: registration2ndYear,
+          registration_3rd_year: registration3rdYear,
+          registration_4th_year: registration4thYear,
           logo_url: logoUrl || null
         }
       },
@@ -248,15 +256,59 @@ export const ClubInfoEdit = ({ club, onSocialMediaClick }: ClubInfoEditProps) =>
           />
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="registration"
-            checked={registrationOpen}
-            onCheckedChange={setRegistrationOpen}
-          />
-          <Label htmlFor="registration">
-            Registration Open {registrationOpen ? '(Students can register)' : '(Registration closed)'}
-          </Label>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="registration"
+              checked={registrationOpen}
+              onCheckedChange={setRegistrationOpen}
+            />
+            <Label htmlFor="registration">
+              Registration Open {registrationOpen ? '(Students can register)' : '(Registration closed)'}
+            </Label>
+          </div>
+          
+          {registrationOpen && (
+            <div className="ml-6 space-y-3 p-4 bg-muted/50 rounded-lg border">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Allow registration for specific years:
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="registration-1st"
+                    checked={registration1stYear}
+                    onCheckedChange={setRegistration1stYear}
+                  />
+                  <Label htmlFor="registration-1st" className="text-sm">1st Year</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="registration-2nd"
+                    checked={registration2ndYear}
+                    onCheckedChange={setRegistration2ndYear}
+                  />
+                  <Label htmlFor="registration-2nd" className="text-sm">2nd Year</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="registration-3rd"
+                    checked={registration3rdYear}
+                    onCheckedChange={setRegistration3rdYear}
+                  />
+                  <Label htmlFor="registration-3rd" className="text-sm">3rd Year</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="registration-4th"
+                    checked={registration4thYear}
+                    onCheckedChange={setRegistration4thYear}
+                  />
+                  <Label htmlFor="registration-4th" className="text-sm">4th Year</Label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         
         <Button onClick={handleSave} disabled={isPending} className="w-full">

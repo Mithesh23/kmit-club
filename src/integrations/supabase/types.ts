@@ -425,6 +425,10 @@ export type Database = {
           linkedin_url: string | null
           logo_url: string | null
           name: string
+          registration_1st_year: boolean
+          registration_2nd_year: boolean
+          registration_3rd_year: boolean
+          registration_4th_year: boolean
           registration_open: boolean
           short_description: string | null
           twitter_url: string | null
@@ -443,6 +447,10 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name: string
+          registration_1st_year?: boolean
+          registration_2nd_year?: boolean
+          registration_3rd_year?: boolean
+          registration_4th_year?: boolean
           registration_open?: boolean
           short_description?: string | null
           twitter_url?: string | null
@@ -461,6 +469,10 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string
+          registration_1st_year?: boolean
+          registration_2nd_year?: boolean
+          registration_3rd_year?: boolean
+          registration_4th_year?: boolean
           registration_open?: boolean
           short_description?: string | null
           twitter_url?: string | null
