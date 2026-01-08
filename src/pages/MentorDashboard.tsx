@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Trash2, Edit2, Camera, Plus, Calendar, Link2, FolderOpen, ImageIcon, X, Home, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ManageClubs from "@/components/mentor/ManageClubs";
+import CertificateRequestsManager from "@/components/mentor/CertificateRequestsManager";
 import MentorCredentialsManager from "@/components/mentor/MentorCredentialsManager";
 import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useMentorAuth } from "@/hooks/useMentorAuth";
@@ -345,12 +346,15 @@ export default function MentorDashboard() {
 
         {/* ⭐ TABS SYSTEM */}
         <Tabs defaultValue="clubs" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
+          <TabsList className="grid grid-cols-4 w-full mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
             <TabsTrigger value="clubs" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
               Manage Clubs
             </TabsTrigger>
             <TabsTrigger value="events" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
               Events
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+              Requests
             </TabsTrigger>
             <TabsTrigger value="mentors" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
               Credentials
@@ -719,6 +723,13 @@ export default function MentorDashboard() {
           ============================================================ */}
           <TabsContent value="clubs">
             <ManageClubs />
+          </TabsContent>
+
+          {/* ============================================================
+             CERTIFICATE REQUESTS TAB
+          ============================================================ */}
+          <TabsContent value="requests" className="animate-fade-in">
+            <CertificateRequestsManager />
           </TabsContent>
 
           {/* ============================================================
