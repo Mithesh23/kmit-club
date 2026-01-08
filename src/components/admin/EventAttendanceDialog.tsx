@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Download, Users, Loader2, CheckCircle2, Clock, Award } from 'lucide-react';
+import { Download, Users, Loader2, CheckCircle2, Clock, Award, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
@@ -50,13 +50,16 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [certificatePermission, setCertificatePermission] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [isIssuingCertificates, setIsIssuingCertificates] = useState(false);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (open && eventId) {
       fetchAttendance();
       fetchCertificatePermission();
+      fetchRequestStatus();
     }
   }, [open, eventId]);
 
@@ -90,6 +93,60 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
       setCertificatePermission(data?.certificate_permission || false);
     } catch (error) {
       console.error('Error fetching certificate permission:', error);
+    }
+  };
+
+  const fetchRequestStatus = async () => {
+    try {
+      const adminClient = getAdminSupabaseClient();
+      const { data, error } = await adminClient
+        .from('certificate_requests')
+        .select('status')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setRequestStatus(data.status as 'pending' | 'approved' | 'rejected');
+      } else {
+        setRequestStatus('none');
+      }
+    } catch (error) {
+      console.error('Error fetching request status:', error);
+    }
+  };
+
+  const handleRequestPermission = async () => {
+    setIsRequestingPermission(true);
+    try {
+      const adminClient = getAdminSupabaseClient();
+      
+      const { error } = await adminClient
+        .from('certificate_requests')
+        .insert({
+          event_id: eventId,
+          club_id: clubId,
+          status: 'pending',
+        });
+
+      if (error) throw error;
+
+      setRequestStatus('pending');
+      toast({
+        title: "Request Sent",
+        description: "Certificate permission request has been sent to the Principal.",
+      });
+    } catch (error: any) {
+      console.error('Error requesting permission:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send request.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRequestingPermission(false);
     }
   };
 
@@ -254,16 +311,44 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
                   )}
                   Issue Certificates
                 </Button>
-              ) : (
+              ) : requestStatus === 'pending' ? (
                 <Button
                   size="sm"
                   variant="outline"
                   className="border-yellow-500 text-yellow-600"
                   disabled
-                  title="Principal permission required to issue certificates"
                 >
-                  <Award className="mr-2 h-4 w-4" />
-                  Awaiting Permission
+                  <Clock className="mr-2 h-4 w-4" />
+                  Awaiting Approval
+                </Button>
+              ) : requestStatus === 'rejected' ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500 text-red-600"
+                  onClick={handleRequestPermission}
+                  disabled={isRequestingPermission}
+                >
+                  {isRequestingPermission ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  Request Again
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black"
+                  onClick={handleRequestPermission}
+                  disabled={isRequestingPermission}
+                >
+                  {isRequestingPermission ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  Request Permission
                 </Button>
               )}
             </div>

@@ -119,6 +119,51 @@ export type Database = {
           },
         ]
       }
+      certificate_requests: {
+        Row: {
+          club_id: string
+          created_at: string
+          event_id: string
+          id: string
+          requested_at: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          requested_at?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          requested_at?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_requests_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
           certificate_number: string
