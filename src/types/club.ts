@@ -13,6 +13,10 @@ export interface Club {
   facebook_url: string | null;
   linkedin_url: string | null;
   twitter_url: string | null;
+  registration_1st_year: boolean;
+  registration_2nd_year: boolean;
+  registration_3rd_year: boolean;
+  registration_4th_year: boolean;
 }
 
 export interface ClubMember {

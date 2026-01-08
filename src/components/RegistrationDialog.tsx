@@ -99,7 +99,29 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
     );
   };
 
+  // Check if registration is open
   if (!club.registration_open) {
+    return (
+      <Button disabled variant="secondary" className="w-full">
+        No registration for now!!
+      </Button>
+    );
+  }
+
+  // Get allowed years based on club settings
+  const getAllowedYears = () => {
+    const years: string[] = [];
+    if (club.registration_1st_year) years.push('1st Year');
+    if (club.registration_2nd_year) years.push('2nd Year');
+    if (club.registration_3rd_year) years.push('3rd Year');
+    if (club.registration_4th_year) years.push('4th Year');
+    return years;
+  };
+
+  const allowedYears = getAllowedYears();
+
+  // If no years are allowed, show disabled button
+  if (allowedYears.length === 0) {
     return (
       <Button disabled variant="secondary" className="w-full">
         No registration for now!!
@@ -197,10 +219,9 @@ export const RegistrationDialog = ({ club }: RegistrationDialogProps) => {
       required
     >
       <option value="">Select Year</option>
-      <option value="1st Year">1st Year</option>
-      <option value="2nd Year">2nd Year</option>
-      <option value="3rd Year">3rd Year</option>
-      <option value="4th Year">4th Year</option>
+      {allowedYears.map((yr) => (
+        <option key={yr} value={yr}>{yr}</option>
+      ))}
     </select>
   </div>
 
