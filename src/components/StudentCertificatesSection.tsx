@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Award, Loader2, ExternalLink, Download } from 'lucide-react';
+import { Award, Loader2, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import jsPDF from 'jspdf';
 
 interface Certificate {
   id: string;
@@ -14,6 +15,8 @@ interface Certificate {
   certificate_title: string;
   description: string | null;
   issued_at: string;
+  student_name: string;
+  roll_number: string;
   club: {
     name: string;
     logo_url: string | null;
@@ -30,12 +33,11 @@ interface StudentCertificatesSectionProps {
 
 export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSectionProps) => {
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data: certificates, isLoading } = useQuery({
     queryKey: ['student-certificates', rollNumber],
     queryFn: async () => {
-      const token = localStorage.getItem('student_auth_token');
-      
       const { data, error } = await supabase
         .from('certificates')
         .select(`
@@ -44,6 +46,8 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
           certificate_title,
           description,
           issued_at,
+          student_name,
+          roll_number,
           club:clubs(name, logo_url),
           event:events(title, event_date)
         `)
@@ -56,39 +60,107 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
     enabled: !!rollNumber,
   });
 
-  const handleDownloadCertificate = (certificate: Certificate) => {
-    // Generate a simple text-based certificate for download
-    const content = `
-═══════════════════════════════════════════════════════════════════
-                          CERTIFICATE
-═══════════════════════════════════════════════════════════════════
+  // Fetch student details for year and branch
+  const { data: studentDetails } = useQuery({
+    queryKey: ['student-details', rollNumber],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('student_accounts')
+        .select('year, branch')
+        .eq('roll_number', rollNumber)
+        .single();
 
-Certificate Number: ${certificate.certificate_number}
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!rollNumber,
+  });
 
-                    ${certificate.certificate_title}
+  const handleDownloadCertificate = async (certificate: Certificate) => {
+    setIsDownloading(true);
+    
+    try {
+      // Create PDF with landscape orientation (A4)
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-This is to certify that this certificate was issued by:
+      const pageWidth = 297;
+      const pageHeight = 210;
 
-Club: ${certificate.club?.name || 'N/A'}
-Event: ${certificate.event?.title || 'N/A'}
-${certificate.event?.event_date ? `Date: ${format(new Date(certificate.event.event_date), 'PPP')}` : ''}
+      // Load the certificate template image
+      const templateImg = new Image();
+      templateImg.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        templateImg.onload = () => resolve();
+        templateImg.onerror = () => reject(new Error('Failed to load template'));
+        templateImg.src = '/certificate-template.jpg';
+      });
 
-${certificate.description ? `Description: ${certificate.description}` : ''}
+      // Add the template as background
+      pdf.addImage(templateImg, 'JPEG', 0, 0, pageWidth, pageHeight);
 
-Issued on: ${format(new Date(certificate.issued_at), 'PPP')}
+      // Set Times New Roman font (using Times which is built into jsPDF)
+      pdf.setFont('times', 'normal');
 
-═══════════════════════════════════════════════════════════════════
-                    KMIT Clubs Portal
-═══════════════════════════════════════════════════════════════════
-    `.trim();
+      // Format student year for display (e.g., "1st Year" -> "I", "2nd Year" -> "II")
+      const yearMapping: Record<string, string> = {
+        '1st Year': 'I',
+        '2nd Year': 'II',
+        '3rd Year': 'III',
+        '4th Year': 'IV',
+      };
+      const studentYear = studentDetails?.year || '';
+      const romanYear = yearMapping[studentYear] || studentYear;
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${certificate.certificate_number}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+      // Format event date
+      const eventDate = certificate.event?.event_date 
+        ? format(new Date(certificate.event.event_date), 'do MMMM yyyy')
+        : '';
+
+      // Position and add text - matching the template layout
+      // All measurements are approximate based on the template structure
+      
+      // Student Name (after "Mr/Ms")
+      pdf.setFontSize(14);
+      pdf.setFont('times', 'bold');
+      const studentName = certificate.student_name.toUpperCase();
+      pdf.text(studentName, 95, 117);
+
+      // Year (after "Studying" - B.Tech + Year)
+      pdf.setFontSize(14);
+      pdf.setFont('times', 'bold');
+      const studyingText = `B.Tech ${romanYear} Year`;
+      pdf.text(studyingText, 75, 130);
+
+      // Branch (after "in")
+      pdf.setFontSize(14);
+      pdf.setFont('times', 'bold');
+      const branch = studentDetails?.branch || '';
+      pdf.text(branch, 160, 130);
+
+      // Event Name (after "event of")
+      pdf.setFontSize(14);
+      pdf.setFont('times', 'bold');
+      const eventName = certificate.event?.title || '';
+      pdf.text(eventName, 135, 143);
+
+      // Event Date (after "held in the college during/on")
+      pdf.setFontSize(14);
+      pdf.setFont('times', 'bold');
+      pdf.text(eventDate, 115, 156);
+
+      // Save the PDF
+      const fileName = `Certificate_${certificate.student_name.replace(/\s+/g, '_')}_${certificate.event?.title?.replace(/\s+/g, '_') || 'Event'}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   if (isLoading) {
@@ -228,9 +300,14 @@ Issued on: ${format(new Date(certificate.issued_at), 'PPP')}
                   variant="outline"
                   className="flex-1"
                   onClick={() => handleDownloadCertificate(selectedCertificate)}
+                  disabled={isDownloading}
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  {isDownloading ? 'Generating...' : 'Download PDF'}
                 </Button>
                 <Button
                   className="flex-1 bg-amber-500 hover:bg-amber-600"
