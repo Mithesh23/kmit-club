@@ -128,7 +128,7 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
       const studentName = certificate.student_name.toUpperCase();
-      pdf.text(studentName, 95, 117);
+      pdf.text(studentName, 128, 109);
 
       // Year (after "Studying" - B.Tech + Year)
       pdf.setFontSize(14);
@@ -146,12 +146,12 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
       const eventName = certificate.event?.title || '';
-      pdf.text(eventName, 135, 143);
+      pdf.text(eventName, 188, 141);
 
       // Event Date (after "held in the college during/on")
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
-      pdf.text(eventDate, 115, 156);
+      pdf.text(eventDate, 125, 156);
 
       // Save the PDF
       const fileName = `Certificate_${certificate.student_name.replace(/\s+/g, '_')}_${certificate.event?.title?.replace(/\s+/g, '_') || 'Event'}.pdf`;
