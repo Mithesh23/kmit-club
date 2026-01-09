@@ -10,6 +10,7 @@ import { Camera, CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-reac
 interface Event {
   id: string;
   title: string;
+  event_date?: string | null;
 }
 
 interface QRScannerDialogProps {
@@ -17,8 +18,9 @@ interface QRScannerDialogProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   eventTitle: string;
+  eventDate?: string | null;
   events?: Event[];
-  onEventChange?: (event: { id: string; title: string }) => void;
+  onEventChange?: (event: { id: string; title: string; event_date?: string | null }) => void;
 }
 
 interface ScanResult {
@@ -34,9 +36,12 @@ export function QRScannerDialog({
   onOpenChange, 
   eventId, 
   eventTitle, 
+  eventDate,
   events = [], 
   onEventChange 
 }: QRScannerDialogProps) {
+  // Check if event date has passed
+  const isEventPast = eventDate ? new Date(eventDate) < new Date(new Date().toDateString()) : false;
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -168,16 +173,16 @@ export function QRScannerDialog({
   };
 
 
-  // Auto-start camera when dialog opens
+  // Auto-start camera when dialog opens (only if event is not past)
   useEffect(() => {
-    if (open && eventId && !isScanning && !scanResult && !isProcessing) {
+    if (open && eventId && !isScanning && !scanResult && !isProcessing && !isEventPast) {
       // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         startScanning();
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [open, eventId]);
+  }, [open, eventId, isEventPast]);
 
   // Cleanup on unmount or close
   useEffect(() => {
@@ -230,7 +235,7 @@ export function QRScannerDialog({
                 onValueChange={(value) => {
                   const selectedEvent = events.find(e => e.id === value);
                   if (selectedEvent && onEventChange) {
-                    onEventChange({ id: selectedEvent.id, title: selectedEvent.title });
+                    onEventChange({ id: selectedEvent.id, title: selectedEvent.title, event_date: selectedEvent.event_date });
                   }
                 }}
               >
@@ -248,8 +253,23 @@ export function QRScannerDialog({
             </div>
           )}
 
+          {/* Event Past Warning */}
+          {isEventPast && eventId && (
+            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
+                <div>
+                  <p className="font-semibold text-amber-700 dark:text-amber-300">Event Date Passed</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    Attendance cannot be marked after the event date has passed.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Scanner Container */}
-          {!scanResult && eventId && (
+          {!scanResult && eventId && !isEventPast && (
             <div className="space-y-4">
               <div 
                 id="qr-reader" 

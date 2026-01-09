@@ -52,7 +52,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
-  const [selectedEventForScan, setSelectedEventForScan] = useState<{ id: string; title: string } | null>(null);
+  const [selectedEventForScan, setSelectedEventForScan] = useState<{ id: string; title: string; event_date?: string | null } | null>(null);
   const [attendanceOpen, setAttendanceOpen] = useState<string | null>(null);
   
   const { data: events, isLoading, refetch } = useAdminEvents(clubId);
@@ -280,7 +280,7 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
               className="rounded-full bg-green-600 hover:bg-green-700 text-white h-10 w-10"
               onClick={() => {
                 if (events && events.length > 0) {
-                  setSelectedEventForScan({ id: events[0].id, title: events[0].title });
+                  setSelectedEventForScan({ id: events[0].id, title: events[0].title, event_date: events[0].event_date });
                   setScannerOpen(true);
                 }
               }}
@@ -424,7 +424,8 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
           }}
           eventId={selectedEventForScan?.id || ''}
           eventTitle={selectedEventForScan?.title || ''}
-          events={events || []}
+          eventDate={selectedEventForScan?.event_date}
+          events={events?.map(e => ({ id: e.id, title: e.title, event_date: e.event_date })) || []}
           onEventChange={(event) => setSelectedEventForScan(event)}
         />
       </CardContent>
