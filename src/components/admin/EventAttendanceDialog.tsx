@@ -166,6 +166,15 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
     try {
       const adminClient = getAdminSupabaseClient();
       
+      // Fetch event details for the email
+      const { data: eventData, error: eventError } = await adminClient
+        .from('events')
+        .select('title, event_date, club_id, clubs(name)')
+        .eq('id', eventId)
+        .single();
+
+      if (eventError) throw eventError;
+
       // Check for existing certificates for this event
       const { data: existingCerts, error: checkError } = await adminClient
         .from('certificates')
@@ -188,7 +197,7 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
         return;
       }
 
-      // Create certificates for new attendees
+      // Create certificates in database for new attendees
       const certificatesToInsert = newAttendees.map(attendee => ({
         event_id: eventId,
         club_id: clubId,
@@ -205,10 +214,43 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
 
       if (insertError) throw insertError;
 
+      // Send certificates via email to all new attendees
       toast({
-        title: "Certificates Issued",
-        description: `Successfully issued ${newAttendees.length} certificate(s).`,
+        title: "Sending Certificates",
+        description: `Sending ${newAttendees.length} certificate(s) via email...`,
       });
+
+      const clubData = eventData?.clubs as { name: string } | null;
+      
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-certificate-email', {
+        body: {
+          event_id: eventId,
+          event_title: eventTitle,
+          event_date: eventData?.event_date || new Date().toISOString(),
+          club_id: clubId,
+          club_name: clubData?.name || 'KMIT Club',
+          attendees: newAttendees.map(a => ({
+            student_name: a.student_name,
+            student_email: a.student_email,
+            roll_number: a.roll_number,
+          })),
+        },
+      });
+
+      if (emailError) {
+        console.error('Error sending certificate emails:', emailError);
+        toast({
+          title: "Certificates Issued",
+          description: `${newAttendees.length} certificate(s) issued. Email sending failed - students can download from their dashboard.`,
+          variant: "default",
+        });
+      } else {
+        const result = emailResult as { successful_count: number; failed_count: number };
+        toast({
+          title: "Certificates Issued & Emailed",
+          description: `Successfully issued ${newAttendees.length} certificate(s). Emails sent: ${result.successful_count} successful, ${result.failed_count} failed.`,
+        });
+      }
     } catch (error: any) {
       console.error('Error issuing certificates:', error);
       toast({
