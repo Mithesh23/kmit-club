@@ -43,9 +43,10 @@ const getAdminSupabaseClient = () => {
 
 interface EventsManagerProps {
   clubId: string;
+  clubName: string;
 }
 
-export const EventsManager = ({ clubId }: EventsManagerProps) => {
+export const EventsManager = ({ clubId, clubName }: EventsManagerProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
@@ -354,7 +355,9 @@ export const EventsManager = ({ clubId }: EventsManagerProps) => {
                       onOpenChange={(open) => setAttendanceOpen(open ? event.id : null)}
                       eventId={event.id}
                       eventTitle={event.title}
+                      eventDate={event.event_date || ''}
                       clubId={clubId}
+                      clubName={clubName}
                     />
 
                     {event.event_images && event.event_images.length > 0 && (

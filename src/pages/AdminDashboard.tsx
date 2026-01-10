@@ -140,7 +140,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="events">
-            <EventsManager clubId={club.id} />
+            <EventsManager clubId={club.id} clubName={club.name} />
           </TabsContent>
 
           <TabsContent value="registrations">
