@@ -134,7 +134,7 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
       const studyingText = `B.Tech ${romanYear} Year`;
-      pdf.text(studyingText, 75, 125);
+      pdf.text(studyingText, 75, 130);
 
       // Branch (after "in")
       pdf.setFontSize(14);
