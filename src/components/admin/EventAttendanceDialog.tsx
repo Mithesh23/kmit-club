@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Download, Users, Loader2, CheckCircle2, Clock, Award, Send } from 'lucide-react';
+import { Download, Users, Loader2, CheckCircle2, Clock, Award, Send, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
@@ -33,7 +33,9 @@ interface EventAttendanceDialogProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   eventTitle: string;
+  eventDate: string;
   clubId: string;
+  clubName: string;
 }
 
 interface AttendanceRecord {
@@ -46,13 +48,14 @@ interface AttendanceRecord {
   created_at: string;
 }
 
-export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle, clubId }: EventAttendanceDialogProps) {
+export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle, eventDate, clubId, clubName }: EventAttendanceDialogProps) {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [certificatePermission, setCertificatePermission] = useState(false);
   const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [isIssuingCertificates, setIsIssuingCertificates] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [isSendingEmails, setIsSendingEmails] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -221,6 +224,54 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
     }
   };
 
+  const handleSendCertificateEmails = async () => {
+    const presentAttendees = attendance.filter(a => a.is_present);
+    
+    if (presentAttendees.length === 0) {
+      toast({
+        title: "No Attendees",
+        description: "There are no present attendees to send certificates to.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingEmails(true);
+    try {
+      const attendeesData = presentAttendees.map(a => ({
+        name: a.student_name,
+        email: a.student_email,
+        rollNumber: a.roll_number,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('send-certificate-email', {
+        body: {
+          eventId,
+          eventTitle,
+          eventDate,
+          clubName,
+          attendees: attendeesData,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Certificates Sent",
+        description: `Successfully sent ${data.successCount} certificate email(s). ${data.failCount > 0 ? `${data.failCount} failed.` : ''}`,
+      });
+    } catch (error: any) {
+      console.error('Error sending certificate emails:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send certificate emails.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmails(false);
+    }
+  };
+
   const downloadAttendance = () => {
     const presentAttendees = attendance.filter(a => a.is_present);
     
@@ -286,7 +337,7 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button 
                 onClick={downloadAttendance} 
                 variant="outline" 
@@ -295,6 +346,21 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download CSV
+              </Button>
+              
+              <Button
+                onClick={handleSendCertificateEmails}
+                size="sm"
+                variant="outline"
+                className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                disabled={presentCount === 0 || isSendingEmails}
+              >
+                {isSendingEmails ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="mr-2 h-4 w-4" />
+                )}
+                Send Certificates
               </Button>
               
               {certificatePermission ? (
