@@ -15,6 +15,7 @@ interface CertificateRequest {
   event_date: string;
   club_id: string;
   club_name: string;
+  template_url: string;
   attendees: {
     student_name: string;
     student_email: string;
@@ -30,7 +31,7 @@ const yearMapping: Record<string, string> = {
   '4th Year': 'IV',
 };
 
-// Format date for certificate
+// Format date for certificate (e.g., "9th January 2026")
 function formatCertificateDate(dateStr: string): string {
   const date = new Date(dateStr);
   const day = date.getDate();
@@ -45,15 +46,16 @@ function formatCertificateDate(dateStr: string): string {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-// Generate certificate PDF as base64
+// Generate certificate PDF as base64 - matching the Student Download functionality exactly
 async function generateCertificatePDF(
   studentName: string,
   studentYear: string,
   studentBranch: string,
   eventName: string,
-  eventDate: string
+  eventDate: string,
+  templateBase64: string
 ): Promise<string> {
-  // Use the jsPDF from CDN for Deno
+  // Use jsPDF from CDN for Deno
   const { jsPDF } = await import("https://esm.sh/jspdf@2.5.1");
   
   // Create PDF with landscape orientation (A4)
@@ -66,29 +68,17 @@ async function generateCertificatePDF(
   const pageWidth = 297;
   const pageHeight = 210;
 
-  // Fetch the certificate template
-  const templateUrl = Deno.env.get("SUPABASE_URL") + "/storage/v1/object/public/certificate-templates/certificate-template.jpg";
-  
+  // Add the template as background
   try {
-    // Try to fetch from storage first
-    const response = await fetch(templateUrl);
-    if (response.ok) {
-      const imageData = await response.arrayBuffer();
-      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageData)));
-      pdf.addImage(`data:image/jpeg;base64,${base64Image}`, 'JPEG', 0, 0, pageWidth, pageHeight);
-    }
+    pdf.addImage(`data:image/jpeg;base64,${templateBase64}`, 'JPEG', 0, 0, pageWidth, pageHeight);
   } catch (error) {
-    console.log("Could not load template from storage, using fallback");
-    // If template not found, create a simple certificate design
+    console.error("Error adding template image:", error);
+    // Create fallback design if template fails
     pdf.setFillColor(255, 248, 220);
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-    
-    // Border
     pdf.setDrawColor(218, 165, 32);
     pdf.setLineWidth(3);
     pdf.rect(10, 10, pageWidth - 20, pageHeight - 20);
-    
-    // Title
     pdf.setFont('times', 'bold');
     pdf.setFontSize(36);
     pdf.setTextColor(139, 69, 19);
@@ -103,29 +93,30 @@ async function generateCertificatePDF(
   const romanYear = yearMapping[studentYear] || studentYear;
   const formattedDate = formatCertificateDate(eventDate);
 
-  // Position and add text - matching the template layout
-  // Student Name (after "Mr/Ms")
+  // Position and add text - EXACTLY matching StudentCertificatesSection.tsx layout
+  
+  // Student Name (after "Mr/Ms") - position (128, 109)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   pdf.text(studentName.toUpperCase(), 128, 109);
 
-  // Year (after "Studying" - B.Tech + Year)
+  // Year (after "Studying" - B.Tech + Year) - position (75, 125)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   const studyingText = `B.Tech ${romanYear} Year`;
-  pdf.text(studyingText, 75, 130);
+  pdf.text(studyingText, 75, 125);
 
-  // Branch (after "in")
+  // Branch (after "in") - position (160, 130)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   pdf.text(studentBranch || '', 160, 130);
 
-  // Event Name (after "event of")
+  // Event Name (after "event of") - position (188, 141)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   pdf.text(eventName, 188, 141);
 
-  // Event Date (after "held in the college during/on")
+  // Event Date (after "held in the college during/on") - position (125, 156)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   pdf.text(formattedDate, 125, 156);
@@ -147,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const requestData: CertificateRequest = await req.json();
-    const { event_id, event_title, event_date, club_id, club_name, attendees } = requestData;
+    const { event_id, event_title, event_date, club_id, club_name, attendees, template_url } = requestData;
 
     console.log(`Processing certificates for event: ${event_title}, attendees: ${attendees.length}`);
 
@@ -162,6 +153,24 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch the certificate template image once (to avoid fetching for each attendee)
+    let templateBase64 = '';
+    try {
+      if (template_url) {
+        console.log(`Fetching certificate template from: ${template_url}`);
+        const templateResponse = await fetch(template_url);
+        if (templateResponse.ok) {
+          const imageData = await templateResponse.arrayBuffer();
+          templateBase64 = btoa(String.fromCharCode(...new Uint8Array(imageData)));
+          console.log("Certificate template loaded successfully");
+        } else {
+          console.error("Failed to fetch template:", templateResponse.status);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching certificate template:", error);
+    }
 
     // Fetch student details for all attendees
     const rollNumbers = attendees.map(a => a.roll_number);
@@ -185,13 +194,14 @@ const handler = async (req: Request): Promise<Response> => {
         // Get student details (default to empty if not found - for non-registered students)
         const details = studentDetailsMap.get(attendee.roll_number) || { year: '', branch: '' };
         
-        // Generate PDF certificate
+        // Generate PDF certificate with the template
         const pdfBase64 = await generateCertificatePDF(
           attendee.student_name,
           details.year || '',
           details.branch || '',
           event_title,
-          event_date
+          event_date,
+          templateBase64
         );
 
         console.log(`Generated certificate for ${attendee.student_name}`);
