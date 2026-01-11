@@ -222,9 +222,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
 
       const clubData = eventData?.clubs as { name: string } | null;
       
-      // Build the template URL for the edge function
-      const templateUrl = `${window.location.origin}/certificate-template.jpg`;
-      
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-certificate-email', {
         body: {
           event_id: eventId,
@@ -232,7 +229,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
           event_date: eventData?.event_date || new Date().toISOString(),
           club_id: clubId,
           club_name: clubData?.name || 'KMIT Club',
-          template_url: templateUrl,
           attendees: newAttendees.map(a => ({
             student_name: a.student_name,
             student_email: a.student_email,

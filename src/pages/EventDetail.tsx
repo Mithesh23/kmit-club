@@ -136,7 +136,7 @@ const EventDetail = () => {
           
           <div className="space-y-6">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-display font-bold text-gradient">
+              <h1 className="text-5xl md:text-6xl font-display font-bold text-gradient text-neon">
                 {event.title}
               </h1>
               <div className="w-24 h-2 bg-gradient-primary rounded-full glow-primary"></div>
