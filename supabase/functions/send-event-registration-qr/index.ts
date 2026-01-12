@@ -1,31 +1,24 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import QRCode from "https://esm.sh/qrcode-svg@1.1.0";
+import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-interface RegistrationQRRequest {
-  registration_id: string;
-  event_id: string;
-  event_title: string;
-  event_date: string;
+interface QREmailRequest {
   student_name: string;
   student_email: string;
   roll_number: string;
-  club_name: string;
-}
-
-// Generate a secure unique token
-function generateSecureToken(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  event_id: string;
+  event_title: string;
+  event_date: string;
+  registration_id: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -38,60 +31,66 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const {
-      registration_id,
-      event_id,
-      event_title,
-      event_date,
       student_name,
       student_email,
       roll_number,
-      club_name,
-    }: RegistrationQRRequest = await req.json();
+      event_id,
+      event_title,
+      event_date,
+      registration_id,
+    }: QREmailRequest = await req.json();
 
-    console.log(`Processing QR for registration: ${registration_id}, student: ${student_name}`);
+    console.log("Processing QR email for:", { student_name, student_email, event_title });
 
-    // Validate required fields
-    if (!registration_id || !event_id || !student_email || !student_name) {
-      console.error("Missing required fields");
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Generate a unique QR token
+    const qrToken = crypto.randomUUID();
+
+    // Create event attendance record with QR token
+    const { error: attendanceError } = await supabase
+      .from("event_attendance")
+      .insert({
+        event_id,
+        registration_id,
+        student_name,
+        student_email,
+        roll_number,
+        qr_token: qrToken,
+        is_present: false,
+      });
+
+    if (attendanceError) {
+      console.error("Error creating attendance record:", attendanceError);
+      throw new Error(`Failed to create attendance record: ${attendanceError.message}`);
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log("Attendance record created with QR token:", qrToken);
 
-    // Generate unique QR token
-    const qrToken = generateSecureToken();
-    console.log(`Generated QR token for ${student_name}`);
-
-    // Create QR code data - contains token and event ID for validation
+    // Create QR code data - this will be used for scanning
     const qrData = JSON.stringify({
       token: qrToken,
       event_id: event_id,
       registration_id: registration_id,
     });
 
-    // Generate QR code as SVG string using qrcode-svg (works without canvas)
-    const qrSvg = new QRCode({
-      content: qrData,
-      width: 300,
-      height: 300,
-      padding: 2,
-      color: '#000000',
-      background: '#ffffff',
-      ecl: 'M',
-    });
+    // Generate QR code as PNG using QR Server API (reliable, no canvas needed)
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&format=png&margin=10`;
     
-    const svgString = qrSvg.svg();
+    console.log("Fetching QR code from API...");
+    const qrResponse = await fetch(qrApiUrl);
     
-    // Convert SVG to base64 for email attachment
-    const svgBase64 = btoa(svgString);
+    if (!qrResponse.ok) {
+      throw new Error(`Failed to generate QR code: ${qrResponse.statusText}`);
+    }
+    
+    const qrImageBuffer = await qrResponse.arrayBuffer();
+    const qrBase64 = base64Encode(new Uint8Array(qrImageBuffer));
 
-    console.log("QR code generated successfully");
+    console.log("QR code PNG generated successfully");
 
     // Store the attendance record with QR token
     const { error: insertError } = await supabase
@@ -135,9 +134,9 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `🎫 Your Entry Pass for ${event_title} - KMIT Clubs`,
       attachments: [
         {
-          filename: 'qr-code.svg',
-          content: svgBase64,
-          content_type: 'image/svg+xml',
+          filename: 'qr-code.png',
+          content: qrBase64,
+          content_type: 'image/png',
         },
       ],
       html: `
