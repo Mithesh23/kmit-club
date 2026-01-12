@@ -92,6 +92,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("QR code PNG generated successfully");
 
+    // Fetch club name for the event
+    const { data: eventData, error: eventError } = await supabase
+      .from('events')
+      .select('club_id, clubs(name)')
+      .eq('id', event_id)
+      .single();
+
+    const club_name = eventData?.clubs?.name || 'KMIT Clubs';
+    
+    if (eventError) {
+      console.log("Could not fetch club name, using default:", eventError);
+    }
+
     // Store the attendance record with QR token
     const { error: insertError } = await supabase
       .from('event_attendance')
