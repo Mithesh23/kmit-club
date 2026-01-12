@@ -217,30 +217,30 @@ async function generateCertificatePDF(
 
   // Position and add text - matching the template layout exactly like student download
   // Student Name (after "Mr/Ms")
-  pdf.setFontSize(14);
+  pdf.setFontSize(15);
   pdf.setFont('times', 'bold');
-  pdf.text(studentName.toUpperCase(), 128, 109);
+  pdf.text(studentName.toUpperCase(), 115, 113.5);
 
   // Year (after "Studying" - B.Tech + Year)
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   const studyingText = `B.Tech ${romanYear} Year`;
-  pdf.text(studyingText, 75, 125);
+  pdf.text(studyingText, 75, 129.5);
 
   // Branch (after "in")
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
-  pdf.text(studentBranch || '', 160, 130);
+  pdf.text(studentBranch || '', 190, 129.5);
 
   // Event Name (after "event of")
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
-  pdf.text(eventName, 188, 141);
+  pdf.text(eventName, 190, 145);
 
   // Event Date (after "held in the college during/on")
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
-  pdf.text(formattedDate, 125, 156);
+  pdf.text(formattedDate, 125, 160.5);
 
   // Get PDF as base64
   const pdfOutput = pdf.output('datauristring');
