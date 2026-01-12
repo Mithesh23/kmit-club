@@ -137,29 +137,29 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
 
       // Position and add text - matching the template layout
       // Student Name (after "Mr/Ms")
-      pdf.setFontSize(14);
+      pdf.setFontSize(16);
       pdf.setFont('times', 'bold');
-      pdf.text(previewData.studentName, 128, 109);
+      pdf.text(previewData.studentName, 115, 113.5);
 
       // Year (after "Studying" - B.Tech + Year)
-      pdf.setFontSize(14);
+      pdf.setFontSize(15);
       pdf.setFont('times', 'bold');
-      pdf.text(previewData.studyingText, 75, 125);
+      pdf.text(previewData.studyingText, 75, 129.5);
 
       // Branch (after "in")
-      pdf.setFontSize(14);
+      pdf.setFontSize(15);
       pdf.setFont('times', 'bold');
-      pdf.text(previewData.branch, 160, 130);
+      pdf.text(previewData.branch, 190, 129.5);
 
       // Event Name (after "event of")
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
-      pdf.text(previewData.eventName, 188, 141);
+      pdf.text(previewData.eventName, 190, 145);
 
       // Event Date (after "held in the college during/on")
       pdf.setFontSize(14);
       pdf.setFont('times', 'bold');
-      pdf.text(previewData.eventDate, 125, 156);
+      pdf.text(previewData.eventDate, 125, 160.5);
 
       // Save the PDF
       const fileName = `Certificate_${certificate.student_name.replace(/\s+/g, '_')}_${certificate.event?.title?.replace(/\s+/g, '_') || 'Event'}.pdf`;
@@ -186,60 +186,60 @@ export const StudentCertificatesSection = ({ rollNumber }: StudentCertificatesSe
         
         {/* Overlay text positioned exactly like the PDF */}
         <div className="absolute inset-0" style={{ fontFamily: 'Times New Roman, serif' }}>
-          {/* Student Name - position (128, 109) in PDF = ~43.1% from left, ~51.9% from top */}
+          {/* Student Name - position  */}
           <div 
             className="absolute font-bold text-black"
             style={{ 
-              left: '43.1%', 
-              top: '49.6%',
+              left: '38%', 
+              top: '51.5%',
               fontSize: 'clamp(8px, 1.4vw, 14px)',
             }}
           >
             {previewData.studentName}
           </div>
           
-          {/* Year - position (75, 125) in PDF = ~25.3% from left, ~59.5% from top */}
+          {/* Year - position  */}
           <div 
             className="absolute font-bold text-black"
             style={{ 
               left: '25.3%', 
-              top: '57%',
+              top: '59%',
               fontSize: 'clamp(8px, 1.4vw, 14px)',
             }}
           >
             {previewData.studyingText}
           </div>
           
-          {/* Branch - position (160, 130) in PDF = ~53.9% from left, ~61.9% from top */}
+          {/* Branch - position*/}
           <div 
             className="absolute font-bold text-black"
             style={{ 
-              left: '53.9%', 
-              top: '61.9%',
+              left: '63.3%', 
+              top: '59%',
               fontSize: 'clamp(8px, 1.4vw, 14px)',
             }}
           >
             {previewData.branch}
           </div>
           
-          {/* Event Name - position (188, 141) in PDF = ~63.3% from left, ~67.1% from top */}
+          {/* Event Name - position  */}
           <div 
             className="absolute font-bold text-black"
             style={{ 
               left: '63.3%', 
-              top: '64.5%',
+              top: '66.5%',
               fontSize: 'clamp(8px, 1.4vw, 14px)',
             }}
           >
             {previewData.eventName}
           </div>
           
-          {/* Event Date - position (125, 156) in PDF = ~42.1% from left, ~74.3% from top */}
+          {/* Event Date - position */}
           <div 
             className="absolute font-bold text-black"
             style={{ 
               left: '42.1%', 
-              top: '71.5%',
+              top: '73.9%',
               fontSize: 'clamp(8px, 1.4vw, 14px)',
             }}
           >
