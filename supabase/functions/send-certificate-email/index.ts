@@ -67,8 +67,7 @@ async function generateCertificatePDF(
   const pageWidth = 297;
   const pageHeight = 210;
 
-  // Fetch the certificate template from the public folder
-  // Try multiple possible URLs for the template
+  // Use reliable public URLs for the certificate template
   const templateUrls = [
     `${siteUrl}/certificate-template.jpg`,
     'https://kmitclubs.in/certificate-template.jpg',
@@ -76,33 +75,65 @@ async function generateCertificatePDF(
   ];
   
   let templateLoaded = false;
+  let lastError = '';
   
   for (const templateUrl of templateUrls) {
     try {
       console.log(`Attempting to fetch template from: ${templateUrl}`);
-      const response = await fetch(templateUrl);
+      const response = await fetch(templateUrl, {
+        headers: {
+          'Accept': 'image/jpeg,image/png,image/*',
+          'User-Agent': 'KMIT-Clubs-Certificate-Generator/1.0',
+        },
+      });
+      
+      console.log(`Response status from ${templateUrl}: ${response.status}`);
       
       if (response.ok) {
+        const contentType = response.headers.get('content-type');
+        console.log(`Content-Type: ${contentType}`);
+        
         const imageData = await response.arrayBuffer();
+        console.log(`Image data size: ${imageData.byteLength} bytes`);
+        
+        if (imageData.byteLength < 1000) {
+          console.log(`Image too small, likely not a valid image. Skipping...`);
+          lastError = 'Image data too small';
+          continue;
+        }
+        
         const uint8Array = new Uint8Array(imageData);
         
-        // Convert to base64 properly for large images
-        let binary = '';
-        const chunkSize = 8192;
-        for (let i = 0; i < uint8Array.length; i += chunkSize) {
-          const chunk = uint8Array.subarray(i, i + chunkSize);
-          binary += String.fromCharCode.apply(null, Array.from(chunk));
-        }
-        const base64Image = btoa(binary);
+        // Convert to base64 using Deno's built-in encoding
+        const base64Image = btoa(
+          uint8Array.reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
         
-        pdf.addImage(`data:image/jpeg;base64,${base64Image}`, 'JPEG', 0, 0, pageWidth, pageHeight);
-        console.log("Certificate template loaded successfully");
-        templateLoaded = true;
-        break;
+        console.log(`Base64 length: ${base64Image.length}`);
+        
+        try {
+          // Add the image to PDF - use the raw base64 without data URI prefix
+          pdf.addImage(base64Image, 'JPEG', 0, 0, pageWidth, pageHeight);
+          console.log("Certificate template added to PDF successfully");
+          templateLoaded = true;
+          break;
+        } catch (addImageError: any) {
+          console.error(`Failed to add image to PDF: ${addImageError.message}`);
+          lastError = `addImage failed: ${addImageError.message}`;
+          // Continue to try next URL
+        }
+      } else {
+        lastError = `HTTP ${response.status}`;
+        console.log(`Failed with status ${response.status}`);
       }
-    } catch (error) {
-      console.log(`Failed to load template from ${templateUrl}:`, error);
+    } catch (error: any) {
+      lastError = error.message;
+      console.log(`Failed to load template from ${templateUrl}:`, error.message);
     }
+  }
+  
+  if (!templateLoaded) {
+    console.error(`Could not load template from any URL. Last error: ${lastError}`);
   }
   
   if (!templateLoaded) {
