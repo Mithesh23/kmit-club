@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { Resend } from "npm:resend@2.0.0";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+import QRCode from "https://esm.sh/qrcode-svg@1.1.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -75,18 +75,21 @@ const handler = async (req: Request): Promise<Response> => {
       registration_id: registration_id,
     });
 
-    // Generate QR code as base64 string (without data URL prefix)
-    const qrCodeBase64 = await QRCode.toDataURL(qrData, {
+    // Generate QR code as SVG string using qrcode-svg (works without canvas)
+    const qrSvg = new QRCode({
+      content: qrData,
       width: 300,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#ffffff',
-      },
+      height: 300,
+      padding: 2,
+      color: '#000000',
+      background: '#ffffff',
+      ecl: 'M',
     });
-
-    // Extract pure base64 content (remove data:image/png;base64, prefix)
-    const base64Content = qrCodeBase64.replace(/^data:image\/png;base64,/, '');
+    
+    const svgString = qrSvg.svg();
+    
+    // Convert SVG to base64 for email attachment
+    const svgBase64 = btoa(svgString);
 
     console.log("QR code generated successfully");
 
@@ -132,9 +135,9 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `🎫 Your Entry Pass for ${event_title} - KMIT Clubs`,
       attachments: [
         {
-          filename: 'qr-code.png',
-          content: base64Content,
-          content_type: 'image/png',
+          filename: 'qr-code.svg',
+          content: svgBase64,
+          content_type: 'image/svg+xml',
         },
       ],
       html: `
