@@ -51,7 +51,8 @@ async function generateCertificatePDF(
   studentYear: string,
   studentBranch: string,
   eventName: string,
-  eventDate: string
+  eventDate: string,
+  siteUrl: string
 ): Promise<string> {
   // Use the jsPDF from CDN for Deno
   const { jsPDF } = await import("https://esm.sh/jspdf@2.5.1");
@@ -66,20 +67,47 @@ async function generateCertificatePDF(
   const pageWidth = 297;
   const pageHeight = 210;
 
-  // Fetch the certificate template
-  const templateUrl = Deno.env.get("SUPABASE_URL") + "/storage/v1/object/public/certificate-templates/certificate-template.jpg";
+  // Fetch the certificate template from the public folder
+  // Try multiple possible URLs for the template
+  const templateUrls = [
+    `${siteUrl}/certificate-template.jpg`,
+    'https://kmitclubs.in/certificate-template.jpg',
+    'https://club-connect-deploy.lovable.app/certificate-template.jpg',
+  ];
   
-  try {
-    // Try to fetch from storage first
-    const response = await fetch(templateUrl);
-    if (response.ok) {
-      const imageData = await response.arrayBuffer();
-      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageData)));
-      pdf.addImage(`data:image/jpeg;base64,${base64Image}`, 'JPEG', 0, 0, pageWidth, pageHeight);
+  let templateLoaded = false;
+  
+  for (const templateUrl of templateUrls) {
+    try {
+      console.log(`Attempting to fetch template from: ${templateUrl}`);
+      const response = await fetch(templateUrl);
+      
+      if (response.ok) {
+        const imageData = await response.arrayBuffer();
+        const uint8Array = new Uint8Array(imageData);
+        
+        // Convert to base64 properly for large images
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        const base64Image = btoa(binary);
+        
+        pdf.addImage(`data:image/jpeg;base64,${base64Image}`, 'JPEG', 0, 0, pageWidth, pageHeight);
+        console.log("Certificate template loaded successfully");
+        templateLoaded = true;
+        break;
+      }
+    } catch (error) {
+      console.log(`Failed to load template from ${templateUrl}:`, error);
     }
-  } catch (error) {
-    console.log("Could not load template from storage, using fallback");
-    // If template not found, create a simple certificate design
+  }
+  
+  if (!templateLoaded) {
+    console.log("Could not load template from any URL, using fallback design");
+    // Fallback: create a simple certificate design
     pdf.setFillColor(255, 248, 220);
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
     
@@ -88,11 +116,64 @@ async function generateCertificatePDF(
     pdf.setLineWidth(3);
     pdf.rect(10, 10, pageWidth - 20, pageHeight - 20);
     
+    // Inner border
+    pdf.setLineWidth(1);
+    pdf.rect(15, 15, pageWidth - 30, pageHeight - 30);
+    
     // Title
     pdf.setFont('times', 'bold');
     pdf.setFontSize(36);
     pdf.setTextColor(139, 69, 19);
-    pdf.text('CERTIFICATE OF PARTICIPATION', pageWidth / 2, 50, { align: 'center' });
+    pdf.text('CERTIFICATE OF PARTICIPATION', pageWidth / 2, 45, { align: 'center' });
+    
+    // Decorative line
+    pdf.setDrawColor(218, 165, 32);
+    pdf.setLineWidth(0.5);
+    pdf.line(60, 55, pageWidth - 60, 55);
+    
+    // Certificate body text
+    pdf.setFont('times', 'normal');
+    pdf.setFontSize(14);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('This is to certify that', pageWidth / 2, 80, { align: 'center' });
+    
+    // Student name
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(20);
+    pdf.text(studentName.toUpperCase(), pageWidth / 2, 95, { align: 'center' });
+    
+    // Format year for display
+    const romanYear = yearMapping[studentYear] || studentYear;
+    const formattedDate = formatCertificateDate(eventDate);
+    
+    // Student details
+    pdf.setFont('times', 'normal');
+    pdf.setFontSize(14);
+    pdf.text(`B.Tech ${romanYear} Year - ${studentBranch}`, pageWidth / 2, 110, { align: 'center' });
+    
+    // Event participation text
+    pdf.setFontSize(14);
+    pdf.text('has successfully participated in the event', pageWidth / 2, 125, { align: 'center' });
+    
+    // Event name
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(18);
+    pdf.text(eventName, pageWidth / 2, 140, { align: 'center' });
+    
+    // Date
+    pdf.setFont('times', 'normal');
+    pdf.setFontSize(14);
+    pdf.text(`held on ${formattedDate}`, pageWidth / 2, 155, { align: 'center' });
+    
+    // Footer
+    pdf.setFontSize(12);
+    pdf.text('KMIT Clubs', pageWidth / 2, 180, { align: 'center' });
+    
+    // Get PDF as base64
+    const pdfOutput = pdf.output('datauristring');
+    const base64Content = pdfOutput.split(',')[1];
+    
+    return base64Content;
   }
 
   // Set Times New Roman font (using Times which is built into jsPDF)
@@ -103,7 +184,7 @@ async function generateCertificatePDF(
   const romanYear = yearMapping[studentYear] || studentYear;
   const formattedDate = formatCertificateDate(eventDate);
 
-  // Position and add text - matching the template layout
+  // Position and add text - matching the template layout exactly like student download
   // Student Name (after "Mr/Ms")
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
@@ -113,7 +194,7 @@ async function generateCertificatePDF(
   pdf.setFontSize(14);
   pdf.setFont('times', 'bold');
   const studyingText = `B.Tech ${romanYear} Year`;
-  pdf.text(studyingText, 75, 130);
+  pdf.text(studyingText, 75, 125);
 
   // Branch (after "in")
   pdf.setFontSize(14);
@@ -179,6 +260,10 @@ const handler = async (req: Request): Promise<Response> => {
       (studentAccounts || []).map(s => [s.roll_number, { year: s.year, branch: s.branch }])
     );
 
+    // Get the site URL from the request origin or use default
+    const origin = req.headers.get('origin') || 'https://kmitclubs.in';
+    console.log(`Using site URL: ${origin} for certificate template`);
+
     // Process all emails in parallel
     const emailPromises = attendees.map(async (attendee) => {
       try {
@@ -191,7 +276,8 @@ const handler = async (req: Request): Promise<Response> => {
           details.year || '',
           details.branch || '',
           event_title,
-          event_date
+          event_date,
+          origin
         );
 
         console.log(`Generated certificate for ${attendee.student_name}`);
