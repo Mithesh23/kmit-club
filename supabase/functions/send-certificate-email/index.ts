@@ -322,7 +322,6 @@ const handler = async (req: Request): Promise<Response> => {
             {
               filename: `Certificate_${attendee.student_name.replace(/\s+/g, '_')}_${event_title.replace(/\s+/g, '_')}.pdf`,
               content: pdfBase64,
-              content_type: 'application/pdf',
             },
           ],
           html: `
