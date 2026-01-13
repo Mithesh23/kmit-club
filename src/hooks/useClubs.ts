@@ -20,7 +20,9 @@ export const useClubs = (includeInactive = false) => {
       
       if (error) throw error;
       return data || [];
-    }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 };
 
@@ -37,7 +39,9 @@ export const useClub = (clubId: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!clubId
+    enabled: !!clubId,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 };
 
@@ -54,7 +58,8 @@ export const useClubMembers = (clubId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clubId
+    enabled: !!clubId,
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -71,7 +76,8 @@ export const useAnnouncements = (clubId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clubId
+    enabled: !!clubId,
+    staleTime: 2 * 60 * 1000, // Cache announcements for 2 minutes
   });
 };
 
@@ -91,7 +97,8 @@ export const useEvents = (clubId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clubId
+    enabled: !!clubId,
+    staleTime: 2 * 60 * 1000, // Cache events for 2 minutes
   });
 };
 
@@ -102,13 +109,19 @@ export const useRegisterForClub = () => {
     mutationFn: async (registration: Omit<ClubRegistration, 'id' | 'created_at'>) => {
       const { data, error } = await supabase
         .from('club_registrations')
-        .insert([registration]);
+        .insert([registration])
+        .select('id')
+        .single();
       
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
+      // Invalidate registrations cache
       queryClient.invalidateQueries({ queryKey: ['registrations'] });
-    }
+    },
+    // Retry logic for network failures
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
 };

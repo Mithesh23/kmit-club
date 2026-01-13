@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -19,6 +18,16 @@ interface QREmailRequest {
   event_title: string;
   event_date: string;
   registration_id: string;
+}
+
+// Helper function to convert ArrayBuffer to base64
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -50,6 +59,21 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate a unique QR token
     const qrToken = crypto.randomUUID();
 
+    // Fetch club name for the event (do this first to fail fast if event doesn't exist)
+    const { data: eventData, error: eventError } = await supabase
+      .from('events')
+      .select('club_id, clubs(name)')
+      .eq('id', event_id)
+      .single();
+
+    // Handle the joined clubs data - it comes as an object, not array when using .single()
+    const clubsData = eventData?.clubs as { name: string } | null;
+    const club_name = clubsData?.name || 'KMIT Clubs';
+    
+    if (eventError) {
+      console.log("Could not fetch club name, using default:", eventError);
+    }
+
     // Create event attendance record with QR token
     const { error: attendanceError } = await supabase
       .from("event_attendance")
@@ -64,11 +88,16 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     if (attendanceError) {
-      console.error("Error creating attendance record:", attendanceError);
-      throw new Error(`Failed to create attendance record: ${attendanceError.message}`);
+      // If duplicate, just log and continue (registration already processed)
+      if (attendanceError.code === '23505') {
+        console.log("Attendance record already exists, skipping insert");
+      } else {
+        console.error("Error creating attendance record:", attendanceError);
+        throw new Error(`Failed to create attendance record: ${attendanceError.message}`);
+      }
+    } else {
+      console.log("Attendance record created with QR token:", qrToken);
     }
-
-    console.log("Attendance record created with QR token:", qrToken);
 
     // Create QR code data - this will be used for scanning
     const qrData = JSON.stringify({
@@ -88,45 +117,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     const qrImageBuffer = await qrResponse.arrayBuffer();
-    const qrBase64 = base64Encode(new Uint8Array(qrImageBuffer));
+    const qrBase64 = arrayBufferToBase64(qrImageBuffer);
 
     console.log("QR code PNG generated successfully");
-
-    // Fetch club name for the event
-    const { data: eventData, error: eventError } = await supabase
-      .from('events')
-      .select('club_id, clubs(name)')
-      .eq('id', event_id)
-      .single();
-
-    const club_name = eventData?.clubs?.name || 'KMIT Clubs';
-    
-    if (eventError) {
-      console.log("Could not fetch club name, using default:", eventError);
-    }
-
-    // Store the attendance record with QR token
-    const { error: insertError } = await supabase
-      .from('event_attendance')
-      .insert({
-        event_id,
-        registration_id,
-        qr_token: qrToken,
-        student_name,
-        student_email,
-        roll_number,
-        is_present: false,
-      });
-
-    if (insertError) {
-      // If duplicate, just log and continue (registration already processed)
-      if (insertError.code === '23505') {
-        console.log("Attendance record already exists, skipping insert");
-      } else {
-        console.error("Error inserting attendance record:", insertError);
-        throw insertError;
-      }
-    }
 
     // Format event date for display
     const formattedDate = event_date 
@@ -149,7 +142,6 @@ const handler = async (req: Request): Promise<Response> => {
         {
           filename: 'qr-code.png',
           content: qrBase64,
-          content_type: 'image/png',
         },
       ],
       html: `
