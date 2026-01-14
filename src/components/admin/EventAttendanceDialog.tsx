@@ -5,8 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Download, Users, Loader2, CheckCircle2, Clock, Award, Send, Mail, RefreshCw } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Download, Users, Loader2, CheckCircle2, Clock, Award, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
@@ -54,7 +53,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
   const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [isIssuingCertificates, setIsIssuingCertificates] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
-  const [resendingFor, setResendingFor] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -265,66 +263,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
     }
   };
 
-  const handleResendCertificate = async (attendee: AttendanceRecord) => {
-    setResendingFor(attendee.roll_number);
-    try {
-      const adminClient = getAdminSupabaseClient();
-      
-      // Fetch event details
-      const { data: eventData, error: eventError } = await adminClient
-        .from('events')
-        .select('title, event_date, club_id, clubs(name)')
-        .eq('id', eventId)
-        .single();
-
-      if (eventError) throw eventError;
-
-      const clubData = eventData?.clubs as { name: string } | null;
-
-      // Call the edge function to resend
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-certificate-email', {
-        body: {
-          event_id: eventId,
-          event_title: eventTitle,
-          event_date: eventData?.event_date || new Date().toISOString(),
-          club_id: clubId,
-          club_name: clubData?.name || 'KMIT Club',
-          attendees: [{
-            student_name: attendee.student_name,
-            student_email: attendee.student_email,
-            roll_number: attendee.roll_number,
-          }],
-        },
-      });
-
-      if (emailError) throw emailError;
-
-      const result = emailResult as { successful_count: number; failed_count: number };
-      
-      if (result.successful_count > 0) {
-        toast({
-          title: "Certificate Resent",
-          description: `Certificate email sent to ${attendee.student_email}`,
-        });
-      } else {
-        toast({
-          title: "Failed to Send",
-          description: `Could not send email to ${attendee.student_email}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error('Error resending certificate:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to resend certificate.",
-        variant: "destructive",
-      });
-    } finally {
-      setResendingFor(null);
-    }
-  };
-
   const downloadAttendance = () => {
     const presentAttendees = attendance.filter(a => a.is_present);
     
@@ -479,7 +417,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
                     <TableHead>Email</TableHead>
                     <TableHead className="text-center">Status</TableHead>
                     <TableHead>Scan Time</TableHead>
-                    {certificatePermission && <TableHead className="w-[50px]"></TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -503,32 +440,6 @@ export function EventAttendanceDialog({ open, onOpenChange, eventId, eventTitle,
                         <TableCell className="text-sm text-muted-foreground">
                           {formatTime(record.scanned_at)}
                         </TableCell>
-                        {certificatePermission && (
-                          <TableCell>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleResendCertificate(record)}
-                                    disabled={resendingFor === record.roll_number}
-                                  >
-                                    {resendingFor === record.roll_number ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <RefreshCw className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Resend Certificate Email</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </TableCell>
-                        )}
                       </TableRow>
                     ))}
                 </TableBody>

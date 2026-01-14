@@ -275,7 +275,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch student details from student_accounts for all attendees
+    // Fetch student details for all attendees
     const rollNumbers = attendees.map(a => a.roll_number);
     const { data: studentAccounts, error: studentError } = await supabase
       .from('student_accounts')
@@ -286,26 +286,9 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error fetching student accounts:", studentError);
     }
 
-    // Also fetch from event_registrations for attendees who are not club members
-    // This covers non-club members who registered for events
-    const { data: eventRegistrations, error: regError } = await supabase
-      .from('event_registrations')
-      .select('roll_number, year, branch')
-      .eq('event_id', event_id)
-      .in('roll_number', rollNumbers);
-
-    if (regError) {
-      console.error("Error fetching event registrations:", regError);
-    }
-
-    // Create maps for quick lookup
+    // Create a map for quick lookup
     const studentDetailsMap = new Map(
       (studentAccounts || []).map(s => [s.roll_number, { year: s.year, branch: s.branch }])
-    );
-    
-    // Create map from event_registrations (for non-club members)
-    const eventRegDetailsMap = new Map(
-      (eventRegistrations || []).map(r => [r.roll_number, { year: r.year, branch: r.branch }])
     );
 
     // Get the site URL from the request origin or use default
@@ -315,21 +298,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Process all emails in parallel
     const emailPromises = attendees.map(async (attendee) => {
       try {
-        // Get student details - first try student_accounts, then fall back to event_registrations
-        let details = studentDetailsMap.get(attendee.roll_number);
-        
-        // If no year/branch from student_accounts or they're empty, try event_registrations
-        if (!details?.year || !details?.branch) {
-          const regDetails = eventRegDetailsMap.get(attendee.roll_number);
-          if (regDetails) {
-            details = {
-              year: details?.year || regDetails.year || '',
-              branch: details?.branch || regDetails.branch || ''
-            };
-          } else {
-            details = details || { year: '', branch: '' };
-          }
-        }
+        // Get student details (default to empty if not found - for non-registered students)
+        const details = studentDetailsMap.get(attendee.roll_number) || { year: '', branch: '' };
         
         // Generate PDF certificate
         const pdfBase64 = await generateCertificatePDF(
