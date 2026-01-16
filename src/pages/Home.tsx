@@ -294,7 +294,7 @@ const Home = () => {
                 <li><a href="#" className="hover:text-primary transition-colors">About KMIT</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Student Life</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Academic Programs</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Campus Resources</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Verify Event Certificate</a></li>
               </ul>
             </div>
             
