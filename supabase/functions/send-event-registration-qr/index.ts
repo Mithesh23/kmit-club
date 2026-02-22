@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     // Handle the joined clubs data - it comes as an object, not array when using .single()
-    const clubsData = eventData?.clubs as { name: string } | null;
+    const clubsData = eventData?.clubs as unknown as { name: string } | null;
     const club_name = clubsData?.name || 'KMIT Clubs';
     
     if (eventError) {
