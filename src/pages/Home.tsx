@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useClubs } from '@/hooks/useClubs';
 import { useHasNewNotices } from '@/hooks/useNoticeBoard';
@@ -17,6 +17,7 @@ import kmitAuditorium from '@/assets/kmit-auditorium.jpg';
 import kmitCampusExtra from '@/assets/kmit-campus-extra.avif';
 import kmitLogo from '@/assets/kmit-logo.png';
 import { transformImageUrl } from '@/lib/utils';
+import { CertificateVerifyDialog } from '@/components/CertificateVerifyDialog';
 const Home = () => {
   const {
     data: clubs,
@@ -26,6 +27,7 @@ const Home = () => {
   const hasNewNotices = useHasNewNotices();
   const navigate = useNavigate();
   const [showAllClubs, setShowAllClubs] = useState(false);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -294,7 +296,7 @@ const Home = () => {
                 <li><a href="#" className="hover:text-primary transition-colors">About KMIT</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Student Life</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Academic Programs</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Verify Event Certificate</a></li>
+                <li><button onClick={() => setShowVerifyDialog(true)} className="hover:text-primary transition-colors">Verify Event Certificate</button></li>
               </ul>
             </div>
             
@@ -333,6 +335,8 @@ const Home = () => {
 </div>
 
       </footer>
+
+      <CertificateVerifyDialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog} />
     </div>;
 };
 export default Home;
