@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, User, Mail, Phone, Edit } from 'lucide-react';
+
+const SUPABASE_URL = "https://qvsrhfzdkjygjuwmfwmh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c";
 
 interface StudentProfileDialogProps {
   rollNumber: string;
@@ -26,94 +28,73 @@ export const StudentProfileDialog = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
+  // Sync state when props change (e.g. after data refetch)
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setEmail(currentEmail || '');
+      setPhone(currentPhone || '');
+    }
+    setOpen(newOpen);
+  };
+
   const handleUpdate = async () => {
     if (!email.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Email is required.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation Error", description: "Email is required.", variant: "destructive" });
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation Error", description: "Please enter a valid email address.", variant: "destructive" });
       return;
     }
 
-    // Basic phone validation (optional but if provided should be valid)
     if (phone && !/^[0-9]{10}$/.test(phone.replace(/\D/g, ''))) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid 10-digit phone number.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation Error", description: "Please enter a valid 10-digit phone number.", variant: "destructive" });
       return;
     }
 
     setIsUpdating(true);
     try {
       const token = localStorage.getItem('student_auth_token');
-      
-      // Create a client with the custom x-student-token header for RLS
-      const { createClient } = await import('@supabase/supabase-js');
-      const authClient = createClient(
-        'https://qvsrhfzdkjygjuwmfwmh.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2c3JoZnpka2p5Z2p1d21md21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyOTExNDksImV4cCI6MjA2OTg2NzE0OX0.PC03FIARScFmY1cJmlW8H7rLppcjVXKKUzErV7XA5_c',
+      if (!token) throw new Error('Not authenticated. Please login again.');
+
+      // Update student_accounts using direct fetch with x-student-token header
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/student_accounts?roll_number=eq.${encodeURIComponent(rollNumber)}`,
         {
-          global: {
-            headers: {
-              'x-student-token': token || ''
-            }
-          }
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'x-student-token': token,
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            student_email: email.trim(),
+            phone: phone.trim() || null,
+          }),
         }
       );
-      
-      const { error } = await authClient
-        .from('student_accounts')
-        .update({
-          student_email: email.trim(),
-          phone: phone.trim() || null
-        })
-        .eq('roll_number', rollNumber);
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Update failed (${response.status})`);
+      }
 
-      // Also update club_registrations for consistency
-      await authClient
-        .from('club_registrations')
-        .update({
-          student_email: email.trim(),
-          phone: phone.trim() || null
-        })
-        .eq('roll_number', rollNumber);
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully.",
-      });
-
+      toast({ title: "Profile Updated", description: "Your profile has been updated successfully." });
       setOpen(false);
       onUpdate?.();
     } catch (error: any) {
-      toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update profile.",
-        variant: "destructive",
-      });
+      toast({ title: "Update Failed", description: error.message || "Failed to update profile.", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Edit className="h-4 w-4 mr-2" />
@@ -131,12 +112,7 @@ export const StudentProfileDialog = ({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="roll">Roll Number</Label>
-            <Input
-              id="roll"
-              value={rollNumber}
-              disabled
-              className="bg-muted"
-            />
+            <Input id="roll" value={rollNumber} disabled className="bg-muted" />
           </div>
 
           <div className="space-y-2">
@@ -169,15 +145,10 @@ export const StudentProfileDialog = ({
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleUpdate} disabled={isUpdating}>
             {isUpdating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
-              </>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Updating...</>
             ) : (
               'Save Changes'
             )}
